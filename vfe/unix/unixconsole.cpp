@@ -51,6 +51,7 @@
 #include "disp.h"
 #include "disp_text.h"
 #include "disp_sdl.h"
+#include "disp_sdl2.h"
 
 // from directory "source"
 #include "backend/povray.h"
@@ -68,7 +69,8 @@ enum DispMode
 {
     DISP_MODE_NONE,
     DISP_MODE_TEXT,
-    DISP_MODE_SDL
+    DISP_MODE_SDL,
+    DISP_MODE_SDL2
 };
 
 static DispMode gDisplayMode;
@@ -151,6 +153,18 @@ static vfeDisplay *UnixDisplayCreator (unsigned int width, unsigned int height, 
     UnixDisplay *display = GetRenderWindow () ;
     switch (gDisplayMode)
     {
+#ifdef HAVE_LIBSDL2
+        case DISP_MODE_SDL2:
+            if (display != NULL && display->GetWidth() == width && display->GetHeight() == height)
+            {
+                UnixDisplay *p = new UnixSDL2Display (width, height, gamma, session, false) ;
+                if (p->TakeOver (display))
+                    return p;
+                delete p;
+            }
+            return new UnixSDL2Display (width, height, gamma, session, visible) ;
+            break;
+#endif
 #ifdef HAVE_LIBSDL
         case DISP_MODE_SDL:
             if (display != NULL && display->GetWidth() == width && display->GetHeight() == height)
@@ -410,6 +424,11 @@ int main (int argc, char **argv)
         ErrorExit(session);
 
     // display mode registration
+#ifdef HAVE_LIBSDL2
+    if (UnixSDL2Display::Register(session))
+        gDisplayMode = DISP_MODE_SDL2;
+    else
+#endif
 #ifdef HAVE_LIBSDL
     if (UnixSDLDisplay::Register(session))
         gDisplayMode = DISP_MODE_SDL;
@@ -523,6 +542,10 @@ int main (int argc, char **argv)
 
         if (GetRenderWindow() != NULL)
         {
+#ifdef HAVE_LIBSDL2
+            if (gDisplayMode == DISP_MODE_SDL2)
+                static_cast<UnixSDL2Display *>(GetRenderWindow())->Live();
+#endif
             // early exit
             if (GetRenderWindow()->HandleEvents())
             {

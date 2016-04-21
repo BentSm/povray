@@ -63,6 +63,7 @@ m4_include([unix/config/ax_test_compiler_flags.m4])
 m4_include([unix/config/ax_check_lib.m4])
 m4_include([unix/config/ax_check_libjpeg.m4])
 m4_include([unix/config/ax_check_libsdl.m4])
+m4_include([unix/config/ax_check_libsdl2.m4])
 m4_include([unix/config/ax_check_libtiff.m4])
 m4_include([unix/config/ax_check_openexr.m4])
 m4_include([unix/config/ax_compare_version.m4])
@@ -80,6 +81,7 @@ required_libpng_version="1.2.5"
 required_libjpeg_version="6b"
 required_libtiff_version="3.6.1"
 required_libsdl_version="1.2"
+required_libsdl2_version="2.0.1"
 required_openexr_version="1.2"
 
 # Supported options.
@@ -100,6 +102,7 @@ AX_ARG_WITH([--with-libpng],        [DIR], [use the PNG library (in directory DI
 AX_ARG_WITH([--with-libjpeg],       [DIR], [use the JPEG library (in directory DIR)])
 AX_ARG_WITH([--with-libtiff],       [DIR], [use the TIFF library (in directory DIR)])
 AX_ARG_WITH([--with-libsdl],        [DIR], [use the SDL library (in directory DIR)])
+AX_ARG_WITH([--with-libsdl2],       [DIR], [use the SDL2 library (in directory DIR)])
 AX_ARG_WITH([--with-libmkl],        [DIR], [use the Intel(R) Math Kernel Library (in directory DIR)])
 AX_ARG_WITH([--with-openexr],       [DIR], [use the OpenEXR library (in directory DIR)]) 
 
@@ -524,15 +527,21 @@ else
     esac
   fi
 
-  # libSDL
+  # libSDL, libSDL2
   if test x"$pov_xwin_msg" = x"enabled"; then
-    AX_CHECK_LIBSDL([$required_libsdl_version])
-    if test x"$ax_check_libsdl" = x"ok"; then
-      pov_libsdl=ok
-      pov_xwin_msg="$pov_xwin_msg (using SDL)"
+    AX_CHECK_LIBSDL2([$required_libsdl2_version])
+    if test x"$ax_check_libsdl2" = x"ok"; then
+      pov_libsdl2=ok
+      pov_xwin_msg="$pov_xwin_msg (using SDL2)"
     else
-      AC_MSG_WARN([the preview display is disabled])
-      pov_xwin_msg="disabled"  # FIXME
+      AX_CHECK_LIBSDL([$required_libsdl_version])
+      if test x"$ax_check_libsdl" = x"ok"; then
+        pov_libsdl=ok
+        pov_xwin_msg="$pov_xwin_msg (using SDL)"
+      else
+        AC_MSG_WARN([the preview display is disabled])
+        pov_xwin_msg="disabled"  # FIXME
+      fi
     fi
   fi
 

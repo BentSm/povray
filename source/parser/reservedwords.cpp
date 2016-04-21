@@ -91,6 +91,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { ASCII_TOKEN,                  "ascii" },
     { ASIN_TOKEN,                   "asin" },
     { ASINH_TOKEN,                  "asinh" },
+    { ASSUME_NESTED_TOKEN,          "assume_nested" },
     { ASSUMED_GAMMA_TOKEN,          "assumed_gamma" },
     { ATAN_TOKEN,                   "atan" },
     { ATAN2_TOKEN,                  "atan2" },
@@ -99,6 +100,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { AVERAGE_TOKEN,                "average" },
 
     { BACKGROUND_TOKEN,             "background" },
+    { BAILOUT_TOKEN,                "bailout" },
     { BEZIER_SPLINE_TOKEN,          "bezier_spline" },
     { BICUBIC_PATCH_TOKEN,          "bicubic_patch" },
     { BITWISE_AND_TOKEN,            "bitwise_and" },
@@ -186,10 +188,12 @@ const RESERVED_WORD Reserved_Words[] = {
     { DIMENSIONS_TOKEN,             "dimensions" },
     { DIRECTION_TOKEN,              "direction" },
     { DISC_TOKEN,                   "disc" },
+    { DISCONTINUITY_TEST_TOKEN,     "discontinuity_test" },
     { DISPERSION_TOKEN,             "dispersion" },
     { DISPERSION_SAMPLES_TOKEN,     "dispersion_samples" },
     { DIST_EXP_TOKEN,               "dist_exp" },
     { DISTANCE_TOKEN,               "distance" },
+    { DISTANCE_ESTIMATOR_TOKEN,     "distance_estimator" },
 #if 0 // [CLi] the distance_maximum token is perfectly obsolete
     { DISTANCE_MAXIMUM_TOKEN,       "distance_maximum" },
 #endif
@@ -287,6 +291,9 @@ const RESERVED_WORD Reserved_Words[] = {
     { JPEG_TOKEN,                   "jpeg" },
     { JULIA_TOKEN,                  "julia" },
     { JULIA_FRACTAL_TOKEN,          "julia_fractal" },
+    { JUMP_DECAY_TOKEN,             "jump_decay" },
+    { JUMP_MAX_TOKEN,               "jump_max" },
+    { JUMP_MIN_TOKEN,               "jump_min" },
 
     { LAMBDA_TOKEN,                 "lambda" },
     { LATHE_TOKEN,                  "lathe" },
@@ -582,6 +589,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { V_STEPS_TOKEN,                "v_steps" },
     { VAL_TOKEN,                    "val" },
     { VARIANCE_TOKEN,               "variance" },
+    { VARIANT_TOKEN,                "variant" },
     { VAXIS_ROTATE_TOKEN,           "vaxis_rotate" },
     { VCROSS_TOKEN,                 "vcross" },
     { VDOT_TOKEN,                   "vdot" },

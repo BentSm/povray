@@ -42,6 +42,7 @@
 #include "core/math/matrix.h"
 #include "core/math/vector.h"
 #include "core/scene/object.h"
+#include "core/shape/fractal/types.h"
 
 namespace pov
 {
@@ -56,30 +57,13 @@ namespace pov
 * Global preprocessor defines
 ******************************************************************************/
 
-#define QUATERNION_TYPE    0
-#define HYPERCOMPLEX_TYPE  1
+static const Vector3d kDummyVector;
 
-/* Hcmplx function stypes must come first */
-#define EXP_STYPE          0
-#define LN_STYPE           1
-#define SIN_STYPE          2
-#define ASIN_STYPE         3
-#define COS_STYPE          4
-#define ACOS_STYPE         5
-#define TAN_STYPE          6
-#define ATAN_STYPE         7
-#define SINH_STYPE         8
-#define ASINH_STYPE        9
-#define COSH_STYPE        10
-#define ACOSH_STYPE       11
-#define TANH_STYPE        12
-#define ATANH_STYPE       13
-#define PWR_STYPE         14
-
-/* end function stypes */
-#define SQR_STYPE         15
-#define CUBE_STYPE        16
-#define RECIPROCAL_STYPE  17
+#define BIteration(V,F,IS) ( (F)->Rules->Iterate(V,F,kDummyVector,NULL,IS) == (F)->Num_Iterations + 1 )
+#define Iteration(V,F,IS,n) ( (n = (F)->Rules->Iterate(V,F,kDummyVector,NULL,IS)) == (F)->Num_Iterations + 1 )
+#define Normal_Calc(F,V,IST,ISP,n) ( (F)->Rules->CalcNormal(V,n,F,IST,ISP) )
+#define F_Bound(R,F,dm,dM) ( (F)->Rules->Bound(R,F,dm,dM) )
+#define D_Iteration(V,F,I,D,IS,n) ( (n = (F)->Rules->Iterate(V,F,I,D,IS)) == (F)->Num_Iterations + 1 )
 
 /*****************************************************************************
 * Global typedefs
@@ -87,45 +71,53 @@ namespace pov
 
 class Fractal;
 
-struct Complex
-{
-    DBL x,y;
-};
-
 class Fractal : public ObjectBase
 {
-    public:
-        Vector3d Center;
-        VECTOR_4D Julia_Parm;
-        VECTOR_4D Slice;              /* vector perpendicular to slice plane */
-        DBL SliceDist;                /* distance from slice plane to origin */
-        DBL Exit_Value;
-        int Num_Iterations;           /* number of iterations */
-        DBL Precision;                /* Precision value */
-        int Algebra;                  /* Quaternion or Hypercomplex */
-        int Sub_Type;
-        Complex exponent;             /* exponent of power function */
-        DBL Radius_Squared;           /* For F_Bound(), if needed */
-        FractalRulesPtr Rules;
+public:
+    Vector3d Center;
+    VECTOR_4D Julia_Parm;
+    VECTOR_4D Slice;              /* vector perpendicular to slice plane */
+    Vector3d SliceNorm;
+    DBL SliceDist;                /* distance from slice plane to origin */
+    DBL SliceDistNorm;
+    DBL Bailout;
+    DBL Exit_Value;
+    int Num_Iterations;           /* number of iterations */
+    DBL Precision;                /* Precision value */
+    bool Assume_Nested;
+    int Discontinuity_Test;
+    EstimatorType Distance_Estimator;
+    DBL Jump_Max;
+    DBL Jump_Max_Lower;
+    DBL Jump_Decay;
+    DBL Jump_Min;
+    FractalFuncType Func_Type;
+    Complex exponent;             /* exponent of power function */
+    DBL Radius_Squared;           /* For F_Bound(), if needed */
+    FractalRulesPtr Rules;
 
-        Fractal();
-        virtual ~Fractal();
+    Fractal();
+    virtual ~Fractal();
 
-        virtual ObjectPtr Copy();
+    virtual ObjectPtr Copy();
 
-        virtual bool All_Intersections(const Ray&, IStack&, TraceThreadData *);
-        virtual bool Inside(const Vector3d&, TraceThreadData *) const;
-        virtual void Normal(Vector3d&, Intersection *, TraceThreadData *) const;
-        virtual void Translate(const Vector3d&, const TRANSFORM *);
-        virtual void Rotate(const Vector3d&, const TRANSFORM *);
-        virtual void Scale(const Vector3d&, const TRANSFORM *);
-        virtual void Transform(const TRANSFORM *);
-        virtual void Compute_BBox();
+    virtual bool All_Intersections(const Ray&, IStack&, TraceThreadData *);
+    virtual bool Inside(const Vector3d&, TraceThreadData *) const;
+    virtual void Normal(Vector3d&, Intersection *, TraceThreadData *) const;
+    virtual void Translate(const Vector3d&, const TRANSFORM *);
+    virtual void Rotate(const Vector3d&, const TRANSFORM *);
+    virtual void Scale(const Vector3d&, const TRANSFORM *);
+    virtual void Transform(const TRANSFORM *);
+    virtual void Compute_BBox();
 
-        static void Free_Iteration_Stack(DBL **IStack);
-        static void Allocate_Iteration_Stack(DBL **IStack, int Len);
+    static const int kNumIterStacks = 3;
 
-        int SetUp_Fractal(void);
+    static void Free_Iteration_Stacks(void **apIterData);
+    static void Allocate_Iteration_Stacks(void **apIterData, int size);
+
+    int SetUp_Fractal();
+    int IterationDataSize() const;
+
 };
 
 /// @}

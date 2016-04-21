@@ -53,9 +53,11 @@ namespace pov
 
 TraceThreadData::TraceThreadData(shared_ptr<SceneData> sd): sceneData(sd), qualityFlags(9)
 {
-    for(int i = 0; i < 4; i++)
-        Fractal_IStack[i] = NULL;
-    Fractal::Allocate_Iteration_Stack(Fractal_IStack, sceneData->Fractal_Iteration_Stack_Length);
+    int i;
+    Fractal_IterData = reinterpret_cast<void **>(POV_MALLOC(sizeof(void *) * Fractal::kNumIterStacks, "Fractal Iteration Data"));
+    for (i = 0; i < Fractal::kNumIterStacks; i++)
+        Fractal_IterData[i] = NULL;
+    Fractal::Allocate_Iteration_Stacks(Fractal_IterData, sceneData->Fractal_Iteration_Stack_Size);
     Max_Blob_Queue_Size = 1;
     Blob_Coefficient_Count = sceneData->Max_Blob_Components * 5;
     Blob_Interval_Count = sceneData->Max_Blob_Components * 2;
@@ -121,7 +123,8 @@ TraceThreadData::~TraceThreadData()
     POV_FREE(Blob_Coefficients);
     POV_FREE(Blob_Queue);
     POV_FREE(isosurfaceData);
-    Fractal::Free_Iteration_Stack(Fractal_IStack);
+    Fractal::Free_Iteration_Stacks(Fractal_IterData);
+    POV_FREE(Fractal_IterData);
     delete surfacePhotonMap;
     delete mediaPhotonMap;
     delete[] Blob_Intervals;

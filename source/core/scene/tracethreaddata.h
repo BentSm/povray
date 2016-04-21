@@ -86,7 +86,7 @@ class TraceThreadData : public Task::TaskData
          */
         RenderStatistics& Stats(void) { return renderStats; }
 
-        DBL *Fractal_IStack[4];
+        void **Fractal_IterData;
         BBoxPriorityQueue Mesh_Queue;
         void **Blob_Queue;
         unsigned int Max_Blob_Queue_Size;

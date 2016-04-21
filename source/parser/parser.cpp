@@ -73,6 +73,7 @@
 #include "core/shape/csg.h"
 #include "core/shape/disc.h"
 #include "core/shape/fractal.h"
+#include "core/shape/fractal/types.h"
 #include "core/shape/heightfield.h"
 #include "core/shape/isosurface.h"
 #include "core/shape/lathe.h"
@@ -2708,7 +2709,7 @@ ObjectPtr Parser::Parse_Isosurface()
 *
 * INPUT None
 *
-* OUTPUT Fractal Objecstructure filledt
+* OUTPUT Fractal Object structure filled
 *
 * RETURNS
 *
@@ -2733,6 +2734,8 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
 {
     Fractal *Object;
     DBL P;
+    int k;
+    bool legacy = false;
 
     Parse_Begin();
 
@@ -2741,6 +2744,15 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
 
     Object = new Fractal();
 
+    if (sceneData->EffectiveLanguageVersion() <= 370)
+    {
+        Warning("Rendering julia_fractal in pre-3.71 scene. Compatibility\n"
+                "adjustments will be enabled; however, there may be noticeable\n"
+                "differences in appearance.  See the documentation for more\n"
+                "information.");
+        legacy = true;
+    }
+
     Parse_Vector4D(Object->Julia_Parm);
 
     EXPECT
@@ -2748,9 +2760,9 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         CASE(MAX_ITERATION_TOKEN)
             Object->Num_Iterations = (int)floor(Parse_Float());
 
-            if (Object->Num_Iterations <= 0)
+            if (Object->Num_Iterations < 0)
             {
-                Object->Num_Iterations = 1;
+                Object->Num_Iterations = 0;
             }
         END_CASE
 
@@ -2783,50 +2795,141 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
             Object->Precision = 1.0 / P;
         END_CASE
 
+       CASE(BAILOUT_TOKEN)
+            P = Parse_Float();
+            if ( P <= 0.0 )
+            {
+	        Error("Bailout is zero or negative.");
+            }
+            Object->Bailout = P;
+        END_CASE
+
+        CASE(ASSUME_NESTED_TOKEN)
+            Object->Assume_Nested = Allow_Float(1.0) > 0.0;
+        END_CASE
+
+        CASE(DISTANCE_ESTIMATOR_TOKEN)
+            EXPECT
+                CASE_FLOAT
+                    Object->Distance_Estimator = (EstimatorType)floor(Parse_Float());
+                    EXIT
+                END_CASE
+
+                CASE(LEFT_CURLY_TOKEN)
+                    UNGET
+                    Parse_Begin();
+
+                    Object->Distance_Estimator = (EstimatorType)floor(Allow_Float(1.0));
+
+                    EXPECT
+                        CASE(JUMP_MAX_TOKEN)
+                            P = Parse_Float();
+                            if (P < 1.0)
+                            {
+                                Error("Maximum jump factor is less than 1.");
+                            }
+                            Object->Jump_Max = P;
+                            Parse_Comma();
+                            P = Allow_Float(1.0);
+                            if (P <= 0.0)
+                            {
+                                Error("Lower maximum jump factor is zero or negative.");
+                            }
+                            Object->Jump_Max_Lower = P;
+                        END_CASE
+
+                        CASE(JUMP_DECAY_TOKEN)
+                            P = Parse_Float();
+                            if (P > 1.0 || P < 0.0)
+                            {
+                                Error("Jump decay factor is greater than 1 or negative.");
+                            }
+                            Object->Jump_Decay = P;
+                        END_CASE
+
+                        CASE(JUMP_MIN_TOKEN)
+                            P = Parse_Float();
+                            if (P < 1.0)
+                            {
+                                Error("Minimum jump factor is less than 1.");
+                            }
+                            Object->Jump_Min = P;
+                        END_CASE
+
+                        OTHERWISE
+                            UNGET
+                            EXIT
+                        END_CASE
+
+                    END_EXPECT
+
+                    Parse_End();
+                    EXIT
+                END_CASE
+
+                OTHERWISE
+                    UNGET
+                    Object->Distance_Estimator = kDefaultEstimator;
+                    EXIT
+                END_CASE
+
+            END_EXPECT
+
+        END_CASE
+
+        CASE(DISCONTINUITY_TEST_TOKEN)
+            k = (int)floor(Allow_Float(1.0));
+            if ( P < 0 )
+            {
+	        Error("Discontinuity-testing level is negative.");
+            }
+            Object->Discontinuity_Test = k;
+        END_CASE
+
         CASE(FLOAT_FUNCT_TOKEN)
             switch(Token.Function_Id)
             {
                 case EXP_TOKEN:
-                    Object->Sub_Type = EXP_STYPE;
+                    Object->Func_Type.type = kFunc_Exp;
                     break;
                 case LN_TOKEN:
-                    Object->Sub_Type = LN_STYPE;
+                    Object->Func_Type.type = kFunc_Ln;
                     break;
                 case SIN_TOKEN:
-                    Object->Sub_Type = SIN_STYPE;
+                    Object->Func_Type.type = kFunc_Sin;
                     break;
                 case ASIN_TOKEN:
-                    Object->Sub_Type = ASIN_STYPE;
+                    Object->Func_Type.type = kFunc_ASin;
                     break;
                 case COS_TOKEN:
-                    Object->Sub_Type = COS_STYPE;
+                    Object->Func_Type.type = kFunc_Cos;
                     break;
                 case ACOS_TOKEN:
-                    Object->Sub_Type = ACOS_STYPE;
+                    Object->Func_Type.type = kFunc_ACos;
                     break;
                 case TAN_TOKEN:
-                    Object->Sub_Type = TAN_STYPE;
+                    Object->Func_Type.type = kFunc_Tan;
                     break;
                 case ATAN_TOKEN:
-                    Object->Sub_Type = ATAN_STYPE;
+                    Object->Func_Type.type = kFunc_ATan;
                     break;
                 case COSH_TOKEN:
-                    Object->Sub_Type = COSH_STYPE;
+                    Object->Func_Type.type = kFunc_Cosh;
                     break;
                 case SINH_TOKEN:
-                    Object->Sub_Type = SINH_STYPE;
+                    Object->Func_Type.type = kFunc_Sinh;
                     break;
                 case TANH_TOKEN:
-                    Object->Sub_Type = TANH_STYPE;
+                    Object->Func_Type.type = kFunc_Tanh;
                     break;
                 case ATANH_TOKEN:
-                    Object->Sub_Type = ATANH_STYPE;
+                    Object->Func_Type.type = kFunc_ATanh;
                     break;
                 case ACOSH_TOKEN:
-                    Object->Sub_Type = ACOSH_STYPE;
+                    Object->Func_Type.type = kFunc_ACosh;
                     break;
                 case ASINH_TOKEN:
-                    Object->Sub_Type = ASINH_STYPE;
+                    Object->Func_Type.type = kFunc_ASinh;
                     break;
                 default: Expectation_Error ("fractal keyword");
             }
@@ -2838,28 +2941,32 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
          */
 
         CASE(SQR_TOKEN)
-            Object->Sub_Type = SQR_STYPE;
+            Object->Func_Type.type = kFunc_Sqr;
         END_CASE
 
         CASE(PWR_TOKEN)
-            Object->Sub_Type = PWR_STYPE;
+            Object->Func_Type.type = kFunc_Pwr;
             Parse_Float_Param2(&Object->exponent.x,&Object->exponent.y);
         END_CASE
 
         CASE(CUBE_TOKEN)
-            Object->Sub_Type = CUBE_STYPE;
+            Object->Func_Type.type = kFunc_Cube;
         END_CASE
 
         CASE(RECIPROCAL_TOKEN)
-            Object->Sub_Type = RECIPROCAL_STYPE;
+            Object->Func_Type.type = kFunc_Reciprocal;
+        END_CASE
+
+        CASE(VARIANT_TOKEN)
+            Object->Func_Type.variant = (FractalFunc_VariantType)floor(Allow_Float(1.0));
         END_CASE
 
         CASE(HYPERCOMPLEX_TOKEN)
-            Object->Algebra = HYPERCOMPLEX_TYPE;
+            Object->Func_Type.algebra = kHypercomplex;
         END_CASE
 
         CASE(QUATERNION_TOKEN)
-            Object->Algebra = QUATERNION_TYPE;
+            Object->Func_Type.algebra = kQuaternion;
         END_CASE
 
         OTHERWISE
@@ -2869,14 +2976,53 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
 
     END_EXPECT
 
+    /* Bug compensation and behavior adjustment. */
+    if (legacy)
+    {
+        /* Due to a bug in legacy versions, the last iteration was not checked,
+           causing the shape generated to be that corresponding to one iteration
+           less than requested. */
+        if (Object->Num_Iterations > 0)
+            Object->Num_Iterations--;
+
+        /* Due to another bug in legacy versions, hypercomplex cube was actually
+           hypercomplex sqr. */
+        if (Object->Func_Type.algebra == kHypercomplex && Object->Func_Type.type == kFunc_Cube)
+            Object->Func_Type.type = kFunc_Sqr;
+
+        /* The function types acos and acosh correspond to the alternate variants. */
+        if (Object->Func_Type.type == kFunc_ACos || Object->Func_Type.type == kFunc_ACosh)
+            Object->Func_Type.variant = kVar_Alternate;
+
+        /* Disabled because the benefits ([approximate] reproduction of some legacy
+           artefacts; theoretically more faithful [to legacy versions]) were not worth
+           the drawbacks (slower rendering; [approximate] reproduction of some legacy
+           artefacts).  The user can still request the legacy estimators manually,
+           if they really want to. */
+
+        /* This is not a bug; merely a behavior change. */
+        /*        if (Object->Distance_Estimator == kDefaultEstimator)
+                  Object->Distance_Estimator = kLegacyEstimator; */
+    }
+
     Parse_Object_Mods(reinterpret_cast<ObjectPtr>(Object));
 
     int num_iterations = Object->SetUp_Fractal();
-    if (num_iterations > sceneData->Fractal_Iteration_Stack_Length)
+
+    /* This warning really belongs in SetUp_Fractal, but is implemented here
+       for now. */
+    if (Object->Discontinuity_Test < 0)
     {
-        sceneData->Fractal_Iteration_Stack_Length = num_iterations;
+        Warning("Discontinuity testing is currently not implemented for this\n"
+                "fractal type.  This may change in the future!");
+    }
+
+    int needed_size = (num_iterations + 1) * Object->IterationDataSize();
+    if (needed_size > sceneData->Fractal_Iteration_Stack_Size)
+    {
+        sceneData->Fractal_Iteration_Stack_Size = needed_size;
         TraceThreadData *td = GetParserDataPtr();
-        Fractal::Allocate_Iteration_Stack(td->Fractal_IStack, sceneData->Fractal_Iteration_Stack_Length);
+        Fractal::Allocate_Iteration_Stacks(td->Fractal_IterData, sceneData->Fractal_Iteration_Stack_Size);
     }
 
     return(reinterpret_cast<ObjectPtr>(Object));
@@ -10061,6 +10207,7 @@ void Parser::Link_To_Frame(ObjectPtr Object)
             (dynamic_cast<CSGMerge *>(Object) == NULL)        && // FIXME
             (dynamic_cast<Poly *>(Object) == NULL)            && // FIXME
             (dynamic_cast<TrueType *>(Object) == NULL)        && // FIXME
+            (dynamic_cast<Fractal *>(Object) == NULL)         && // FIXME
             ((dynamic_cast<Quadric *>(Object) == NULL) || (dynamic_cast<Quadric *>(Object)->Automatic_Bounds)))
         {
             /* Destroy only, if bounding object is not used as clipping object. */

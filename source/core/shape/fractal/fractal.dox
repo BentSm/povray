@@ -1,0 +1,26 @@
+/** @page fractal_docs General julia_fractal documentation
+
+@note
+Some of this information may also be found in the appropriate source files.
+
+@todo
+Finish, improve, distribute, revise, elaborate, expand, organize, etc.
+
+@note
+One page worth checking out is https://web.archive.org/web/20060428104627/http://skal.planet-d.net/quat/f_gal.ang.html, written by the original author of the @c julia_fractal code.  The code is outdated, but much of the theory still applies.
+
+@section assumptions Assumptions
+
+Certain parts of the code make assumptions that simplify operations.  If these assumptions are not met, the code is liable to produce incorrect results.
+
+Some of the more major ones include:
+
+@li @c MagicHypercomplexFractalRules assumes that the function being iterated is hypercomplex-differentiable.
+@li @c HypercomplexFuncFractalRules assumes that the complex function is complex-differentiable.
+@li @c QuaternionFuncFractalRules assumes that the complex function is not only complex-differentiable, but commutes with complex conjugation (i.e., \f$f(\overline{z})=\overline{f(z)}\f$).
+
+@section quaternion_func Quaternion function implementation
+
+The quaternion function implementation (@c QuaternionFuncFractalRules) is primarily based on looking at quaternions as 2 x 2 complex matrices (\see https://en.wikipedia.org/wiki/Quaternion#Matrix_representations), and applying Sylvester's formula (\see https://en.wikipedia.org/wiki/Sylvester's_formula).  In order for the resulting matrix to represent a valid quaternion in this system, the complex function must commute with complex conjugation, which permits further simplification.
+
+*/

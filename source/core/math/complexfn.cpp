@@ -97,32 +97,6 @@ void Sqrt(Complex& rTarget, const Complex& source, const Complex&)
     }
 }
 
-void Sqrt_UpperHalfPlane(Complex& rTarget, const Complex& source, const Complex&)
-{
-    DBL mag;
-    DBL theta;
-
-    if(source.x == 0.0 && source.y == 0.0)
-    {
-        rTarget.x = rTarget.y = 0.0;
-    }
-    else
-    {
-        mag   = sqrt(sqrt(pov::Sqr(source.x) + pov::Sqr(source.y)));
-        theta = atan2(source.y, source.x) / 2;
-        if (theta < 0.0)
-        {
-            rTarget.y = -mag * sin(theta);
-            rTarget.x = -mag * cos(theta);
-        }
-        else
-        {
-            rTarget.y = mag * sin(theta);
-            rTarget.x = mag * cos(theta);
-        }
-    }
-}
-
 void Ln(Complex& rTarget, const Complex& source, const Complex&)
 {
     DBL mod, zx, zy;
@@ -186,17 +160,17 @@ void Cosh(Complex& rTarget, const Complex& source, const Complex&)
 /* rz=Arcsin(z)=-i*Log{i*z+sqrt(1-z*z)} */
 void ASin(Complex& rTarget, const Complex& source, const Complex&)
 {
-    Complex tempz1, tempz2;
+    Complex temp1, temp2;
 
-    Sqr(tempz1, source);
-    tempz1.x = 1 - tempz1.x; tempz1.y = -tempz1.y;
-    Sqrt(tempz1, tempz1);
+    Sqr(temp1, source);
+    temp1.x = 1 - temp1.x; temp1.y = -temp1.y;
+    Sqrt(temp1, temp1);
 
-    tempz2.x = -source.y; tempz2.y = source.x;
-    tempz1.x += tempz2.x;  tempz1.y += tempz2.y;
+    temp2.x = -source.y; temp2.y = source.x;
+    temp1.x += temp2.x;  temp1.y += temp2.y;
 
-    Ln(tempz1, tempz1);
-    rTarget.x = tempz1.y;  rTarget.y = -tempz1.x;
+    Ln(temp1, temp1);
+    rTarget.x = temp1.y;  rTarget.y = -temp1.x;
 }
 
 void ASin_Deriv(Complex& rTarget, const Complex& source, const Complex&)
@@ -215,8 +189,14 @@ void ACos(Complex& rTarget, const Complex& source, const Complex&)
 
     Sqr(temp, source);
     temp.x -= 1;
-    /* This is important to get the standard principal value for arccosine. */
-    Sqrt_UpperHalfPlane(temp, temp);
+    Sqrt(temp, temp);
+
+    /* Tweak to get the principal value. */
+    /// @todo Use @c signbit -- negative zeros make a difference!
+    if ((source.x < 0) ^ (source.y < 0))
+    {
+        temp.x *= -1; temp.y *= -1;
+    }
 
     temp.x += source.x; temp.y += source.y;
 
@@ -274,23 +254,32 @@ void ASinh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
 /* rz=Arccosh(z)=Log(z+sqrt(z*z-1)} */
 void ACosh(Complex& rTarget, const Complex& source, const Complex&)
 {
-    Complex tempz;
-    Sqr(tempz, source);
-    tempz.x -= 1;
-    Sqrt_UpperHalfPlane(tempz, tempz);
-    tempz.x += source.x; tempz.y += source.y;
-    Ln(rTarget, tempz);
+    Complex temp;
+
+    Sqr(temp, source);
+    temp.x -= 1;
+    Sqrt(temp, temp);
+
+    /* Tweak to get the principal value. */
+    /// @todo Use @c signbit -- negative zeros make a difference!
+    if (source.x < 0)
+    {
+        temp.x *= -1; temp.y *= -1;
+    }
+
+    temp.x += source.x; temp.y += source.y;
+    Ln(rTarget, temp);
 }
 
 /* There are some oddities with this function, due to branch cuts. */
 void ACosh_Alt(Complex& rTarget, const Complex& source, const Complex&)
 {
-    Complex tempz;
-    Sqr(tempz, source);
-    tempz.x -= 1;
-    Sqrt(tempz, tempz);
-    tempz.x += source.x; tempz.y += source.y;
-    Ln(rTarget, tempz);
+    Complex temp;
+    Sqr(temp, source);
+    temp.x -= 1;
+    Sqrt(temp, temp);
+    temp.x += source.x; temp.y += source.y;
+    Ln(rTarget, temp);
 }
 
 void ACosh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
@@ -322,7 +311,7 @@ void ATanh(Complex& rTarget, const Complex& source, const Complex&)
         }
         else if (fabs(source.x) < 1.0 && source.y == 0.0)
         {
-            rTarget.x = log((1+source.x)/(1-source.x))/2;
+            rTarget.x = log((1 + source.x) / (1 - source.x)) / 2;
             rTarget.y = 0;
             return;
         }
@@ -352,11 +341,13 @@ void ATan(Complex& rTarget, const Complex& source, const Complex&)
     Complex temp0, temp1, temp2, temp3;
     if (source.x == 0.0 && source.y == 0.0)
         rTarget.x = rTarget.y = 0;
-    else if (source.x != 0.0 && source.y == 0.0){
+    else if (source.x != 0.0 && source.y == 0.0)
+    {
         rTarget.x = atan(source.x);
         rTarget.y = 0;
     }
-    else if (source.x == 0.0 && source.y != 0.0){
+    else if (source.x == 0.0 && source.y != 0.0)
+    {
         temp0.x = source.y;  temp0.y = 0.0;
         ATanh(temp0, temp0);
         rTarget.x = -temp0.y; rTarget.y = temp0.x;
@@ -405,8 +396,8 @@ void Tan_Deriv(Complex& rTarget, const Complex& source, const Complex&)
     denom = pov::Sqr(cosx + coshy) / 2;
     if (denom == 0)
         return;
-    rTarget.x = (cosx*coshy+1)/denom;
-    rTarget.y = sinx*sinhy/denom;
+    rTarget.x = (cosx * coshy + 1) / denom;
+    rTarget.y = sinx * sinhy / denom;
 }
 
 void Tanh(Complex& rTarget, const Complex& source, const Complex&)
@@ -419,8 +410,8 @@ void Tanh(Complex& rTarget, const Complex& source, const Complex&)
     denom = coshx + cosy;
     if (denom == 0)
         return;
-    rTarget.x = sinhx/denom;
-    rTarget.y = siny/denom;
+    rTarget.x = sinhx / denom;
+    rTarget.y = siny / denom;
 }
 
 void Tanh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
@@ -433,8 +424,8 @@ void Tanh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
     denom = pov::Sqr(coshx + cosy) / 2;
     if (denom == 0)
         return;
-    rTarget.x = (coshx*cosy+1)/denom;
-    rTarget.y = -sinhx*siny/denom;
+    rTarget.x = (coshx * cosy + 1) / denom;
+    rTarget.y = -sinhx * siny / denom;
 }
 
 void Pwr(Complex& rTarget, const Complex& source1, const Complex& source2)
@@ -509,7 +500,7 @@ bool NegReal_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Comple
 bool ASin_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
 {
     DBL tmp;
-    if (((cT.y >= 0.0) ^ (cP.y >= 0.0)) && (fabs(cT.x) > 1.0 || fabs(cT.x) > 1.0))
+    if (((cT.y >= 0.0) ^ (cP.y >= 0.0)) && (fabs(cT.x) > 1.0 || fabs(cP.x) > 1.0))
     {
         tmp = -cP.y / (cT.y - cP.y);
         if (fabs((cT.x - cP.x) * tmp + cP.x) > 1.0)
@@ -526,7 +517,7 @@ bool ASin_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& 
 bool ASinh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
 {
     DBL tmp;
-    if (((cT.x >= 0.0) ^ (cP.x >= 0.0)) && (fabs(cT.y) > 1.0 || fabs(cT.y) > 1.0))
+    if (((cT.x >= 0.0) ^ (cP.x >= 0.0)) && (fabs(cT.y) > 1.0 || fabs(cP.y) > 1.0))
     {
         tmp = -cP.x / (cT.x - cP.x);
         if (fabs((cT.y - cP.y) * tmp + cP.y) > 1.0)
@@ -550,6 +541,23 @@ bool ACos_Alt_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Compl
         rNormal.y = 0;
     }
     else if (((cT.y >= 0.0) ^ (cP.y >= 0.0)) && (cT.x < 1.0 || cP.x < 1.0))
+    {
+        tmp = -cP.y / (cT.y - cP.y);
+        if ((cT.x - cP.x) * tmp + cP.x < 1.0)
+        {
+            rDist = tmp;
+            rNormal.x = 0;
+            rNormal.y = (cT.y >= 0.0 ? -1.0 : 1.0);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ACosh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
+{
+    DBL tmp;
+    if (((cT.y >= 0.0) ^ (cP.y >= 0.0)) && (cT.x < 1.0 || cP.x < 1.0))
     {
         tmp = -cP.y / (cT.y - cP.y);
         if ((cT.x - cP.x) * tmp + cP.x < 1.0)

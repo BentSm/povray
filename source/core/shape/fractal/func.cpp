@@ -73,7 +73,7 @@ static const FractalFunc kFractalFuncArray[] =
     { { kComplex,  kFunc_Sinh,   kVar_Normal    },  Sinh,       Cosh,         False_DTest    },
     { { kComplex,  kFunc_ASinh,  kVar_Normal    },  ASinh,      ASinh_Deriv,  ASinh_DTest    },
     { { kComplex,  kFunc_Cosh,   kVar_Normal    },  Cosh,       Sinh,         False_DTest    },
-    { { kComplex,  kFunc_ACosh,  kVar_Normal    },  ACosh,      ACosh_Deriv,  ASin_DTest     },
+    { { kComplex,  kFunc_ACosh,  kVar_Normal    },  ACosh,      ACosh_Deriv,  ACosh_DTest    },
     { { kComplex,  kFunc_ACosh,  kVar_Alternate },  ACosh_Alt,  ACosh_Deriv,  ACos_Alt_DTest },
     { { kComplex,  kFunc_Tanh,   kVar_Normal    },  Tanh,       Tanh_Deriv,   False_DTest    }, /* See note */
     { { kComplex,  kFunc_ATanh,  kVar_Normal    },  ATanh,      ATanh_Deriv,  ASin_DTest     },

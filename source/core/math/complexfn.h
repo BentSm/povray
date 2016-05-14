@@ -109,7 +109,6 @@ void ATan(Complex& rTarget, const Complex& source, const Complex& unused = cNULL
 void Tanh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
 void ATanh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
 void Sqrt(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Sqrt_UpperHalfPlane(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
 void Sqr(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
 void Recip(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
 void Pwr(Complex& rTarget, const Complex& source1, const Complex& source2);
@@ -130,6 +129,7 @@ bool NegReal_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Comple
 bool ASin_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
 bool ASinh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
 bool ACos_Alt_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
+bool ACosh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
 
 }
 

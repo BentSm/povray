@@ -91,7 +91,6 @@ const RESERVED_WORD Reserved_Words[] = {
     { ASCII_TOKEN,                  "ascii" },
     { ASIN_TOKEN,                   "asin" },
     { ASINH_TOKEN,                  "asinh" },
-    { ASSUME_NESTED_TOKEN,          "assume_nested" },
     { ASSUMED_GAMMA_TOKEN,          "assumed_gamma" },
     { ATAN_TOKEN,                   "atan" },
     { ATAN2_TOKEN,                  "atan2" },

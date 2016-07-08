@@ -84,7 +84,6 @@ public:
     DBL Exit_Value;
     int Num_Iterations;           /* number of iterations */
     DBL Precision;                /* Precision value */
-    bool Assume_Nested;
     int Discontinuity_Test;
     EstimatorType Distance_Estimator;
     DBL Jump_Max;

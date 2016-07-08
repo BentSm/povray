@@ -84,7 +84,6 @@ const RESERVED_WORD Reserved_Words[LAST_TOKEN] = {
     {ASC_TOKEN, "asc"},
     {ASINH_TOKEN, "asinh"},
     {ASIN_TOKEN, "asin"},
-    {ASSUME_NESTED_TOKEN, "assume_nested"},
     {ASSUMED_GAMMA_TOKEN, "assumed_gamma"},
     {ATAN2_TOKEN, "atan2"},
     {ATANH_TOKEN, "atanh"},

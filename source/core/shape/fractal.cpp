@@ -303,13 +303,13 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
         if (Trans != NULL)
         {
             MTransPoint(Real_Pt, IPoint, Trans);
-            Normal_Calc(this, F_Normal, tStack, pStack, (Assume_Nested ? Num_Iterations : tIter));
+            Normal_Calc(this, F_Normal, tStack, pStack, tIter);
             MTransNormal(Real_Normal, F_Normal, Trans);
         }
         else
         {
             Real_Pt = IPoint;
-            Normal_Calc(this, Real_Normal, tStack, pStack, (Assume_Nested ? Num_Iterations : tIter));
+            Normal_Calc(this, Real_Normal, tStack, pStack, tIter);
         }
 
         if (Clip.empty() || Point_In_Clip(Real_Pt, Clip, Thread))
@@ -685,7 +685,6 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
 
     Precision = 1.0 / 20.0;
 
-    Assume_Nested = false;
     Discontinuity_Test = -1;
 
     Distance_Estimator = kDefaultEstimator;

@@ -2804,10 +2804,6 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
             Object->Bailout = P;
         END_CASE
 
-        CASE(ASSUME_NESTED_TOKEN)
-            Object->Assume_Nested = Allow_Float(1.0) > 0.0;
-        END_CASE
-
         CASE(DISTANCE_ESTIMATOR_TOKEN)
             EXPECT
                 CASE_FLOAT

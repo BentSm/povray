@@ -58,6 +58,7 @@ m4_include([unix/config/acx_pthread.m4])
 m4_include([unix/config/ax_arg_enable.m4])
 m4_include([unix/config/ax_arg_with.m4])
 m4_include([unix/config/ax_boost_base.m4])
+m4_include([unix/config/ax_boost_chrono.m4])
 m4_include([unix/config/ax_boost_thread.m4])
 m4_include([unix/config/ax_test_compiler_flags.m4])
 m4_include([unix/config/ax_check_lib.m4])
@@ -336,6 +337,12 @@ done
 if test $boost_thread_links != '1'; then
   AC_MSG_RESULT([no])
   AC_MSG_FAILURE([cannot link with the boost thread library])
+fi
+
+AX_BOOST_CHRONO
+
+if test x"$ax_cv_boost_thread" = x"yes"; then
+   LIBS="$BOOST_CHRONO_LIB $LIBS"
 fi
 
 AC_DEFINE([USE_OFFICIAL_BOOST], [], [Use the official Boost libraries.])

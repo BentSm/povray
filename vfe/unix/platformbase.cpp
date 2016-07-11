@@ -48,6 +48,12 @@
 # include <sys/resource.h>
 #endif
 
+#ifdef HAVE_BOOST_CHRONO
+# include <boost/chrono.hpp>
+# include <boost/chrono/process_cpu_clocks.hpp>
+# include <boost/chrono/thread_clock.hpp>
+#endif
+
 #include "vfe.h"
 
 // this must be the last file included
@@ -118,6 +124,11 @@ namespace pov_base
 
     unsigned POV_LONG vfeTimer::GetWallTime (void) const
     {
+#ifdef HAVE_BOOST_CHRONO
+        return static_cast<unsigned POV_LONG>
+            (boost::chrono::duration_cast<boost::chrono::milliseconds>
+             (boost::chrono::system_clock::now().time_since_epoch()).count());
+#endif
 #ifdef HAVE_CLOCK_GETTIME
         struct timespec ts;
         if (clock_gettime(CLOCK_REALTIME, &ts) == 0)
@@ -133,6 +144,24 @@ namespace pov_base
 
     unsigned POV_LONG vfeTimer::GetCPUTime (void) const
     {
+#ifdef HAVE_BOOST_CHRONO
+        if (m_ThreadTimeOnly)
+#ifdef BOOST_CHRONO_HAS_THREAD_CLOCK
+            return static_cast<unsigned POV_LONG>
+                (boost::chrono::duration_cast<boost::chrono::milliseconds>
+                 (boost::chrono::thread_clock::now().time_since_epoch()).count());
+#else
+            return GetWallTime();
+#endif
+        else
+#ifdef BOOST_CHRONO_HAS_PROCESS_CLOCKS
+            return static_cast<unsigned POV_LONG>
+                (boost::chrono::duration_cast<boost::chrono::milliseconds>
+                 (boost::chrono::process_real_cpu_clock::now().time_since_epoch()).count());
+#else
+            return GetWallTime();
+#endif
+#endif
 #ifdef HAVE_CLOCK_GETTIME
         struct timespec ts;
 #if defined (__FreeBSD__)
@@ -173,6 +202,11 @@ namespace pov_base
 
     bool vfeTimer::HasValidCPUTime() const
     {
+#ifdef HAVE_BOOST_CHRONO
+#ifdef BOOST_CHRONO_HAS_THREAD_CLOCK
+        return true;
+#endif
+#endif
 #ifdef HAVE_CLOCK_GETTIME
         struct timespec ts;
         if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) == 0)

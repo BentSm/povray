@@ -82,18 +82,15 @@ public:
 
         step *= (step < 0 ? -2 : 2);
 
-        if (step > kDistanceEstimatorTolerance * 2)
-        {
-            fValue = norm - pFractal->Exit_Value;
+        fValue = norm - pFractal->Exit_Value;
 
-            if (fValue > trustAmt * step)
-            {
-                return trustAmt;
-            }
-            else if (fValue > pFractal->Precision * step)
-            {
-                return fValue / step;
-            }
+        if (fValue > trustAmt * step)
+        {
+            return trustAmt;
+        }
+        else if (fValue > pFractal->Precision * step)
+        {
+            return fValue / step;
         }
 
         return pFractal->Precision;

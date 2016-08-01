@@ -59,28 +59,30 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterDat
     static_cast<const RulesClass<Estimator> *>(this)->NonVirtualCalcNormalWDisc(rResult, nMax, pFractal, pTIterData, pPIterData);
 }
 
-// This is effectively the code from Sphere::Intersect, with one significant change:
-//  --  Slicing is accounted for (i.e., the w-coordinate is included in computations)
+// This was adapted from the Sphere::Intersect code
 template <template <class> class RulesClass, class Estimator, class BaseRules>
 bool MagicFractalRulesBase<RulesClass, Estimator, BaseRules>::
 Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const
 {
-    DBL OCSquared, t_Closest_Approach, Half_Chord, t_Half_Chord_Squared, OCWComp;
-    Vector3d Origin_To_Center;
+    DBL OCSquared, t_Closest_Approach, Half_Chord, t_Half_Chord_Squared, OCWComp, DirSquared, DirWComp;
+    Vector3d Center_To_Origin;
 
-    Origin_To_Center = pFractal->Center - ray.Origin;
+    Center_To_Origin = ray.Origin - pFractal->Center;
 
-    OCWComp = -dot(Origin_To_Center, pFractal->SliceNorm);
+    OCWComp = pFractal->SliceDistNorm - dot(Center_To_Origin, pFractal->SliceNorm);
 
-    OCSquared = Origin_To_Center.lengthSqr() + Sqr(OCWComp);
+    DirWComp = -dot(ray.Direction, pFractal->SliceNorm);
 
-    t_Closest_Approach = dot(Origin_To_Center, ray.Direction) + OCWComp *
-        (pFractal->SliceDistNorm - dot(ray.Direction, pFractal->SliceNorm));
+    OCSquared = Center_To_Origin.lengthSqr() + Sqr(OCWComp);
+
+    DirSquared = ray.Direction.lengthSqr() + Sqr(DirWComp);
+
+    t_Closest_Approach = -(dot(Center_To_Origin, ray.Direction) + OCWComp * DirWComp) / DirSquared;
 
     if ((OCSquared >= pFractal->Radius_Squared) && (t_Closest_Approach < EPSILON))
         return(false);
 
-    t_Half_Chord_Squared = pFractal->Radius_Squared - OCSquared + Sqr(t_Closest_Approach);
+    t_Half_Chord_Squared = (pFractal->Radius_Squared - OCSquared) / DirSquared + Sqr(t_Closest_Approach);
 
     if (t_Half_Chord_Squared > EPSILON)
     {

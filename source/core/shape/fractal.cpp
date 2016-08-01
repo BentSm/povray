@@ -609,24 +609,24 @@ void Fractal::Compute_BBox()
     {
         ;// TODO MESSAGE        Warning("Degenerate julia_fractal.");
 
-        // This isn't entirely superfluous, since custom bounding is permitted for fractals
+        // This is basically superfluous, but it doesn't hurt.
         Set_Flag(this, DEGENERATE_FLAG);
 
-        // This should cause any bounding checks to fail quickly (if it isn't overridden by
-        // the user)
+        // This should cause any bounding checks to fail quickly.
+        // (Is this okay to do?)
         Make_BBox(BBox, BOUND_HUGE, BOUND_HUGE, BOUND_HUGE,
                   -2.0 * BOUND_HUGE, -2.0 * BOUND_HUGE, -2.0 * BOUND_HUGE);
     }
     else
     {
         dx = sqrt(q * (n2 - a2)) / n2;
-        x0 = -SliceNorm[X] * SliceDistNorm / n2 - dx;
+        x0 = SliceNorm[X] * SliceDistNorm / n2 - dx;
 
         dy = sqrt(q * (n2 - b2)) / n2;
-        y0 = -SliceNorm[Y] * SliceDistNorm / n2 - dy;
+        y0 = SliceNorm[Y] * SliceDistNorm / n2 - dy;
 
         dz = sqrt(q * (n2 - c2)) / n2;
-        z0 = -SliceNorm[Z] * SliceDistNorm / n2 - dz;
+        z0 = SliceNorm[Z] * SliceDistNorm / n2 - dz;
 
         Make_BBox(BBox, x0, y0, z0, 2.0 * dx, 2.0 * dy, 2.0 * dz);
 

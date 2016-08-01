@@ -10203,7 +10203,6 @@ void Parser::Link_To_Frame(ObjectPtr Object)
             (dynamic_cast<CSGMerge *>(Object) == NULL)        && // FIXME
             (dynamic_cast<Poly *>(Object) == NULL)            && // FIXME
             (dynamic_cast<TrueType *>(Object) == NULL)        && // FIXME
-            (dynamic_cast<Fractal *>(Object) == NULL)         && // FIXME
             ((dynamic_cast<Quadric *>(Object) == NULL) || (dynamic_cast<Quadric *>(Object)->Automatic_Bounds)))
         {
             /* Destroy only, if bounding object is not used as clipping object. */

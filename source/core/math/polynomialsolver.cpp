@@ -1067,15 +1067,17 @@ static int difficult_coeffs(int n, DBL *x)
 static int difficult_coeffs(int n, const DBL *x)
 {
     int i;
-    DBL biggest;
+    DBL biggest, t;
 
     biggest = 0.0;
 
     for (i = 0; i <= n; i++)
     {
-        if (fabs(x[i]) > biggest)
+        t = fabs(x[i]);
+
+        if (t > biggest)
         {
-            biggest = x[i];
+            biggest = t;
         }
     }
 

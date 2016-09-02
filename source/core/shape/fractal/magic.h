@@ -94,7 +94,7 @@ public:
                             int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
 
 protected:
-    const Quaternion mJuliaParm;
+    const IQuaternion mJuliaParm;
 
     template <bool disc>
     void TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData,
@@ -129,7 +129,7 @@ public:
                             int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
 
 protected:
-    const Duplex mDuplexJuliaParm;
+    const IDuplex mDuplexJuliaParm;
 
     template <bool disc>
     void TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData,

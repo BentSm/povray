@@ -38,10 +38,10 @@
 
 #include "core/coretypes.h"
 #include "core/math/vector.h"
-#include "core/shape/fractal/cxx03compat.h"
 #include "core/shape/fractal/func.h"
 #include "core/shape/fractal/magic.h"
 #include "core/shape/fractal/types.h"
+#include "core/shape/fractal/util.h"
 
 namespace pov
 {

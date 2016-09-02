@@ -2,8 +2,7 @@
 ///
 /// @file core/shape/fractal/util.h
 ///
-/// This module contains miscellaneous fractal-related code.  If you can think
-/// of a good home for any (or all) of this, feel free to move things around.
+/// This module contains miscellaneous fractal-related code.
 ///
 /// @copyright
 /// @parblock
@@ -39,6 +38,8 @@
 
 #include "core/coretypes.h"
 
+#include "core/shape/fractal/types.h"
+
 namespace pov
 {
 
@@ -58,6 +59,48 @@ static inline void ComputeHypercomplexFromDuplex(DBL& rx, DBL& ry, DBL& rz, DBL&
     rz = .5 * (c0.y - c1.y);
     rw = .5 * (c1.x - c0.x);
 }
+
+/* Helper functions to permit inline creation of certain const structs
+   (and const arrays).  These are written in such a way as to permit simple
+   replacement for C++11 or higher. */
+#ifndef FRACTAL_USE_CXX11
+
+static inline const Complex CreateComplex(DBL x, DBL y)
+{
+    Complex c = { x, y };
+    return c;
+}
+
+static inline const FractalFuncType CreateFuncType(FractalAlgebra algebra, FractalFunc_FuncType type, FractalFunc_VariantType variant)
+{
+    FractalFuncType f = { algebra, type, variant };
+    return f;
+}
+
+static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& funcType, EstimatorType estimatorType,
+                                                     DiscontinuitySupportLevel discontinuitySupport, int iterationDataSize)
+{
+    FractalRulesInfo f = { funcType, estimatorType, discontinuitySupport, iterationDataSize };
+    return f;
+}
+
+#define INIT_DUPLEX(var, v0, v1) var(v0, v1)
+#define INIT_QUATERNION(var, qx, qy, qz, qw) var(qx, qy, qz, qw)
+
+#else
+
+/* The easy part. */
+
+#define CREATE_GENERAL(...) {__VA_ARGS__}
+
+#define CreateComplex (Complex)CREATE_GENERAL
+#define CreateFuncType (FractalFuncType)CREATE_GENERAL
+#define CreateRulesInfo (FractalRulesInfo)CREATE_GENERAL
+
+#define INIT_DUPLEX(var, v0, v1) var{v0, v1}
+#define INIT_QUATERNION(var, qx, qy, qz, qw) var{qx, qy, qz, qw}
+
+#endif
 
 }
 

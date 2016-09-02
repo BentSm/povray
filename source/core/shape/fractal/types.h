@@ -2,7 +2,7 @@
 ///
 /// @file core/shape/fractal/types.h
 ///
-/// This module contains types for fractals.
+/// This module contains types for fractals and other general miscellany.
 ///
 /// @copyright
 /// @parblock
@@ -37,6 +37,10 @@
 #define POVRAY_CORE_FRACTAL_TYPES_H
 
 #include "core/coretypes.h"
+
+#ifndef FRACTAL_USE_CXX11
+#include <cstdarg>
+#endif
 
 namespace pov
 {
@@ -126,6 +130,40 @@ struct FractalConstructorData
     VECTOR_4D juliaParm;
     Complex exponent;
 };
+
+/* If we don't have C++11, we can't initialize const arrays... */
+#ifndef FRACTAL_USE_CXX11
+
+template <class T, unsigned N>
+class IArray
+{
+public:
+    IArray(const T t0, ...)
+    {
+        va_list vals;
+        int i = 0;
+        va_start(vals, t0);
+        value[0] = t0;
+        for (i = 1; i < N; i++)
+            value[i] = va_arg(vals, const T);
+        va_end(vals);
+    }
+    T& operator[](unsigned k) { return value[k]; }
+    const T& operator[](unsigned k) const { return value[k]; }
+
+private:
+    T value[N];
+};
+
+typedef IArray<Complex, 2> Duplex;
+typedef IArray<DBL, 4> Quaternion;
+
+#else
+
+typedef Complex Duplex[2];
+typedef DBL Quaternion[4];
+
+#endif
 
 }
 

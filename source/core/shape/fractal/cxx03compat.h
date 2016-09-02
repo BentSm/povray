@@ -38,6 +38,10 @@
 
 #include "core/coretypes.h"
 
+#ifndef FRACTAL_USE_CXX11
+#include <cstdarg>
+#endif
+
 #include "core/shape/fractal/types.h"
 
 namespace pov
@@ -62,8 +66,6 @@ typedef DBL Quaternion[4];
 #define INIT_QUATERNION(var, qx, qy, qz, qw) var{qx, qy, qz, qw}
 
 #else
-
-#include <cstdarg>
 
 static inline const Complex CreateComplex(DBL x, DBL y)
 {

@@ -51,7 +51,7 @@ class HypercomplexFractalRulesBase : public MagicHypercomplexFractalRules<RulesC
 {
 public:
     typedef struct {
-        Complex point[2];
+        Duplex point;
     } IterationData;
 
     HypercomplexFractalRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport) :

@@ -54,7 +54,7 @@ class QuaternionFractalRulesBase : public MagicQuaternionFractalRules<RulesClass
 {
 public:
     typedef struct {
-        DBL point[4];
+        Quaternion point;
         DBL sNorm;
     } IterationData;
 
@@ -82,7 +82,7 @@ class QuaternionCubeFractalRules : public QuaternionFractalRulesBase<QuaternionC
 {
 public:
     typedef struct {
-        DBL point[4];
+        Quaternion point;
         DBL sNorm, cVal;
     } IterationData;
 
@@ -117,7 +117,7 @@ class QuaternionFuncFractalRules : public QuaternionFractalRulesBase<QuaternionF
 {
 public:
     typedef struct {
-        DBL point[4];
+        Quaternion point;
         DBL nNorm, normFVal;
     } IterationData;
 
@@ -145,7 +145,7 @@ class QuaternionPwrFractalRules : public QuaternionFractalRulesBase<QuaternionPw
 {
 public:
     typedef struct {
-        DBL point[4];
+        Quaternion point;
         DBL nNorm[2], normFVal[2];
         Complex expVal, lg[2];
     } IterationData;

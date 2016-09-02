@@ -131,6 +131,9 @@ struct FractalConstructorData
     Complex exponent;
 };
 
+typedef Complex Duplex[2];
+typedef VECTOR_4D Quaternion;
+
 /* If we don't have C++11, we can't initialize const arrays... */
 #ifndef FRACTAL_USE_CXX11
 
@@ -155,13 +158,13 @@ private:
     T value[N];
 };
 
-typedef IArray<Complex, 2> Duplex;
-typedef IArray<DBL, 4> Quaternion;
+typedef IArray<Complex, 2> IDuplex;
+typedef IArray<DBL, 4> IQuaternion;
 
 #else
 
-typedef Complex Duplex[2];
-typedef DBL Quaternion[4];
+typedef Duplex IDuplex;
+typedef Quaternion IQuaternion;
 
 #endif
 

@@ -53,26 +53,12 @@
 namespace pov
 {
 
-/*****************************************************************************
-* Local preprocessor defines
-******************************************************************************/
-
-/*****************************************************************************
-* Local typedefs
-******************************************************************************/
-
-/*****************************************************************************
-* Static functions
-******************************************************************************/
-
 static inline void ComplexSqrAdd(Complex& rC, const Complex& c, const Complex& a);
 static inline void ComplexSqrDeriv(Complex& rC, const Complex& c);
 static inline void ComplexCubeAdd(Complex& rC, const Complex& c, const Complex& a);
 static inline void ComplexCubeDeriv(Complex& rC, const Complex& c);
 static inline void ComplexRecipAdd(Complex& rC, const Complex& c, const Complex& a);
 static inline void ComplexRecipDeriv(Complex& rC, const Complex& c);
-
-/******** Computations with Hypercomplexes **********/
 
 static inline void ComplexSqrAdd(Complex& rC, const Complex& c, const Complex& a) {
     DBL tmp;

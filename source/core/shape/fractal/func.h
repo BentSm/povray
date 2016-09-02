@@ -42,8 +42,8 @@
 #include <set>
 
 #include "core/math/complexfn.h"
-#include "core/shape/fractal/cxx03compat.h"
 #include "core/shape/fractal/types.h"
+#include "core/shape/fractal/util.h"
 
 namespace pov
 {

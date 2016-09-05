@@ -104,12 +104,11 @@ static inline bool ClockGettimeMillisec(POV_ULONG& result, clockid_t source)
 static inline bool GetrusageMillisec(POV_ULONG& result, int source)
 {
 #if defined(HAVE_GETRUSAGE)
-    struct rusage ru;
     bool success;
     success = (getrusage(source, &ru) == 0);
     if (success)
-        result = (static_cast<POV_ULONG>(ru.ru_utime.tv_sec)  + static_cast<POV_ULONG>(ru.ru_stime.tv_sec))  *1000
-               + (static_cast<POV_ULONG>(ru.ru_utime.tv_usec) + static_cast<POV_ULONG>(ru.ru_stime.tv_usec)) /1000;
+        result = static_cast<POV_ULONG>(ru.ru_utime.tv_sec)  + static_cast<POV_ULONG>(ru.ru_stime.tv_sec))  *1000
+               + static_cast<POV_ULONG>(ru.ru_utime.tv_usec) + static_cast<POV_ULONG>(ru.ru_stime.tv_usec)) /1000;
     return success;
 #else
     return false;
@@ -132,6 +131,7 @@ static inline bool GettimeofdayMillisec(POV_ULONG& result)
 }
 
 Timer::Timer () :
+    mThreadTimeOnly (CPUTimeIsThreadOnly),
     mWallTimeUseClockGettimeMonotonic (false),
     mWallTimeUseClockGettimeRealtime (false),
     mWallTimeUseGettimeofday (false),
@@ -141,7 +141,7 @@ Timer::Timer () :
     mThreadTimeUseGetrusageThread (false),
     mThreadTimeUseGetrusageLwp (false),
     mThreadTimeUseClockGettimeThread (false),
-    mThreadTimeUseFallback (false)
+    mThreadTimeUseFallback (false),
 {
     // Figure out which timer source to use for wall clock time.
     bool haveWallTime = false;
@@ -227,7 +227,7 @@ POV_ULONG Timer::GetWallTime () const
     return 0;
 }
 
-POV_ULONG Timer::GetProcessTime () const
+POV_ULONG Timer::GetProcessCPUTime () const
 {
     POV_ULONG result;
 #if defined(HAVE_RUSAGE_SELF)
@@ -243,7 +243,7 @@ POV_ULONG Timer::GetProcessTime () const
     return 0;
 }
 
-POV_ULONG Timer::GetThreadTime () const
+POV_ULONG Timer::GetThreadCPUTime () const
 {
     POV_ULONG result;
 #if defined(HAVE_RUSAGE_THREAD)

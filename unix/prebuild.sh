@@ -577,7 +577,7 @@ povowner = @povowner@
 povgroup = @povgroup@
 
 # Directories to build.
-SUBDIRS = source vfe platform unix
+SUBDIRS = source vfe unix platform
 
 # Additional files to distribute.
 EXTRA_DIST = \\
@@ -1388,7 +1388,6 @@ libplatform_a_SOURCES = \\
 AM_CPPFLAGS = \\
   -I\$(top_srcdir)/unix/povconfig \\
   -I\$(top_srcdir)/platform/unix \\
-  -I\$(top_srcdir)/vfe \\
   -I\$(top_srcdir)/vfe/unix \\
   -I\$(top_srcdir)/unix \\
   -I\$(top_srcdir)/source

@@ -37,7 +37,6 @@
 #define POVRAY_UNIX_SYSPOVTIMER_H
 
 #include "base/configbase.h"
-#include "base/types.h"
 
 namespace pov_base
 {

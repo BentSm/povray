@@ -1236,7 +1236,7 @@ AC_CONFIG_FILES([\
   source/Makefile \
   vfe/Makefile \
   unix/Makefile \
-  platform/unix/Makefile \
+  platform/Makefile \
 ])
 
 

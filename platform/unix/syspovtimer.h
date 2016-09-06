@@ -84,16 +84,20 @@ class Timer
         POV_ULONG mThreadTimeStart;
 
         bool mWallTimeUseClockGettimeMonotonic  : 1;    ///< Whether we'll measure elapsed wall-clock time using `clock_gettime(CLOCK_MONOTONIC)`.
+        bool mWallTimeUseBoostChronoSteady      : 1;    ///< Whether we'll measure elapsed wall-clock time using boost::chrono's `steady_clock`.
         bool mWallTimeUseClockGettimeRealtime   : 1;    ///< Whether we'll measure elapsed wall-clock time using `clock_gettime(CLOCK_REALTIME)`.
+        bool mWallTimeUseBoostChronoSystem      : 1;    ///< Whether we'll measure elapsed wall-clock time using boost::chrono's `system_clock`.
         bool mWallTimeUseGettimeofday           : 1;    ///< Whether we'll measure elapsed wall-clock time using `gettimeofday()`.
 
         bool mProcessTimeUseGetrusageSelf       : 1;    ///< Whether we'll measure per-process CPU time using `getrusage(RUSAGE_SELF)`.
         bool mProcessTimeUseClockGettimeProcess : 1;    ///< Whether we'll measure per-process CPU time using `clock_gettime(CLOCK_PROCESS_CPUTIME_ID)`.
+        bool mProcessTimeUseBoostChronoRealCPU  : 1;    ///< Whether we'll measure per-process CPU time using boost::chrono's `process_real_cpu_clock`.
         bool mProcessTimeUseFallback            : 1;    ///< Whether we'll fall back to wall-clock time instead of per-process CPU time.
 
         bool mThreadTimeUseGetrusageThread      : 1;    ///< Whether we'll measure per-thread CPU time using `getrusage(RUSAGE_THREAD)`.
         bool mThreadTimeUseGetrusageLwp         : 1;    ///< Whether we'll measure per-thread CPU time using `getrusage(RUSAGE_LWP)`.
         bool mThreadTimeUseClockGettimeThread   : 1;    ///< Whether we'll measure per-thread CPU time `clock_gettime(CLOCK_THREAD_CPUTIME_ID)`.
+        bool mThreadTimeUseBoostChronoThread    : 1;    ///< Whether we'll measure per-thread CPU time using boost::chrono's `thread_clock`.
         bool mThreadTimeUseFallback             : 1;    ///< Whether we'll fall back to per-process CPU time (or wall-clock time) instead of per-thread CPU time.
 
         POV_ULONG GetWallTime() const;

@@ -160,7 +160,7 @@ static inline bool BoostChronoMillisec(POV_ULONG& result, const boostClockType &
             (boost::chrono::duration_cast<boost::chrono::milliseconds>
              (boost::chrono::system_clock::now().time_since_epoch()).count());
         return true;
-#if defined(BOOST_CHRONO_HAS_STEADY_CLOCK)
+#if defined(BOOST_CHRONO_HAS_CLOCK_STEADY)
     case boostSteadyClock:
         result = static_cast<POV_ULONG>
             (boost::chrono::duration_cast<boost::chrono::milliseconds>
@@ -210,7 +210,7 @@ Timer::Timer () :
     if (!haveWallTime)
         haveWallTime = mWallTimeUseClockGettimeMonotonic = ClockGettimeMillisec(mWallTimeStart, CLOCK_MONOTONIC);
 #endif
-#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_STEADY_CLOCK)
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_CLOCK_STEADY)
     if (!haveWallTime)
         haveWallTime = mWallTimeUseBoostChronoSteady = BoostChronoMillisec(mWallTimeStart, boostSteadyClock);
 #endif
@@ -295,7 +295,7 @@ POV_ULONG Timer::GetWallTime () const
     if (mWallTimeUseClockGettimeMonotonic)
         return (ClockGettimeMillisec(result, CLOCK_MONOTONIC) ? result : 0);
 #endif
-#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_STEADY_CLOCK)
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_CLOCK_STEADY)
     if (mWallTimeUseBoostChronoSteady)
         return (BoostChronoMillisec(result, boostSteadyClock) ? result : 0);
 #endif

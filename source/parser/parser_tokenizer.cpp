@@ -3064,7 +3064,7 @@ Parser::Macro *Parser::Parse_Macro()
     New->Macro_Filename = NULL;
 
     EXPECT
-        CASE (LEFT_PAREN_TOKEN )
+        CASE (LEFT_PAREN_TOKEN)
             EXIT
         END_CASE
         CASE (TEMPORARY_MACRO_ID_TOKEN)
@@ -3138,6 +3138,7 @@ Parser::Macro *Parser::Parse_Macro()
     New->Macro_Filename = UCS2_strdup(Input_File->In_File->name());
     New->Macro_File_Pos = Input_File->In_File->tellg();
     New->Macro_File_Col = Echo_Indx;
+    New->Sym_Entry = Table_Entry;
 
     Check_Macro_Vers();
 
@@ -3162,6 +3163,8 @@ void Parser::Invoke_Macro()
     }
 
     Check_Macro_Vers();
+
+    Acquire_Entry_Reference(PMac->Sym_Entry); // Make sure the macro's data doesn't get deleted while it's being run.
 
     GET(LEFT_PAREN_TOKEN);
 
@@ -3314,12 +3317,15 @@ void Parser::Return_From_Macro()
 
     // Always destroy macro locals
     Destroy_Table(Table_Index--);
+
+    Release_Entry_Reference(1,Cond_Stack[CS_Index].PMac->Sym_Entry);
 }
 
 Parser::Macro::Macro(const char *s) :
     Macro_Name(POV_STRDUP(s)),
     Macro_Filename(NULL),
-    Cache(NULL)
+    Cache(NULL),
+    Sym_Entry(NULL)
 {}
 
 Parser::Macro::~Macro()

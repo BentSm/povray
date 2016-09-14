@@ -97,7 +97,7 @@ struct Sym_Table_Entry
     bool deprecated      : 1;
     bool deprecatedOnce  : 1;
     bool deprecatedShown : 1;
-    SymTableEntryRefCount ref_count; ///< normally 1, but may be greater when passing symbols out of macros
+    SymTableEntryRefCount ref_count; ///< normally 1, but may be greater when within macros or passing symbols out of macros
 };
 
 class FPUContext;
@@ -259,6 +259,7 @@ class Parser : public SceneTask
             vector<MacroParameter> parameters;
             unsigned char *Cache;
             size_t CacheSize;
+            SYM_ENTRY* Sym_Entry;
         };
 
         struct POV_ARRAY

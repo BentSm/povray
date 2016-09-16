@@ -3496,14 +3496,16 @@ void Parser::Parse_Fopen(void)
     UCS2String fileName;
     UCS2String ign;
     SYM_ENTRY *Entry;
+    char *tokString;
 
     New=reinterpret_cast<DATA_FILE *>(POV_MALLOC(sizeof(DATA_FILE),"user file"));
     New->In_File=NULL;
     New->Out_File=NULL;
+    New->Sym_Entry=NULL;
 
     GET(IDENTIFIER_TOKEN)
-    Entry = Add_Symbol (1,Token.Token_String,FILE_ID_TOKEN);
-    Entry->Data=reinterpret_cast<void *>(New);
+    // Wait until everything's ready to add the symbol
+    tokString = POV_STRDUP(Token.Token_String);
 
     asciiFileName = Parse_C_String(true);
     fileName = ASCIItoUCS2String(asciiFileName);
@@ -3553,6 +3555,11 @@ void Parser::Parse_Fopen(void)
             Expectation_Error("read or write");
         END_CASE
     END_EXPECT
+
+    Entry = Add_Symbol (1,tokString,FILE_ID_TOKEN);
+    Entry->Data=reinterpret_cast<void *>(New);
+
+    New->Sym_Entry = Entry;
 }
 
 void Parser::Parse_Fclose(void)
@@ -3562,6 +3569,12 @@ void Parser::Parse_Fclose(void)
     EXPECT
         CASE(FILE_ID_TOKEN)
             Data=reinterpret_cast<DATA_FILE *>(Token.Data);
+            if(Data->Sym_Entry->ref_count > 1)
+            {
+                Error("File %s closed during file access.", (Data->In_File != NULL ?
+                                                             UCS2toASCIIString(UCS2String(Data->In_File->name())).c_str() :
+                                                             UCS2toASCIIString(UCS2String(Data->Out_File->name())).c_str()));
+            }
             if(Data->In_File != NULL)
                 delete Data->In_File;
             if(Data->Out_File != NULL)
@@ -3593,6 +3606,8 @@ void Parser::Parse_Read()
     File_Id=POV_STRDUP(Token.Token_String);
     if(User_File->In_File == NULL)
         Error("Cannot read from file %s because the file is open for writing only.", UCS2toASCIIString(UCS2String(User_File->Out_File->name())).c_str());
+
+    Acquire_Entry_Reference(User_File->Sym_Entry);
 
     Parse_Comma(); /* Scene file comma between File_Id and 1st data ident */
 
@@ -3660,6 +3675,10 @@ void Parser::Parse_Read()
         Got_EOF=false;
         User_File->In_File = NULL;
         Remove_Symbol (1,File_Id,false,NULL,0);
+    }
+    else
+    {
+        Release_Entry_Reference(1,User_File->Sym_Entry);
     }
     POV_FREE(File_Id);
 }
@@ -3805,6 +3824,8 @@ void Parser::Parse_Write(void)
     if(User_File->Out_File == NULL)
         Error("Cannot write to file %s because the file is open for reading only.", UCS2toASCIIString(UCS2String(User_File->In_File->name())).c_str());
 
+    Acquire_Entry_Reference(User_File->Sym_Entry);
+
     Parse_Comma();
 
     EXPECT
@@ -3921,6 +3942,8 @@ void Parser::Parse_Write(void)
             Expectation_Error("string");
         END_CASE
     END_EXPECT
+
+    Release_Entry_Reference(1,User_File->Sym_Entry);
 }
 
 DBL Parser::Parse_Cond_Param(void)

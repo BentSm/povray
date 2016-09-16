@@ -2954,7 +2954,7 @@ SYM_ENTRY *Parser::Add_Symbol (int Index,const char *Name,TOKEN Number)
 }
 
 
-SYM_ENTRY *Parser::Find_Symbol(int Index,const char *Name)
+SYM_ENTRY *Parser::Find_Symbol (int Index, const char *Name)
 {
     SYM_ENTRY *Entry;
 
@@ -2973,6 +2973,19 @@ SYM_ENTRY *Parser::Find_Symbol(int Index,const char *Name)
     }
 
     return(Entry);
+}
+
+
+SYM_ENTRY *Parser::Find_Symbol (const char *name)
+{
+    SYM_ENTRY *entry;
+    for (int index = Table_Index; index > 0; --index)
+    {
+        entry = Find_Symbol (index, name);
+        if (entry)
+            return entry;
+    }
+    return NULL;
 }
 
 
@@ -4025,8 +4038,7 @@ int Parser::Parse_For_Param (char** IdentifierPtr, DBL* EndPtr, DBL* StepPtr)
 
     EXPECT_ONE
         CASE (IDENTIFIER_TOKEN)
-            if (Token.is_array_elem)
-                Error("#for loop variable must not be an array element");
+            POV_PARSER_ASSERT(!Token.is_array_elem);
             Temp_Entry = Add_Symbol (Table_Index,Token.Token_String,IDENTIFIER_TOKEN);
             Token.NumberPtr = &(Temp_Entry->Token_Number);
             Token.DataPtr = &(Temp_Entry->Data);
@@ -4036,9 +4048,8 @@ int Parser::Parse_For_Param (char** IdentifierPtr, DBL* EndPtr, DBL* StepPtr)
         CASE2 (FUNCT_ID_TOKEN, VECTFUNCT_ID_TOKEN)
             if (Token.is_array_elem)
                 Error("#for loop variable must not be an array element");
-            if((!Token.is_array_elem) || (*(Token.DataPtr) != NULL))
-                Error("Redeclaring functions is not allowed - #undef the function first!");
-            // fall through
+            Error("Redeclaring functions is not allowed - #undef the function first!");
+        END_CASE
 
         // These have to match Parse_Declare in parse.cpp!
         CASE4 (TNORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
@@ -4064,8 +4075,8 @@ int Parser::Parse_For_Param (char** IdentifierPtr, DBL* EndPtr, DBL* StepPtr)
         END_CASE
 
         CASE (EMPTY_ARRAY_TOKEN)
-            if (Token.is_array_elem)
-                Error("#for loop variable must not be an array element");
+            POV_PARSER_ASSERT(Token.is_array_elem);
+            Error("#for loop variable must not be an array element");
             Previous = Token.Token_Id;
         END_CASE
 
@@ -4081,8 +4092,12 @@ int Parser::Parse_For_Param (char** IdentifierPtr, DBL* EndPtr, DBL* StepPtr)
                         Temp_Entry = Add_Symbol (Table_Index,Token.Token_String,IDENTIFIER_TOKEN);
                         Token.NumberPtr = &(Temp_Entry->Token_Number);
                         Token.DataPtr   = &(Temp_Entry->Data);
+                        Previous        = IDENTIFIER_TOKEN;
                     }
-                    Previous           = Token.Function_Id;
+                    else
+                    {
+                        Previous        = Token.Function_Id;
+                    }
                     break;
 
                 default:

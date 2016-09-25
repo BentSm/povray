@@ -103,25 +103,19 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
         void *pIterData) const
 {
     int i;
-    DBL x, y, z, w;
+    VECTOR_4D v = {iPoint[X], iPoint[Y], iPoint[Z], pFractal->SliceDistNorm - dot(pFractal->SliceNorm, iPoint)};
     DBL norm, exitValue;
 
     typename RulesClass<Estimator>::IterationData *pIterStack =
         reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pIterData);
 
-    x = pIterStack[0].point[X] = iPoint[X];
-    y = pIterStack[0].point[Y] = iPoint[Y];
-    z = pIterStack[0].point[Z] = iPoint[Z];
-    w = pIterStack[0].point[W] = pFractal->SliceDistNorm -
-                                 pFractal->SliceNorm[X] * x -
-                                 pFractal->SliceNorm[Y] * y -
-                                 pFractal->SliceNorm[Z] * z;
+    Assign_Vector_4D(pIterStack[0].point, v);
 
     exitValue = pFractal->Exit_Value;
 
     for (i = 0; i < pFractal->Num_Iterations; i++)
     {
-        norm = x * x + y * y + z * z + w * w;
+        V4D_Dot(norm, v, v);
 
         if (norm > exitValue)
         {
@@ -135,16 +129,13 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
         }
 
         static_cast<const RulesClass<Estimator> *>(this)->
-            IterateCalc(x, y, z, w, norm, i, pFractal, pIterData);
+            IterateCalc(v, norm, i, pFractal, pIterData);
 
-        pIterStack[i+1].point[X] = x;
-        pIterStack[i+1].point[Y] = y;
-        pIterStack[i+1].point[Z] = z;
-        pIterStack[i+1].point[W] = w;
+        Assign_Vector_4D(pIterStack[i+1].point, v);
 
     }
 
-    norm = x * x + y * y + z * z + w * w;
+    V4D_Dot(norm, v, v);
 
     if (norm > exitValue)
     {
@@ -171,67 +162,52 @@ template <bool disc>
 void MagicQuaternionFractalRules<RulesClass, Estimator, BaseRules>::
 TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
 {
-    DBL n11 = 1.0, n12 = 0.0, n13 = 0.0, n14 = -pFractal->SliceNorm[X],
-	n21 = 0.0, n22 = 1.0, n23 = 0.0, n24 = -pFractal->SliceNorm[Y],
-	n31 = 0.0, n32 = 0.0, n33 = 1.0, n34 = -pFractal->SliceNorm[Z];
+    VECTOR_4D nX = {1.0, 0.0, 0.0, -pFractal->SliceNorm[X]},
+              nY = {0.0, 1.0, 0.0, -pFractal->SliceNorm[Y]},
+              nZ = {0.0, 0.0, 1.0, -pFractal->SliceNorm[Z]};
     int i;
 
     typename RulesClass<Estimator>::IterationData *pTIterStack =
         reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pTIterData),
         *pPIterStack = reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pPIterData);
 
-
     for (i = 0; i < nMax; i++)
     {
         if (disc && pFractal->Discontinuity_Test > 0)
         {
-            DBL dx, dy, dz, dw, dist;
+            VECTOR_4D d;
+            DBL dist;
             if (static_cast<const RulesClass<Estimator> *>(this)->
-                DiscontinuityCheck(dx, dy, dz, dw, dist,
-                                   pTIterStack[i].point[X], pTIterStack[i].point[Y],
-                                   pTIterStack[i].point[Z], pTIterStack[i].point[W],
-                                   pPIterStack[i].point[X], pPIterStack[i].point[Y],
-                                   pPIterStack[i].point[Z], pPIterStack[i].point[W],
+                DiscontinuityCheck(d, dist, pTIterStack[i].point, pPIterStack[i].point,
                                    i, pFractal, pTIterData, pPIterData))
             {
-                rResult[X] = n11 * dx + n12 * dy + n13 * dz + n14 * dw;
-                rResult[Y] = n21 * dx + n22 * dy + n23 * dz + n24 * dw;
-                rResult[Z] = n31 * dx + n32 * dy + n33 * dz + n34 * dw;
+                V4D_Dot(rResult[X], nX, d);
+                V4D_Dot(rResult[Y], nY, d);
+                V4D_Dot(rResult[Z], nZ, d);
                 return;
             }
         }
 
         static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(n11, n12, n13, n14,
-                              pTIterStack[i].point[X], pTIterStack[i].point[Y],
-                              pTIterStack[i].point[Z], pTIterStack[i].point[W],
-                              i, false, pFractal, pTIterData);
+            ApplyDirDerivCalc(nX, pTIterStack[i].point, i, false, pFractal, pTIterData);
         static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(n21, n22, n23, n24,
-                              pTIterStack[i].point[X], pTIterStack[i].point[Y],
-                              pTIterStack[i].point[Z], pTIterStack[i].point[W],
-                              i, true, pFractal, pTIterData);
+            ApplyDirDerivCalc(nY, pTIterStack[i].point, i, true, pFractal, pTIterData);
         static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(n31, n32, n33, n34,
-                              pTIterStack[i].point[X], pTIterStack[i].point[Y],
-                              pTIterStack[i].point[Z], pTIterStack[i].point[W],
-                              i, true, pFractal, pTIterData);
+            ApplyDirDerivCalc(nZ, pTIterStack[i].point, i, true, pFractal, pTIterData);
     }
 
-    rResult[X] = n11 * pTIterStack[nMax].point[X] + n12 * pTIterStack[nMax].point[Y] +
-        n13 * pTIterStack[nMax].point[Z] + n14 * pTIterStack[nMax].point[W];
-    rResult[Y] = n21 * pTIterStack[nMax].point[X] + n22 * pTIterStack[nMax].point[Y] +
-        n23 * pTIterStack[nMax].point[Z] + n24 * pTIterStack[nMax].point[W];
-    rResult[Z] = n31 * pTIterStack[nMax].point[X] + n32 * pTIterStack[nMax].point[Y] +
-        n33 * pTIterStack[nMax].point[Z] + n34 * pTIterStack[nMax].point[W];
+    V4D_Dot(rResult[X], nX, pTIterStack[nMax].point);
+    V4D_Dot(rResult[Y], nY, pTIterStack[nMax].point);
+    V4D_Dot(rResult[Z], nZ, pTIterStack[nMax].point);
 }
 
 template <template <class> class RulesClass, class Estimator, class BaseRules>
 DBL MagicQuaternionFractalRules<RulesClass, Estimator, BaseRules>::
 CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, void *pIterData) const
 {
-    DBL dx = dir[X], dy = dir[Y], dz = dir[Z], dw = -dot(pFractal->SliceNorm, dir);
+    VECTOR_4D d = {dir[X], dir[Y], dir[Z], -dot(pFractal->SliceNorm, dir)};
     int i;
+    DBL res;
 
     typename RulesClass<Estimator>::IterationData *pIterStack =
         reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pIterData);
@@ -239,20 +215,16 @@ CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, void *pIter
     for (i = 0; i < nMax; i++)
     {
         static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(dx, dy, dz, dw,
-                              pIterStack[i].point[X], pIterStack[i].point[Y],
-                              pIterStack[i].point[Z], pIterStack[i].point[W],
-                              i, false, pFractal, pIterData);
+            ApplyDirDerivCalc(d, pIterStack[i].point, i, false, pFractal, pIterData);
     }
 
-    return dx * pIterStack[nMax].point[X] + dy * pIterStack[nMax].point[Y] +
-        dz * pIterStack[nMax].point[Z] + dw * pIterStack[nMax].point[W];
+    V4D_Dot(res, d, pIterStack[nMax].point);
+    return res;
 }
 
 template <template <class> class RulesClass, class Estimator, class BaseRules>
 bool MagicQuaternionFractalRules<RulesClass, Estimator, BaseRules>::
-DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
-                   DBL tx, DBL ty, DBL tz, DBL tw, DBL px, DBL py, DBL pz, DBL pw,
+DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
                    int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
 {
     throw POV_EXCEPTION_STRING("Discontinuity detection not supported for this fractal type.");
@@ -265,26 +237,22 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
         void *pIterData) const
 {
     int i;
-    Complex c0, c1;
+    Duplex d;
     DBL norm, exitValue;
+    VECTOR_4D v = {iPoint[X], iPoint[Y], iPoint[Z], pFractal->SliceDistNorm - dot(pFractal->SliceNorm, iPoint)};
 
     typename RulesClass<Estimator>::IterationData *pIterStack =
         reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pIterData);
 
-    ComputeDuplexFromHypercomplex(c0, c1, iPoint[X], iPoint[Y], iPoint[Z],
-                                  pFractal->SliceDistNorm -
-                                  pFractal->SliceNorm[X] * iPoint[X] -
-                                  pFractal->SliceNorm[Y] * iPoint[Y] -
-                                  pFractal->SliceNorm[Z] * iPoint[Z]);
+    ComputeDuplexFromHypercomplex(d, v);
 
-    pIterStack[0].point[0] = c0;
-    pIterStack[0].point[1] = c1;
+    AssignDuplex(pIterStack[0].point, d);
 
     exitValue = pFractal->Exit_Value;
 
     for (i = 0; i < pFractal->Num_Iterations; i++)
     {
-        norm = 0.5 * (c0.x * c0.x + c0.y * c0.y + c1.x * c1.x + c1.y * c1.y);
+        norm = 0.5 * (d[0].x * d[0].x + d[0].y * d[0].y + d[1].x * d[1].x + d[1].y * d[1].y);
 
         if (norm > exitValue)
         {
@@ -297,15 +265,13 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
             return i;
         }
 
-        static_cast<const RulesClass<Estimator> *>(this)->
-            IterateCalc(c0, c1, norm, i, pFractal, pIterData);
+        static_cast<const RulesClass<Estimator> *>(this)->IterateCalc(d, norm, i, pFractal, pIterData);
 
-        pIterStack[i+1].point[0] = c0;
-        pIterStack[i+1].point[1] = c1;
+        AssignDuplex(pIterStack[i+1].point, d);
 
     }
 
-    norm = 0.5 * (c0.x * c0.x + c0.y * c0.y + c1.x * c1.x + c1.y * c1.y);
+    norm = 0.5 * (d[0].x * d[0].x + d[0].y * d[0].y + d[1].x * d[1].x + d[1].y * d[1].y);
 
     if (norm > exitValue)
     {
@@ -333,8 +299,8 @@ void MagicHypercomplexFractalRules<RulesClass, Estimator, BaseRules>::
 TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
 {
     int i;
-    Complex c0, c1;
-    DBL x, y, z, w;
+    Duplex d = {{1.0, 0.0}, {1.0, 0.0}};
+    VECTOR_4D v;
 
     /*
      * The fact that the functions used for iterating are well-behaved in the hypercomplexes
@@ -343,9 +309,6 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
      * much use.  This is not necessarily the case for a general hypercomplex function, though,
      * and is a problem for many of even the most basic quaternionic functions (e.g., z^2).
      */
-
-    c0.x = 1.0; c0.y = 0.0;
-    c1.x = 1.0; c1.y = 0.0;
 
     typename RulesClass<Estimator>::IterationData *pTIterStack =
         reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pTIterData),
@@ -356,51 +319,47 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
     {
         if (disc && pFractal->Discontinuity_Test > 0)
         {
-            Complex dc0, dc1;
+            Duplex dc;
             DBL dist;
             if (static_cast<const RulesClass<Estimator> *>(this)->
-                DiscontinuityCheck(dc0, dc1, dist,
-                                   pTIterStack[i].point[0], pTIterStack[i].point[1],
-                                   pPIterStack[i].point[0], pPIterStack[i].point[1],
+                DiscontinuityCheck(dc, dist, pTIterStack[i].point, pPIterStack[i].point,
                                    i, pFractal, pTIterData, pPIterData))
             {
-                c0.y *= -1.0;
-                c1.y *= -1.0;
+                d[0].y *= -1.0;
+                d[1].y *= -1.0;
 
-                complex_fn::Mult(c0, c0, dc0);
-                complex_fn::Mult(c1, c1, dc1);
+                complex_fn::Mult(d[0], d[0], dc[0]);
+                complex_fn::Mult(d[1], d[1], dc[1]);
 
-                ComputeHypercomplexFromDuplex(x, y, z, w, c0, c1);
+                ComputeHypercomplexFromDuplex(v, d);
 
-                rResult[X] = (x - w * pFractal->SliceNorm[X]);
-                rResult[Y] = (y - w * pFractal->SliceNorm[Y]);
-                rResult[Z] = (z - w * pFractal->SliceNorm[Z]);
+                rResult[X] = (v[X] - v[W] * pFractal->SliceNorm[X]);
+                rResult[Y] = (v[Y] - v[W] * pFractal->SliceNorm[Y]);
+                rResult[Z] = (v[Z] - v[W] * pFractal->SliceNorm[Z]);
 
                 return;
             }
         }
         static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDerivCalc(c0, c1, pTIterStack[i].point[0], pTIterStack[i].point[1], i, pFractal,
-                           pTIterData);
+            ApplyDerivCalc(d, pTIterStack[i].point, i, pFractal, pTIterData);
     }
 
-    c0.y *= -1.0;
-    c1.y *= -1.0;
+    d[0].y *= -1.0;
+    d[1].y *= -1.0;
 
-    complex_fn::Mult(c0, c0, pTIterStack[nMax].point[0]);
-    complex_fn::Mult(c1, c1, pTIterStack[nMax].point[1]);
+    complex_fn::Mult(d[0], d[0], pTIterStack[nMax].point[0]);
+    complex_fn::Mult(d[1], d[1], pTIterStack[nMax].point[1]);
 
-    ComputeHypercomplexFromDuplex(x, y, z, w, c0, c1);
+    ComputeHypercomplexFromDuplex(v, d);
 
-    rResult[X] = (x - w * pFractal->SliceNorm[X]);
-    rResult[Y] = (y - w * pFractal->SliceNorm[Y]);
-    rResult[Z] = (z - w * pFractal->SliceNorm[Z]);
+    rResult[X] = (v[X] - v[W] * pFractal->SliceNorm[X]);
+    rResult[Y] = (v[Y] - v[W] * pFractal->SliceNorm[Y]);
+    rResult[Z] = (v[Z] - v[W] * pFractal->SliceNorm[Z]);
 }
 
 template <template <class> class RulesClass, class Estimator, class BaseRules>
 bool MagicHypercomplexFractalRules<RulesClass, Estimator, BaseRules>::
-DiscontinuityCheck(Complex& rD0, Complex& rD1, DBL& rDist,
-                   const Complex& t0, const Complex& t1, const Complex& p0, const Complex& p1,
+DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
                    int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
 {
     throw POV_EXCEPTION_STRING("Discontinuity detection not supported for this fractal type.");

@@ -132,10 +132,6 @@ struct FractalConstructorData
 };
 
 typedef Complex Duplex[2];
-typedef VECTOR_4D Quaternion;
-
-/* If we don't have C++11, we can't initialize const arrays... */
-#ifndef FRACTAL_USE_CXX11
 
 template <class T, unsigned N>
 class IArray
@@ -154,17 +150,25 @@ public:
     T& operator[](unsigned k) { return value[k]; }
     const T& operator[](unsigned k) const { return value[k]; }
 
+    typedef T Array_Type[N];
+
+    operator Array_Type&() { return value; }
+    operator const Array_Type&() const { return value; }
+
 private:
-    T value[N];
+    Array_Type value;
 };
 
+/* If we don't have C++11, we can't initialize const arrays... */
+#ifndef FRACTAL_USE_CXX11
+
 typedef IArray<Complex, 2> IDuplex;
-typedef IArray<DBL, 4> IQuaternion;
+typedef IArray<DBL, 4> IVECTOR_4D;
 
 #else
 
 typedef Duplex IDuplex;
-typedef Quaternion IQuaternion;
+typedef VECTOR_4D IVECTOR_4D;
 
 #endif
 

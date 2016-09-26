@@ -112,113 +112,121 @@ static inline void ComplexRecipDeriv(Complex& rC, const Complex& c)
 
 template <class Estimator>
 inline void HypercomplexSqrFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
-    ComplexSqrAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
-    ComplexSqrAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
+    ComplexSqrAdd(rC0, rC0, mDuplexJuliaParm[0]);
+    ComplexSqrAdd(rC1, rC1, mDuplexJuliaParm[1]);
 }
 
 template <class Estimator>
 inline void HypercomplexSqrFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+               int iter, const Fractal *pFractal, void *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    ComplexSqrDeriv(tmp[0], c[0]);
-    ComplexSqrDeriv(tmp[1], c[1]);
+    ComplexSqrDeriv(tmp0, c0);
+    ComplexSqrDeriv(tmp1, c1);
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(rD0, rD0, tmp0);
+    complex_fn::Mult(rD1, rD1, tmp1);
 }
 
 template <class Estimator>
 inline void HypercomplexCubeFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
-    ComplexCubeAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
-    ComplexCubeAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
+    ComplexCubeAdd(rC0, rC0, mDuplexJuliaParm[0]);
+    ComplexCubeAdd(rC1, rC1, mDuplexJuliaParm[1]);
 }
 
 template <class Estimator>
 inline void HypercomplexCubeFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+               int iter, const Fractal *pFractal, void *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    ComplexCubeDeriv(tmp[0], c[0]);
-    ComplexCubeDeriv(tmp[1], c[1]);
+    ComplexCubeDeriv(tmp0, c0);
+    ComplexCubeDeriv(tmp1, c1);
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(rD0, rD0, tmp0);
+    complex_fn::Mult(rD1, rD1, tmp1);
 }
 
 template <class Estimator>
 inline void HypercomplexRecipFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm,
+IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
                             int iter, const Fractal *pFractal, void *pIterData) const
 {
-    ComplexRecipAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
-    ComplexRecipAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
+    ComplexRecipAdd(rC0, rC0, mDuplexJuliaParm[0]);
+    ComplexRecipAdd(rC1, rC1, mDuplexJuliaParm[1]);
 }
 
 template <class Estimator>
 inline void HypercomplexRecipFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+               int iter, const Fractal *pFractal, void *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    ComplexRecipDeriv(tmp[0], c[0]);
-    ComplexRecipDeriv(tmp[1], c[1]);
+    ComplexRecipDeriv(tmp0, c0);
+    ComplexRecipDeriv(tmp1, c1);
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(rD0, rD0, tmp0);
+    complex_fn::Mult(rD1, rD1, tmp1);
 }
 
 template <class Estimator>
 inline void HypercomplexFuncFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
-    (*(mFunc.pFunc))(rC[0], rC[0], mExponent);
-    (*(mFunc.pFunc))(rC[1], rC[1], mExponent);
+    (*(mFunc.pFunc))(rC0, rC0, mExponent);
+    (*(mFunc.pFunc))(rC1, rC1, mExponent);
 
-    rC[0].x += mDuplexJuliaParm[0].x;
-    rC[0].y += mDuplexJuliaParm[0].y;
+    rC0.x += mDuplexJuliaParm[0].x;
+    rC0.y += mDuplexJuliaParm[0].y;
 
-    rC[1].x += mDuplexJuliaParm[1].x;
-    rC[1].y += mDuplexJuliaParm[1].y;
+    rC1.x += mDuplexJuliaParm[1].x;
+    rC1.y += mDuplexJuliaParm[1].y;
 }
 
 template <class Estimator>
 inline void HypercomplexFuncFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+               int iter, const Fractal *pFractal, void *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    (*(mFunc.pDeriv))(tmp[0], c[0], mExponent);
-    (*(mFunc.pDeriv))(tmp[1], c[1], mExponent);
+    (*(mFunc.pDeriv))(tmp0, c0, mExponent);
+    (*(mFunc.pDeriv))(tmp1, c1, mExponent);
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(rD0, rD0, tmp0);
+    complex_fn::Mult(rD1, rD1, tmp1);
 }
 
 template <class Estimator>
 bool HypercomplexFuncFractalRules<Estimator>::
-DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+DiscontinuityCheck(Complex& rD0, Complex& rD1, DBL& rDist,
+                   const Complex& t0, const Complex& t1, const Complex& p0, const Complex& p1,
                    int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
 {
     Complex tmp;
     DBL dist;
-    if ((*(mFunc.pDisc))(tmp, dist, t[0], p[0], mExponent))
+    if ((*(mFunc.pDisc))(tmp, dist, t0, p0, mExponent))
     {
-        rD[0] = tmp;
-        rD[1].x = rD[1].y = 0.0;
+        rD0 = tmp;
+        rD1.x = rD1.y = 0.0;
         rDist = dist;
         return true;
     }
-    else if ((*(mFunc.pDisc))(tmp, dist, t[1], p[1], mExponent))
+    else if ((*(mFunc.pDisc))(tmp, dist, t1, p1, mExponent))
     {
-        rD[0].x = rD[0].y = 0.0;
-        rD[1] = tmp;
+        rD0.x = rD0.y = 0.0;
+        rD1 = tmp;
         rDist = dist;
         return true;
     }

@@ -81,7 +81,8 @@ namespace pov
 
 template <class Estimator>
 inline void QuaternionSqrFractalRules<Estimator>::
-IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
     DBL tmp;
 
@@ -90,31 +91,32 @@ IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, void *pI
 
     pIterStack[iter].sNorm = norm;
 
-    tmp = 2.0 * rV[X];
+    tmp = 2.0 * rX;
 
-    rV[X] = tmp * rV[X] + mJuliaParm[X] - norm;
-    rV[Y] = tmp * rV[Y] + mJuliaParm[Y];
-    rV[Z] = tmp * rV[Z] + mJuliaParm[Z];
-    rV[W] = tmp * rV[W] + mJuliaParm[W];
+    rY = tmp * rY + mJuliaParm[Y];
+    rZ = tmp * rZ + mJuliaParm[Z];
+    rW = tmp * rW + mJuliaParm[W];
+    rX = tmp * rX + mJuliaParm[X] - norm;
 }
 
 template <class Estimator>
 inline void QuaternionSqrFractalRules<Estimator>::
-ApplyDirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
+ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
+                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
 {
     DBL tmp;
 
-    tmp = rD[X] * v[X] - rD[Y] * v[Y] - rD[Z] * v[Z] - rD[W] * v[W];
-
-    rD[X] = tmp;
-    rD[Y] = rD[X] * v[Y] + v[X] * rD[Y];
-    rD[Z] = rD[X] * v[Z] + v[X] * rD[Z];
-    rD[W] = rD[X] * v[W] + v[X] * rD[W];
+    tmp = rDx * x - rDy * y - rDz * z - rDw * w;
+    rDy = rDx * y + x * rDy;
+    rDz = rDx * z + x * rDz;
+    rDw = rDx * w + x * rDw;
+    rDx = tmp;
 }
 
 template <class Estimator>
 inline void QuaternionCubeFractalRules<Estimator>::
-IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
     DBL cVal;
 
@@ -123,17 +125,18 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pI
 
     pIterStack[iter].sNorm = norm;
 
-    pIterStack[iter].cVal = cVal = 4.0 * rV[X] * rV[X] - norm;
+    pIterStack[iter].cVal = cVal = 4.0 * rX * rX - norm;
 
-    rV[X] = (cVal - 2.0 * norm) * rV[X] + mJuliaParm[X];
-    rV[Y] = cVal * rV[Y] + mJuliaParm[Y];
-    rV[Z] = cVal * rV[Z] + mJuliaParm[Z];
-    rV[W] = cVal * rV[W] + mJuliaParm[W];
+    rX = (cVal - 2.0 * norm) * rX + mJuliaParm[X];
+    rY = cVal * rY + mJuliaParm[Y];
+    rZ = cVal * rZ + mJuliaParm[Z];
+    rW = cVal * rW + mJuliaParm[W];
 }
 
 template <class Estimator>
 inline void QuaternionCubeFractalRules<Estimator>::
-ApplyDirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
+ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
+                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
 {
     static DBL tmp1, cVal, norm;
     DBL tmp2;
@@ -148,17 +151,17 @@ ApplyDirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, c
         tmp1 = 2.0 * norm + cVal;
     }
 
-    tmp2 = 2.0 * (3.0 * rD[X] * v[X] - rD[Y] * v[Y] - rD[Z] * v[Z] - rD[W] * v[W]);
-
-    rD[X] = 3.0 * (-rD[X] * tmp1 + v[X] * tmp2);
-    rD[Y] = rD[Y] * cVal + v[Y] * tmp2;
-    rD[Z] = rD[Z] * cVal + v[Z] * tmp2;
-    rD[W] = rD[W] * cVal + v[W] * tmp2;
+    tmp2 = 2.0 * (3.0 * rDx * x - rDy * y - rDz * z - rDw * w);
+    rDx = 3.0 * (-rDx * tmp1 + x * tmp2);
+    rDy = rDy * cVal + y * tmp2;
+    rDz = rDz * cVal + z * tmp2;
+    rDw = rDw * cVal + w * tmp2;
 }
 
 template <class Estimator>
 inline void QuaternionRecipFractalRules<Estimator>::
-IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
     DBL tmp;
 
@@ -167,15 +170,16 @@ IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, void *pI
 
     pIterStack[iter].sNorm = norm;
 
-    rV[X] = rV[X] / norm + mJuliaParm[X];
-    rV[Y] = rV[Y] / norm + mJuliaParm[Y];
-    rV[Z] = rV[Z] / norm + mJuliaParm[Z];
-    rV[W] = rV[W] / norm + mJuliaParm[W];
+    rX = rX / norm + mJuliaParm[X];
+    rY = -rY / norm + mJuliaParm[Y];
+    rZ = -rZ / norm + mJuliaParm[Z];
+    rW = -rW / norm + mJuliaParm[W];
 }
 
 template <class Estimator>
 inline void QuaternionRecipFractalRules<Estimator>::
-ApplyDirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
+ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
+                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
 {
     static DBL norm;
     DBL tmp;
@@ -188,17 +192,17 @@ ApplyDirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, c
         norm = pIterStack[iter].sNorm;
     }
 
-    tmp = 2.0 * (rD[X] * v[X] + rD[Y] * v[Y] + rD[Z] * v[Z] + rD[W] * v[W]) / norm;
-
-    rD[X] = (rD[X] - tmp * v[X]) / norm;
-    rD[Y] = (tmp * v[Y] - rD[Y]) / norm;
-    rD[Z] = (tmp * v[Z] - rD[Z]) / norm;
-    rD[W] = (tmp * v[W] - rD[W]) / norm;
+    tmp = 2.0 * (rDx * x + rDy * y + rDz * z + rDw * w) / norm;
+    rDx = (rDx - tmp * x) / norm;
+    rDy = (tmp * y - rDy) / norm;
+    rDz = (tmp * z - rDz) / norm;
+    rDw = (tmp * w - rDw) / norm;
 }
 
 template <class Estimator>
 inline void QuaternionFuncFractalRules<Estimator>::
-IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
     Complex tmp1, tmp2;
     DBL nNorm, normFVal;
@@ -206,9 +210,9 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pI
     typename QuaternionFuncFractalRules::IterationData *pIterStack =
         reinterpret_cast<typename QuaternionFuncFractalRules::IterationData *>(pIterData);
 
-    pIterStack[iter].nNorm = nNorm = sqrt(rV[Y] * rV[Y] + rV[Z] * rV[Z] + rV[W] * rV[W]);
+    pIterStack[iter].nNorm = nNorm = sqrt(rY * rY + rZ * rZ + rW * rW);
 
-    tmp1.x = rV[X];
+    tmp1.x = rX;
     tmp1.y = nNorm;
 
     (*(mFunc.pFunc))(tmp2, tmp1, mExponent);
@@ -224,15 +228,16 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pI
         pIterStack[iter].normFVal = normFVal = tmp2.y / nNorm;
     }
 
-    rV[X] = tmp2.x + mJuliaParm[X];
-    rV[Y] = rV[Y] * normFVal + mJuliaParm[Y];
-    rV[Z] = rV[Z] * normFVal + mJuliaParm[Z];
-    rV[W] = rV[W] * normFVal + mJuliaParm[W];
+    rX = tmp2.x + mJuliaParm[X];
+    rY = rY * normFVal + mJuliaParm[Y];
+    rZ = rZ * normFVal + mJuliaParm[Z];
+    rW = rW * normFVal + mJuliaParm[W];
 }
 
 template <class Estimator>
 inline void QuaternionFuncFractalRules<Estimator>::
-ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
+ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
+                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
 {
     static DBL ny, nz, nw, nNorm, normFVal;
     static Complex tmp2;
@@ -251,16 +256,16 @@ ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, c
         if (nNorm == 0.0 && normFVal != 0.0)
             return;
 
-        tmp1.x = v[X];
+        tmp1.x = x;
         tmp1.y = nNorm;
 
         (*(mFunc.pDeriv))(tmp2, tmp1, mExponent);
 
         if (nNorm != 0.0)
         {
-            ny = v[Y] / nNorm;
-            nz = v[Z] / nNorm;
-            nw = v[W] / nNorm;
+            ny = y / nNorm;
+            nz = z / nNorm;
+            nw = w / nNorm;
         }
     }
     else if (nNorm == 0.0 && normFVal != 0.0)
@@ -268,17 +273,18 @@ ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, c
 
     if (nNorm == 0.0)
     {
-        AltGenDerivs(rD[X], rD[Y], rD[Z], rD[W], tmp2);
+        AltGenDerivs(rDx, rDy, rDz, rDw, tmp2);
     }
     else
     {
-        CalcGenDerivs(rD[X], rD[Y], rD[Z], rD[W], normFVal, ny, nz, nw, tmp2);
+        CalcGenDerivs(rDx, rDy, rDz, rDw, normFVal, ny, nz, nw, tmp2);
     }
 }
 
 template <class Estimator>
 bool QuaternionFuncFractalRules<Estimator>::
-DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
+                   DBL tx, DBL ty, DBL tz, DBL tw, DBL px, DBL py, DBL pz, DBL pw,
                    int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
 {
     Complex tmp, tPt, pPt;
@@ -288,26 +294,26 @@ DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4
         reinterpret_cast<typename QuaternionFuncFractalRules::IterationData *>(pTIterData),
         *pPIterStack = reinterpret_cast<typename QuaternionFuncFractalRules::IterationData *>(pPIterData);
 
-    tPt.x = t[X];
+    tPt.x = tx;
     tPt.y = pTIterStack[iter].nNorm;
 
-    pPt.x = p[X];
+    pPt.x = px;
     pPt.y = pPIterStack[iter].nNorm;
 
     if ((*(mFunc.pDisc))(tmp, dist, tPt, pPt, mExponent))
     {
-        rD[X] = tmp.x;
+        rDx = tmp.x;
         if (pTIterStack[iter].nNorm == 0.0)
         {
-            rD[Y] = tmp.y;
-            rD[Z] = rD[W] = 0.0;
+            rDy = tmp.y;
+            rDz = rDw = 0.0;
         }
         else
         {
             nc = tmp.y / pTIterStack[iter].nNorm;
-            rD[Y] = t[Y] * nc;
-            rD[Z] = t[Z] * nc;
-            rD[W] = t[W] * nc;
+            rDy = ty * nc;
+            rDz = tz * nc;
+            rDw = tw * nc;
         }
         rDist = dist;
         return true;
@@ -318,7 +324,8 @@ DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4
 
 template <class Estimator>
 inline void QuaternionPwrFractalRules<Estimator>::
-IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
+            int iter, const Fractal *pFractal, void *pIterData) const
 {
     Complex tmp1, tmp2, lg0, lg1;
     DBL nNorm1, nNorm2, normFVal1, normFVal2;
@@ -326,9 +333,9 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pI
     typename QuaternionPwrFractalRules::IterationData *pIterStack =
         reinterpret_cast<typename QuaternionPwrFractalRules::IterationData *>(pIterData);
 
-    pIterStack[iter].nNorm[0] = nNorm1 = sqrt(rV[Y] * rV[Y] + rV[Z] * rV[Z] + rV[W] * rV[W]);
+    pIterStack[iter].nNorm[0] = nNorm1 = sqrt(rY * rY + rZ * rZ + rW * rW);
 
-    tmp1.x = rV[X];
+    tmp1.x = rX;
     tmp1.y = nNorm1;
 
     complex_fn::Ln(tmp1, tmp1);
@@ -343,10 +350,10 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pI
     }
 
     lg0.x = tmp1.x;
-    lg0.y = rV[Y] * normFVal1;
+    lg0.y = rY * normFVal1;
 
-    lg1.x = rV[Z] * normFVal1;
-    lg1.y = rV[W] * normFVal1;
+    lg1.x = rZ * normFVal1;
+    lg1.y = rW * normFVal1;
 
     complex_fn::Mult(lg0, lg0, mExponent);
     if (InfoRulesBase<>::mInfo.funcType.variant == kVar_Left)
@@ -379,15 +386,16 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pI
         pIterStack[iter].normFVal[1] = normFVal2 = tmp1.y / nNorm2;
     }
 
-    rV[X] = tmp1.x + mJuliaParm[X];
-    rV[Y] = lg0.y * normFVal2 + mJuliaParm[Y];
-    rV[Z] = lg1.x * normFVal2 + mJuliaParm[Z];
-    rV[W] = lg1.y * normFVal2 + mJuliaParm[W];
+    rX = tmp1.x + mJuliaParm[X];
+    rY = lg0.y * normFVal2 + mJuliaParm[Y];
+    rZ = lg1.x * normFVal2 + mJuliaParm[Z];
+    rW = lg1.y * normFVal2 + mJuliaParm[W];
 }
 
 template <class Estimator>
 inline void QuaternionPwrFractalRules<Estimator>::
-ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
+ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
+                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const
 {
     static DBL ny1, ny2, nz1, nz2, nw1, nw2, nNorm1, nNorm2, normFVal1, normFVal2;
     static Complex tmp21, tmp22;
@@ -403,7 +411,7 @@ ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, c
         nNorm1 = pIterStack[iter].nNorm[0];
         normFVal1 = pIterStack[iter].normFVal[0];
 
-        tmp1.x = v[X];
+        tmp1.x = x;
         tmp1.y = nNorm1;
 
         complex_fn::Recip(tmp21, tmp1);
@@ -415,9 +423,9 @@ ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, c
 
         if (nNorm1 != 0.0)
         {
-            ny1 = v[Y] / nNorm1;
-            nz1 = v[Z] / nNorm1;
-            nw1 = v[W] / nNorm1;
+            ny1 = y / nNorm1;
+            nz1 = z / nNorm1;
+            nw1 = w / nNorm1;
         }
 
         if (nNorm2 != 0.0)
@@ -430,36 +438,37 @@ ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, c
 
     if (nNorm1 == 0.0)
     {
-        AltGenDerivs(rD[X], rD[Y], rD[Z], rD[W], tmp21);
+        AltGenDerivs(rDx, rDy, rDz, rDw, tmp21);
     }
     else
     {
-        CalcGenDerivs(rD[X], rD[Y], rD[Z], rD[W], normFVal1, ny1, nz1, nw1, tmp21);
+        CalcGenDerivs(rDx, rDy, rDz, rDw, normFVal1, ny1, nz1, nw1, tmp21);
     }
 
-    ComponentComplexMult(rD[X], rD[Y], mExponent);
+    ComponentComplexMult(rDx, rDy, mExponent);
     if (InfoRulesBase<>::mInfo.funcType.variant == kVar_Left)
     {
-        ComponentComplexMult(rD[Z], rD[W], mExponent);
+        ComponentComplexMult(rDz, rDw, mExponent);
     }
     else
     {
-        ComponentComplexMult(rD[Z], rD[W], mExponentConj);
+        ComponentComplexMult(rDz, rDw, mExponentConj);
     }
 
     if (nNorm2 == 0.0)
     {
-        AltGenDerivs(rD[X], rD[Y], rD[Z], rD[W], tmp22);
+        AltGenDerivs(rDx, rDy, rDz, rDw, tmp22);
     }
     else
     {
-        CalcGenDerivs(rD[X], rD[Y], rD[Z], rD[W], normFVal2, ny2, nz2, nw2, tmp22);
+        CalcGenDerivs(rDx, rDy, rDz, rDw, normFVal2, ny2, nz2, nw2, tmp22);
     }
 }
 
 template <class Estimator>
 bool QuaternionPwrFractalRules<Estimator>::
-DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
+                   DBL tx, DBL ty, DBL tz, DBL tw, DBL px, DBL py, DBL pz, DBL pw,
                    int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
 {
     Complex tmp, tPt, pPt;
@@ -469,26 +478,26 @@ DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4
         reinterpret_cast<typename QuaternionPwrFractalRules::IterationData *>(pTIterData),
         *pPIterStack = reinterpret_cast<typename QuaternionPwrFractalRules::IterationData *>(pPIterData);
 
-    tPt.x = t[X];
+    tPt.x = tx;
     tPt.y = pTIterStack[iter].nNorm[0];
 
-    pPt.x = p[X];
+    pPt.x = px;
     pPt.y = pPIterStack[iter].nNorm[0];
 
     if (complex_fn::NegReal_DTest(tmp, dist, tPt, pPt, mExponent))
     {
-        rD[X] = tmp.x;
+        rDx = tmp.x;
         if (pTIterStack[iter].nNorm[0] == 0.0)
         {
-            rD[Y] = tmp.y;
-            rD[Z] = rD[W] = 0.0;
+            rDy = tmp.y;
+            rDz = rDw = 0.0;
         }
         else
         {
             nc = tmp.y / pTIterStack[iter].nNorm[0];
-            rD[Y] = t[Y] * nc;
-            rD[Z] = t[Z] * nc;
-            rD[W] = t[W] * nc;
+            rDy = ty * nc;
+            rDz = tz * nc;
+            rDw = tw * nc;
         }
         rDist = dist;
         return true;

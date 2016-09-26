@@ -64,8 +64,10 @@ class HypercomplexSqrFractalRules : public HypercomplexFractalRulesBase<Hypercom
 public:
     HypercomplexSqrFractalRules(const FractalConstructorData& data) :
         HypercomplexFractalRulesBase<pov::HypercomplexSqrFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
+                            int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+                               int iter, const Fractal *pFractal, void *pIterData) const;
 
 protected:
     using MagicHypercomplexFractalRules<pov::HypercomplexSqrFractalRules, Estimator>::mDuplexJuliaParm;
@@ -77,8 +79,10 @@ class HypercomplexCubeFractalRules : public HypercomplexFractalRulesBase<Hyperco
 public:
     HypercomplexCubeFractalRules(const FractalConstructorData& data) :
         HypercomplexFractalRulesBase<pov::HypercomplexCubeFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
+                            int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+                               int iter, const Fractal *pFractal, void *pIterData) const;
 
 protected:
     using MagicHypercomplexFractalRules<pov::HypercomplexCubeFractalRules, Estimator>::mDuplexJuliaParm;
@@ -90,8 +94,10 @@ class HypercomplexRecipFractalRules : public HypercomplexFractalRulesBase<Hyperc
 public:
     HypercomplexRecipFractalRules(const FractalConstructorData& data) :
         HypercomplexFractalRulesBase<pov::HypercomplexRecipFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
+                            int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+                               int iter, const Fractal *pFractal, void *pIterData) const;
 
 protected:
     using MagicHypercomplexFractalRules<pov::HypercomplexRecipFractalRules, Estimator>::mDuplexJuliaParm;
@@ -105,10 +111,13 @@ public:
         HypercomplexFractalRulesBase<pov::HypercomplexFuncFractalRules,
                                      Estimator>(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType))),
         mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
+                            int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDerivCalc(Complex& rD0, Complex& rD1, const Complex& c0, const Complex& c1,
+                               int iter, const Fractal *pFractal, void *pIterData) const;
 
-    bool DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+    bool DiscontinuityCheck(Complex& rD0, Complex& rD1, DBL& rDist,
+                            const Complex& t0, const Complex& t1, const Complex& p0, const Complex& p1,
                             int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
 
 protected:

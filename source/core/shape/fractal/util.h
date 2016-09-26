@@ -43,26 +43,21 @@
 namespace pov
 {
 
-static inline void ComputeDuplexFromHypercomplex(Duplex& rd, const VECTOR_4D& h)
+static inline void ComputeDuplexFromHypercomplex(Complex& rc0, Complex& rc1, DBL x, DBL y, DBL z, DBL w)
 {
-    rd[0].x = h[X] - h[W];
-    rd[0].y = h[Y] + h[Z];
-    rd[1].x = h[X] + h[W];
-    rd[1].y = h[Y] - h[Z];
+    rc0.x = x - w;
+    rc0.y = y + z;
+    rc1.x = x + w;
+    rc1.y = y - z;
 }
 
-static inline void ComputeHypercomplexFromDuplex(VECTOR_4D& rh, const Duplex &d)
+static inline void ComputeHypercomplexFromDuplex(DBL& rx, DBL& ry, DBL& rz, DBL& rw,
+                                                 const Complex& c0, const Complex& c1)
 {
-    rh[X] = .5 * (d[0].x + d[1].x);
-    rh[Y] = .5 * (d[0].y + d[1].y);
-    rh[Z] = .5 * (d[0].y - d[1].y);
-    rh[W] = .5 * (d[1].x - d[0].x);
-}
-
-static inline void AssignDuplex(Duplex& rD, const Duplex& s)
-{
-    rD[0] = s[0];
-    rD[1] = s[1];
+    rx = .5 * (c0.x + c1.x);
+    ry = .5 * (c0.y + c1.y);
+    rz = .5 * (c0.y - c1.y);
+    rw = .5 * (c1.x - c0.x);
 }
 
 /* Helper functions to permit inline creation of certain const structs
@@ -90,7 +85,7 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
 }
 
 #define INIT_DUPLEX(var, v0, v1) var(v0, v1)
-#define INIT_VECTOR_4D(var, qx, qy, qz, qw) var(qx, qy, qz, qw)
+#define INIT_QUATERNION(var, qx, qy, qz, qw) var(qx, qy, qz, qw)
 
 #else
 
@@ -103,7 +98,7 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
 #define CreateRulesInfo (FractalRulesInfo)CREATE_GENERAL
 
 #define INIT_DUPLEX(var, v0, v1) var{v0, v1}
-#define INIT_VECTOR_4D(var, qx, qy, qz, qw) var{qx, qy, qz, qw}
+#define INIT_QUATERNION(var, qx, qy, qz, qw) var{qx, qy, qz, qw}
 
 #endif
 

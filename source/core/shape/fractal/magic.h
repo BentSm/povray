@@ -77,7 +77,7 @@ template <template <class> class RulesClass, class Estimator, class BaseRules = 
 class MagicQuaternionFractalRules : public MagicFractalRulesBase<RulesClass, Estimator, BaseRules> {
 public:
     MagicQuaternionFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport) :
-        INIT_VECTOR_4D(mJuliaParm, data.juliaParm[X], data.juliaParm[Y], data.juliaParm[Z], data.juliaParm[W]),
+        INIT_QUATERNION(mJuliaParm, data.juliaParm[X], data.juliaParm[Y], data.juliaParm[Z], data.juliaParm[W]),
         MagicFractalRulesBase<RulesClass, Estimator, BaseRules>(data, discontinuitySupport) {}
     virtual int Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction,
                         DBL *pDist, void *pIterData) const;
@@ -89,11 +89,12 @@ public:
                                           void *pTIterData, void *pPIterData) const
     { TemplatedCalcNormal<true>(rResult, nMax, pFractal, pTIterData, pPIterData); }
 
-    bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+    bool DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
+                            DBL tx, DBL ty, DBL tz, DBL tw, DBL px, DBL py, DBL pz, DBL pw,
                             int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
 
 protected:
-    const IVECTOR_4D mJuliaParm;
+    const IQuaternion mJuliaParm;
 
     template <bool disc>
     void TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData,
@@ -123,7 +124,8 @@ public:
                                           void *pTIterData, void *pPIterData) const
     { TemplatedCalcNormal<true>(rResult, nMax, pFractal, pTIterData, pPIterData); }
 
-    bool DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+    bool DiscontinuityCheck(Complex& rD0, Complex& rD1, DBL& rDist,
+                            const Complex& t0, const Complex& t1, const Complex& p0, const Complex& p1,
                             int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
 
 protected:

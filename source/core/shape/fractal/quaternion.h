@@ -54,7 +54,7 @@ class QuaternionFractalRulesBase : public MagicQuaternionFractalRules<RulesClass
 {
 public:
     typedef struct {
-        Quaternion point;
+        VECTOR_4D point;
         DBL sNorm;
     } IterationData;
 
@@ -68,10 +68,8 @@ class QuaternionSqrFractalRules : public QuaternionFractalRulesBase<QuaternionSq
 public:
     QuaternionSqrFractalRules(const FractalConstructorData& data) :
         QuaternionFractalRulesBase<pov::QuaternionSqrFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
-                            int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
-                                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
 
 protected:
     using MagicQuaternionFractalRules<pov::QuaternionSqrFractalRules, Estimator>::mJuliaParm;
@@ -82,16 +80,14 @@ class QuaternionCubeFractalRules : public QuaternionFractalRulesBase<QuaternionC
 {
 public:
     typedef struct {
-        Quaternion point;
+        VECTOR_4D point;
         DBL sNorm, cVal;
     } IterationData;
 
     QuaternionCubeFractalRules(const FractalConstructorData& data) :
         QuaternionFractalRulesBase<pov::QuaternionCubeFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
-                            int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
-                                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
 
 protected:
     using MagicQuaternionFractalRules<pov::QuaternionCubeFractalRules, Estimator>::mJuliaParm;
@@ -103,10 +99,8 @@ class QuaternionRecipFractalRules : public QuaternionFractalRulesBase<Quaternion
 public:
     QuaternionRecipFractalRules(const FractalConstructorData& data) :
         QuaternionFractalRulesBase<pov::QuaternionRecipFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
-                            int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
-                                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
 
 protected:
     using MagicQuaternionFractalRules<pov::QuaternionRecipFractalRules, Estimator>::mJuliaParm;
@@ -117,7 +111,7 @@ class QuaternionFuncFractalRules : public QuaternionFractalRulesBase<QuaternionF
 {
 public:
     typedef struct {
-        Quaternion point;
+        VECTOR_4D point;
         DBL nNorm, normFVal;
     } IterationData;
 
@@ -125,13 +119,10 @@ public:
         QuaternionFractalRulesBase<pov::QuaternionFuncFractalRules,
                                    Estimator>(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType))),
         mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) {}
-    inline void IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
-                            int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
-                                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
 
-    bool DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
-                            DBL tx, DBL ty, DBL tz, DBL tw, DBL px, DBL py, DBL pz, DBL pw,
+    bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
                             int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
 
 protected:
@@ -145,7 +136,7 @@ class QuaternionPwrFractalRules : public QuaternionFractalRulesBase<QuaternionPw
 {
 public:
     typedef struct {
-        Quaternion point;
+        VECTOR_4D point;
         DBL nNorm[2], normFVal[2];
         Complex expVal, lg[2];
     } IterationData;
@@ -154,13 +145,10 @@ public:
         QuaternionFractalRulesBase<pov::QuaternionPwrFractalRules, Estimator>(data, kDiscontinuitySupported),
         mExponent(data.exponent), mExponentConj(CreateComplex(data.exponent.x, -data.exponent.y)) {}
 
-    inline void IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
-                            int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, DBL w,
-                                  int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
+    inline void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
+    inline void ApplyDirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, void *pIterData) const;
 
-    bool DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
-                            DBL tx, DBL ty, DBL tz, DBL tw, DBL px, DBL py, DBL pz, DBL pw,
+    bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
                             int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
 
 protected:

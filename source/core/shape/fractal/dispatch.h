@@ -67,14 +67,16 @@ protected:
     }
 };
 
-static inline const std::set<FractalFuncType> CreateFuncTypeSet(unsigned n, ...)
+template <int n>
+static inline const std::set<FractalFuncType> CreateFuncTypeSet(const FractalFuncType t0, ...)
 {
     std::set<FractalFuncType> s;
     int i;
     va_list typeList;
     FractalFuncType f;
-    va_start(typeList, n);
-    for (i = 0; i < n; i++)
+    va_start(typeList, t0);
+    s.insert(t0);
+    for (i = 1; i < n; i++)
     {
         f = va_arg(typeList, const FractalFuncType);
         s.insert(f);

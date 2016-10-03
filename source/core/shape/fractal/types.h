@@ -144,7 +144,7 @@ public:
     IArray(const T t0, ...)
     {
         va_list vals;
-        int i = 0;
+        int i;
         va_start(vals, t0);
         value[0] = t0;
         for (i = 1; i < N; i++)

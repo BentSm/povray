@@ -163,8 +163,6 @@ inline void QuaternionRecipFractalRules<Estimator>::
 IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
             int iter, const Fractal *pFractal, void *pIterData) const
 {
-    DBL tmp;
-
     typename QuaternionRecipFractalRules::IterationData *pIterStack =
         reinterpret_cast<typename QuaternionRecipFractalRules::IterationData *>(pIterData);
 
@@ -327,7 +325,7 @@ inline void QuaternionPwrFractalRules<Estimator>::
 IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
             int iter, const Fractal *pFractal, void *pIterData) const
 {
-    Complex tmp1, tmp2, lg0, lg1;
+    Complex tmp, lg0, lg1;
     DBL nNorm1, nNorm2, normFVal1, normFVal2;
 
     typename QuaternionPwrFractalRules::IterationData *pIterStack =
@@ -335,21 +333,21 @@ IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
 
     pIterStack[iter].nNorm[0] = nNorm1 = sqrt(rY * rY + rZ * rZ + rW * rW);
 
-    tmp1.x = rX;
-    tmp1.y = nNorm1;
+    tmp.x = rX;
+    tmp.y = nNorm1;
 
-    complex_fn::Ln(tmp1, tmp1);
+    complex_fn::Ln(tmp, tmp);
 
     if (nNorm1 == 0.0)
     {
-        pIterStack[iter].normFVal[0] = normFVal1 = tmp1.y;
+        pIterStack[iter].normFVal[0] = normFVal1 = tmp.y;
     }
     else
     {
-        pIterStack[iter].normFVal[0] = normFVal1 = tmp1.y / nNorm1;
+        pIterStack[iter].normFVal[0] = normFVal1 = tmp.y / nNorm1;
     }
 
-    lg0.x = tmp1.x;
+    lg0.x = tmp.x;
     lg0.y = rY * normFVal1;
 
     lg1.x = rZ * normFVal1;
@@ -370,23 +368,23 @@ IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
 
     pIterStack[iter].nNorm[1] = nNorm2 = sqrt(lg0.y * lg0.y + lg1.x * lg1.x + lg1.y * lg1.y);
 
-    tmp1.x = lg0.x;
-    tmp1.y = nNorm2;
+    tmp.x = lg0.x;
+    tmp.y = nNorm2;
 
-    complex_fn::Exp(tmp1, tmp1);
+    complex_fn::Exp(tmp, tmp);
 
-    pIterStack[iter].expVal = tmp1;
+    pIterStack[iter].expVal = tmp;
 
     if (nNorm2 == 0.0)
     {
-        pIterStack[iter].normFVal[1] = normFVal2 = tmp1.y;
+        pIterStack[iter].normFVal[1] = normFVal2 = tmp.y;
     }
     else
     {
-        pIterStack[iter].normFVal[1] = normFVal2 = tmp1.y / nNorm2;
+        pIterStack[iter].normFVal[1] = normFVal2 = tmp.y / nNorm2;
     }
 
-    rX = tmp1.x + mJuliaParm[X];
+    rX = tmp.x + mJuliaParm[X];
     rY = lg0.y * normFVal2 + mJuliaParm[Y];
     rZ = lg1.x * normFVal2 + mJuliaParm[Z];
     rW = lg1.y * normFVal2 + mJuliaParm[W];
@@ -522,8 +520,8 @@ void QuaternionDispatchInit() {
         QuatFuncDispatch(Func_FuncTypeSet(kQuaternion), -1);
 
     static const MagicRulesDispatch<QuaternionPwrFractalRules>
-        QuatPwrDispatch(CreateFuncTypeSet(2, CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Left),
-                                          CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Right)));
+        QuatPwrDispatch(CreateFuncTypeSet<2>(CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Left),
+                                             CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Right)));
 }
 
 }

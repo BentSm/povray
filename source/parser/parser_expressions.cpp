@@ -1530,11 +1530,9 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
 *
 ******************************************************************************/
 
-/* If first operand of a 2-operand function had more terms than the second,
-   then the parsing of the 2nd operand would have automatically promoted it.
-   But if 2nd operand has more terms then we must go back promote the 1st
-   operand before combining them  Promote_Express does it.  If Old_Terms=1
-   then set all terms to Express[0].  Otherwise pad extra terms with 0.0.
+/* Promote_Express promotes Express to the requested number of terms.  If
+   *Old_Terms==1, then it sets all terms to Express[0].  Otherwise, it pads
+   extra terms with 0.0.
 */
 
 void Parser::Promote_Express(EXPRESS& Express,int *Old_Terms,int New_Terms)

@@ -1105,6 +1105,8 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
                     }
                     break;
             }
+
+            *Terms = 1;
             for (i=0; i < *Terms; i++)
                 Express[i]=Val;
             EXIT

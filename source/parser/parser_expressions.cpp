@@ -2242,6 +2242,8 @@ void Parser::Parse_Vector (Vector3d& Vector)
     if (Terms>3)
         Error ("Vector expected but color expression found.");
 
+    Promote_Express(Express,&Terms,3);
+
     for(Terms=0;Terms<3;Terms++)
         Vector[Terms]=Express[Terms];
 
@@ -2291,6 +2293,8 @@ void Parser::Parse_Vector4D (VECTOR_4D Vector)
 
     if (Terms>Dim)
         Error ("Vector expected but color expression found.");
+
+    Promote_Express(Express,&Terms,4);
 
     for(Terms=0;Terms<Dim;Terms++)
         Vector[Terms]=Express[Terms];
@@ -2342,6 +2346,8 @@ void Parser::Parse_UV_Vect (Vector2d& UV_Vect)
 
     if (Terms>2)
         Error ("UV_Vector expected but vector or color expression found.");
+
+    Promote_Express(Express,&Terms,2);
 
     for(Terms=0;Terms<2;Terms++)
         UV_Vect[Terms]=Express[Terms];

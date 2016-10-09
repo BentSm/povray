@@ -1349,6 +1349,7 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
         END_CASE
 
         CASE (LEFT_PAREN_TOKEN)
+            *Terms = 1; // Will be adjusted by Parse_Express
             Parse_Express(Express,Terms);
             GET(RIGHT_PAREN_TOKEN);
             EXIT
@@ -1533,6 +1534,10 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
 /* Promote_Express promotes Express to the requested number of terms.  If
    *Old_Terms==1, then it sets all terms to Express[0].  Otherwise, it pads
    extra terms with 0.0.
+
+   To maximize the consistency of results, **DO NOT PROMOTE** until it is
+   actually required.  This is to ensure, as much as possible, that the same
+   expression will produce the same results regardless of the context.
 */
 
 void Parser::Promote_Express(EXPRESS& Express,int *Old_Terms,int New_Terms)
@@ -1978,18 +1983,20 @@ void Parser::Parse_Express (EXPRESS& Express,int *Terms)
         CASE (QUESTION_TOKEN)
             if (Local_Terms1 != 1)
                 Error("Conditional must evaluate to a float.");
-            Local_Terms1 = Local_Terms2 = *Terms;
+            Local_Terms1 = Local_Terms2 = 1;
             Parse_Express(Local_Express1,&Local_Terms1);
             GET(COLON_TOKEN);
             Parse_Express(Local_Express2,&Local_Terms2);
             if (ftrue(Express[0]))
             {
                 Chosen = reinterpret_cast<EXPRESS *>(&Local_Express1);
+                Promote_Express(Local_Express1,&Local_Terms1,*Terms);
                 *Terms = Local_Terms1;
             }
             else
             {
                 Chosen = reinterpret_cast<EXPRESS *>(&Local_Express2);
+                Promote_Express(Local_Express2,&Local_Terms2,*Terms);
                 *Terms = Local_Terms2;
             }
             POV_MEMCPY(Express,Chosen,sizeof(EXPRESS));

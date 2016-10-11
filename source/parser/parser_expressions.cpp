@@ -100,7 +100,7 @@ DBL Parser::Parse_Float_Param()
 {
     DBL Local;
     EXPRESS Express;
-    int Terms = 1;
+    int Terms;
     bool old_allow_id = Allow_Identifier_In_Call;
     Allow_Identifier_In_Call = false;
 
@@ -1260,8 +1260,8 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
         END_CASE
 
         CASE (FUNCT_ID_TOKEN)
-            Val = Parse_Function_Call();
             *Terms = 1;
+            Val = Parse_Function_Call();
             for(i = 0; i < *Terms; i++)
                 Express[i] = Val;
             EXIT
@@ -1597,8 +1597,6 @@ void Parser::Parse_Num_Term (EXPRESS& Express,int *Terms)
 
     Parse_Num_Factor(Express,Terms);
 
-    Local_Terms=*Terms;
-
     EXPECT
         CASE (STAR_TOKEN)
             Parse_Num_Factor(Local_Express,&Local_Terms);
@@ -1669,8 +1667,6 @@ void Parser::Parse_Rel_Factor (EXPRESS& Express,int *Terms)
     int Local_Terms;
 
     Parse_Num_Term(Express,Terms);
-
-    Local_Terms=*Terms;
 
     EXPECT
         CASE (PLUS_TOKEN)
@@ -1836,8 +1832,6 @@ void Parser::Parse_Rel_Term (EXPRESS& Express,int *Terms)
 
     Parse_Rel_Factor(Express,Terms);
 
-    Local_Terms=*Terms;
-
     EXPECT
         CASE (LEFT_ANGLE_TOKEN)
             Parse_Rel_Factor(Local_Express,&Local_Terms);
@@ -1923,8 +1917,6 @@ void Parser::Parse_Logical (EXPRESS& Express,int *Terms)
 
     Parse_Rel_Term(Express,Terms);
 
-    Local_Terms=*Terms;
-
     EXPECT
         CASE (AMPERSAND_TOKEN)
             Parse_Rel_Term(Local_Express,&Local_Terms);
@@ -1976,28 +1968,23 @@ void Parser::Parse_Express (EXPRESS& Express,int *Terms)
     EXPRESS *Chosen;
     int Local_Terms1, Local_Terms2;
 
-    Local_Terms1 = 1;
-
     Parse_Logical(Express,&Local_Terms1);
 
     EXPECT
         CASE (QUESTION_TOKEN)
             if (Local_Terms1 != 1)
                 Error("Conditional must evaluate to a float.");
-            Local_Terms1 = Local_Terms2 = 1;
             Parse_Express(Local_Express1,&Local_Terms1);
             GET(COLON_TOKEN);
             Parse_Express(Local_Express2,&Local_Terms2);
             if (ftrue(Express[0]))
             {
                 Chosen = reinterpret_cast<EXPRESS *>(&Local_Express1);
-                Promote_Express(Local_Express1,&Local_Terms1,*Terms);
                 *Terms = Local_Terms1;
             }
             else
             {
                 Chosen = reinterpret_cast<EXPRESS *>(&Local_Express2);
-                Promote_Express(Local_Express2,&Local_Terms2,*Terms);
                 *Terms = Local_Terms2;
             }
             POV_MEMCPY(Express,Chosen,sizeof(EXPRESS));
@@ -2005,16 +1992,7 @@ void Parser::Parse_Express (EXPRESS& Express,int *Terms)
         END_CASE
 
         OTHERWISE
-            /* Not a (c)?a:b expression.  Since Express was parsed with
-               Local_Terms1=1 then we may have to promote this.  Suppose
-               Terms=3 but Local_Terms1=1.  If this had been a (c)?a:b
-               then a float is ok but since it is not a condition then
-               it must be promoted to Terms=3.  Note that the parameters
-               below look wrong but they are not.
-             */
-            Promote_Express (Express,&Local_Terms1,*Terms);
-            /* On the other hand, Local_Terms1 may be bigger than Terms.
-               If so, Express already is promoted and Terms must reflect that.
+            /* Not a (c)?a:b expression.  Don't promote.
              */
             *Terms=Local_Terms1;
             UNGET
@@ -2050,8 +2028,6 @@ DBL Parser::Parse_Float ()
     int Terms;
     bool old_allow_id = Allow_Identifier_In_Call;
     Allow_Identifier_In_Call = false;
-
-    Terms=1;
 
     if (sceneData->EffectiveLanguageVersion() < 150)
         Parse_Num_Factor(Express,&Terms);
@@ -2240,8 +2216,6 @@ void Parser::Parse_Vector (Vector3d& Vector)
         Express[Terms] = 0.0;
     }
 
-    Terms=3;
-
     if (sceneData->EffectiveLanguageVersion() < 150)
         Parse_Num_Factor(Express,&Terms);
     else
@@ -2281,7 +2255,6 @@ void Parser::Parse_Vector4D (VECTOR_4D Vector)
 {
     EXPRESS Express;
     int Terms;
-    int Dim = 4;
     bool old_allow_id = Allow_Identifier_In_Call;
     Allow_Identifier_In_Call = false;
 
@@ -2292,19 +2265,17 @@ void Parser::Parse_Vector4D (VECTOR_4D Vector)
         Express[Terms] = 0.0;
     }
 
-    Terms=Dim;
-
     if (sceneData->EffectiveLanguageVersion() < 150)
         Parse_Num_Factor(Express,&Terms);
     else
         Parse_Rel_Factor(Express,&Terms);
 
-    if (Terms>Dim)
+    if (Terms>4)
         Error ("Vector expected but color expression found.");
 
     Promote_Express(Express,&Terms,4);
 
-    for(Terms=0;Terms<Dim;Terms++)
+    for(Terms=0;Terms<4;Terms++)
         Vector[Terms]=Express[Terms];
 
     Allow_Identifier_In_Call = old_allow_id;
@@ -2344,8 +2315,6 @@ void Parser::Parse_UV_Vect (Vector2d& UV_Vect)
     {
         Express[Terms] = 0.0;
     }
-
-    Terms=2;
 
     if (sceneData->EffectiveLanguageVersion() < 150)
         Parse_Num_Factor(Express,&Terms);
@@ -2397,8 +2366,6 @@ int Parser::Parse_Unknown_Vector(EXPRESS& Express, bool allow_identifier, bool *
     {
         Express[Terms] = 0.0;
     }
-
-    Terms=1;
 
     if (sceneData->EffectiveLanguageVersion() < 150)
         Parse_Num_Factor(Express,&Terms);
@@ -2476,7 +2443,7 @@ void Parser::Parse_Scale_Vector (Vector3d& Vector)
 void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
 {
     EXPRESS Express;
-    int Terms;
+    int Terms, tgtTerms;
     bool old_allow_id = Allow_Identifier_In_Call, sawFloatOrFloatFnct;
     Allow_Identifier_In_Call = false;
 
@@ -2532,8 +2499,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     }
                     else
                     {
-                        Terms=3;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,3);
                         if (Terms != 3)
                             Warning("Suspicious expression after rgb.");
                         colour.Set(Express, Terms);
@@ -2548,8 +2515,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     }
                     else
                     {
-                        Terms=4;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,4);
                         if (Terms != 4)
                             Warning("Suspicious expression after rgbf.");
                         colour.Set(Express, Terms);
@@ -2566,8 +2533,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     }
                     else
                     {
-                        Terms=4;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,4);
                         if (Terms != 4)
                             Warning("Suspicious expression after rgbt.");
                         colour.Set(Express, Terms);
@@ -2586,8 +2553,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     }
                     else
                     {
-                        Terms=5;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,5);
                         if (Terms != 5)
                             Warning("Suspicious expression after rgbft.");
                         colour.Set(Express, Terms);
@@ -2626,8 +2593,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     {
                         if (!sceneData->workingGammaToSRGB)
                             Error("Cannot parse sRGB colors before assumed_gamma has been set.");
-                        Terms=3;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,3);
                         if (Terms != 3)
                             Warning("Suspicious expression after srgb.");
                         colour.Set(Express, Terms);
@@ -2645,8 +2612,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     {
                         if (!sceneData->workingGammaToSRGB)
                             Error("Cannot parse sRGB colors before assumed_gamma has been set.");
-                        Terms=4;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,4);
                         if (Terms != 4)
                             Warning("Suspicious expression after srgbf.");
                         colour.Set(Express, Terms);
@@ -2666,8 +2633,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     {
                         if (!sceneData->workingGammaToSRGB)
                             Error("Cannot parse sRGB colors before assumed_gamma has been set.");
-                        Terms=4;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,4);
                         if (Terms != 4)
                             Warning("Suspicious expression after srgbt.");
                         colour.Set(Express, Terms);
@@ -2689,8 +2656,8 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                     {
                         if (!sceneData->workingGammaToSRGB)
                             Error("Cannot parse sRGB colors before assumed_gamma has been set.");
-                        Terms=5;
                         Parse_Express(Express,&Terms);
+                        Promote_Express(Express,&Terms,5);
                         if (Terms != 5)
                             Warning("Suspicious expression after srgbft.");
                         colour.Set(Express, Terms);
@@ -2712,10 +2679,11 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
             else
             {
                 if (expectFT)
-                    Terms = 5;
+                    tgtTerms = 5;
                 else
-                    Terms = 3;
+                    tgtTerms = 3;
                 Parse_Express(Express,&Terms);
+                Promote_Express(Express,&Terms,tgtTerms);
                 colour.Set(Express, Terms);
                 if (!expectFT && ((colour.filter() != 0) || (colour.transm() != 0)))
                     Warning("Expected pure RGB color expression, unexpected filter and transmit components will have no effect.");
@@ -2741,10 +2709,11 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
                 else
                     sawFloatOrFloatFnct = false;
                 if (expectFT)
-                    Terms = 5;
+                    tgtTerms = 5;
                 else
-                    Terms = 3;
+                    tgtTerms = 3;
                 Parse_Express(Express,&Terms);
+                Promote_Express(Express,&Terms,tgtTerms);
                 if (expectFT && (Terms != 5))
                     Error("Color expression expected but float or vector expression found.");
                 else if (!expectFT && ((Terms < 3) || Terms > 5))
@@ -3476,7 +3445,6 @@ ColourBlendMapPtr Parser::Parse_Colour_Map<ColourBlendMap> ()
                            float then this is an old style color_map.
                          */
                         CASE_FLOAT
-                            Terms=1;
                             Parse_Express(Express,&Terms);
                             if (Terms==1)
                             {
@@ -3712,8 +3680,8 @@ GenericSpline *Parser::Parse_Spline()
             par = Parse_Float();
             Parse_Comma();
 
-            Terms = 2;
             Parse_Express(Express, &Terms);
+            Promote_Express(Express,&Terms,2);
             if(Terms > 5)
                     Error("Too many components in vector!\n");
             MaxTerms = max(MaxTerms, Terms);

@@ -1261,6 +1261,7 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
 
         CASE (FUNCT_ID_TOKEN)
             Val = Parse_Function_Call();
+            *Terms = 1;
             for(i = 0; i < *Terms; i++)
                 Express[i] = Val;
             EXIT
@@ -1826,7 +1827,7 @@ void Parser::Parse_Rel_Term (EXPRESS& Express,int *Terms)
     UCS2 *Local_String = Parse_String(false, false);
     if(Local_String != NULL)
     {
-            Parse_Rel_String_Term(Local_String, Express, *Terms);
+            Parse_Rel_String_Term(Local_String, Express, 1);
             POV_FREE(Local_String);
             Ok_To_Declare = old_Ok_To_Declare;
             return;

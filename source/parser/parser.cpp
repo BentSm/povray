@@ -156,6 +156,12 @@ Parser::Parser(shared_ptr<BackendSceneData> sd, bool useclk, DBL clk) :
         mBetaFeatureFlags.realTimeRaytracing = true;
 }
 
+Parser::~Parser()
+{
+    // NB: We need to keep fnVMContext around until all functions have been destroyed.
+    delete fnVMContext;
+}
+
 /* Parse the file. */
 void Parser::Run()
 {
@@ -460,9 +466,6 @@ void Parser::Cleanup()
     Brace_Stack = NULL;
 
     Destroy_Random_Generators();
-
-    // NB: We need to keep fnVMContext around until all functions have been destroyed.
-    delete fnVMContext;
 }
 
 void Parser::Stopped()

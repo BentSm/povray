@@ -3602,6 +3602,7 @@ GenericSpline *Parser::Parse_Spline()
 {
     GenericSpline * Old = NULL;
     GenericSpline * New = NULL;
+    bool keepOld = false;
     int i = 0;
     EXPRESS Express;
     int Terms, MaxTerms;
@@ -3617,6 +3618,7 @@ GenericSpline *Parser::Parse_Spline()
             Old = reinterpret_cast<GenericSpline *>(Token.Data);
             i = Old->SplineEntries.size();
             MaxTerms = Old->Terms;
+            keepOld = true;
             EXIT
         END_CASE
 
@@ -3633,7 +3635,10 @@ GenericSpline *Parser::Parse_Spline()
                 New = new LinearSpline(*Old);
             else
                 New = new LinearSpline();
+            if (Old && !keepOld)
+                delete Old;
             Old = New;
+            keepOld = false;
         END_CASE
 
         CASE(QUADRATIC_SPLINE_TOKEN)
@@ -3641,7 +3646,10 @@ GenericSpline *Parser::Parse_Spline()
                 New = new QuadraticSpline(*Old);
             else
                 New = new QuadraticSpline();
+            if (Old && !keepOld)
+                delete Old;
             Old = New;
+            keepOld = false;
         END_CASE
 
         CASE(CUBIC_SPLINE_TOKEN)
@@ -3649,7 +3657,10 @@ GenericSpline *Parser::Parse_Spline()
                 New = new CatmullRomSpline(*Old);
             else
                 New = new CatmullRomSpline();
+            if (Old && !keepOld)
+                delete Old;
             Old = New;
+            keepOld = false;
         END_CASE
 
         CASE(NATURAL_SPLINE_TOKEN)
@@ -3657,7 +3668,10 @@ GenericSpline *Parser::Parse_Spline()
                 New = new NaturalSpline(*Old);
             else
                 New = new NaturalSpline();
+            if (Old && !keepOld)
+                delete Old;
             Old = New;
+            keepOld = false;
         END_CASE
 
         OTHERWISE

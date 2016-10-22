@@ -3012,13 +3012,10 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
                 "fractal type.  This may change in the future!");
     }
 
-    int needed_size = (num_iterations + 1) * Object->IterationDataSize();
-    if (needed_size > sceneData->Fractal_Iteration_Stack_Size)
-    {
-        sceneData->Fractal_Iteration_Stack_Size = needed_size;
-        TraceThreadData *td = GetParserDataPtr();
-        Fractal::Allocate_Iteration_Stacks(td->Fractal_IterData, sceneData->Fractal_Iteration_Stack_Size);
-    }
+    TraceThreadData *td = GetParserDataPtr();
+    for (k = 0; k < Fractal::kNumIterStacks; k++)
+        td->Fractal_IterData[k].ReserveStoresForIters(Object->IterationDataSizes(), num_iterations);
+    sceneData->Fractal_Iteration_Stack_Sizes = td->Fractal_IterData[0].sizes();
 
     return(reinterpret_cast<ObjectPtr>(Object));
 }

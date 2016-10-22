@@ -111,11 +111,8 @@ public:
 
     static const int kNumIterStacks = 3;
 
-    static void Free_Iteration_Stacks(void **apIterData);
-    static void Allocate_Iteration_Stacks(void **apIterData, int size);
-
     int SetUp_Fractal();
-    int IterationDataSize() const;
+    const FractalDataSizes& IterationDataSizes() const;
 
 };
 

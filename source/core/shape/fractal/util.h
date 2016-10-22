@@ -38,6 +38,8 @@
 
 #include "core/coretypes.h"
 
+#include "base/pov_err.h"
+
 #include "core/shape/fractal/types.h"
 
 namespace pov
@@ -65,6 +67,26 @@ static inline void AssignDuplex(Duplex& rD, const Duplex& s)
     rD[1] = s[1];
 }
 
+static inline const DistanceEstimator& BadEstimator()
+{
+    throw POV_EXCEPTION_STRING("Unsupported distance estimator for fractal type.");
+}
+
+template <typename T>
+static inline int GetADataSize()
+{
+    return (typeid(NilData) == typeid(T) ? 0 : sizeof(T));
+}
+
+template <class Rules>
+static inline const FractalDataSizes GetDataSizes()
+{
+    FractalDataSizes sizes = { GetADataSize<typename Rules::FixedData>(),
+                               GetADataSize<typename Rules::MainIterData>(),
+                               GetADataSize<typename Rules::AuxIterData>() };
+    return sizes;
+}
+
 /* Helper functions to permit inline creation of certain const structs
    (and const arrays).  These are written in such a way as to permit simple
    replacement for C++11 or higher. */
@@ -82,10 +104,10 @@ static inline const FractalFuncType CreateFuncType(FractalAlgebra algebra, Fract
     return f;
 }
 
-static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& funcType, EstimatorType estimatorType,
-                                                     DiscontinuitySupportLevel discontinuitySupport, int iterationDataSize)
+static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& funcType, DiscontinuitySupportLevel discontinuitySupport,
+                                                     const FractalDataSizes& sizes, EstimatorType estimatorType)
 {
-    FractalRulesInfo f = { funcType, estimatorType, discontinuitySupport, iterationDataSize };
+    FractalRulesInfo f = { funcType, discontinuitySupport, sizes, estimatorType };
     return f;
 }
 

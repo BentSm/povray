@@ -90,7 +90,7 @@ SceneData::SceneData() :
     bspMaxDepth = 0;
     bspObjectIsectCost = bspBaseAccessCost = bspChildAccessCost = bspMissChance = 0.0f;
 
-    Fractal_Iteration_Stack_Size = 0;
+    Fractal_Iteration_Stack_Sizes = {-1, -1, -1};
     Max_Blob_Components = 1000; // TODO FIXME - this gets set in the parser but allocated *before* that in the scene data, and if it is 0 here, a malloc may fail there because the memory requested is zero [trf]
     Max_Bounding_Cylinders = 100; // TODO FIXME - see note for Max_Blob_Components
     boundingSlabs = NULL;

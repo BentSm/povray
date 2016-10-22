@@ -2,7 +2,7 @@
 ///
 /// @file core/shape/fractal/distestimator.h
 ///
-/// This module implements distance estimators for use in fractals.
+/// This module contains prototypes and definitions for `distestimator.cpp'.
 ///
 /// @copyright
 /// @parblock
@@ -50,150 +50,22 @@ namespace pov
    constants. */
 const DBL kDistanceEstimatorTolerance = 1e-8;
 
-class DistEstimatorNone
+namespace estimators
 {
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *, DBL, int, const Vector3d&, const Fractal *pFractal, void *)
-    {
-        return pFractal->Precision;
-    }
 
-    static const EstimatorType eType = kNoEstimator;
-};
+DBL EstimatorNone(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
+DBL EstimatorNewton(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
+DBL EstimatorNewtonOrig(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
+DBL EstimatorSpecialOrig_QuatSqr(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
+DBL EstimatorSpecialOrig_QuatCube(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
 
-class DistEstimatorNewton
-{
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *pRules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL step, fValue, trustAmt;
-        Vector3d normal;
+const DistanceEstimator kNone = { EstimatorNone, kNoEstimator };
+const DistanceEstimator kNewton = { EstimatorNewton, kNewtonEstimator };
+const DistanceEstimator kNewtonOrig = { EstimatorNewtonOrig, kOrigNewtonEstimator };
+const DistanceEstimator kSpecialOrig_QuatSqr = { EstimatorSpecialOrig_QuatSqr, kOrigSpecialEstimators };
+const DistanceEstimator kSpecialOrig_QuatCube = { EstimatorSpecialOrig_QuatCube, kOrigSpecialEstimators };
 
-        trustAmt = pow(pFractal->Jump_Decay, iters) * pFractal->Jump_Max * pFractal->Precision;
-        if (trustAmt < pFractal->Precision * pFractal->Jump_Min)
-        {
-            return pFractal->Precision;
-        }
-
-        step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
-
-        step *= (step < 0 ? -2 : 2);
-
-        fValue = norm - pFractal->Exit_Value;
-
-        if (fValue > trustAmt * step)
-        {
-            return trustAmt;
-        }
-        else if (fValue > pFractal->Precision * step)
-        {
-            return fValue / step;
-        }
-
-        return pFractal->Precision;
-    }
-
-    static const EstimatorType eType = kNewtonEstimator;
-};
-
-class DistEstimatorNewtonOrig
-{
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *pRules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL step, fValue;
-        Vector3d normal;
-
-        step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
-
-        if (step < -kDistanceEstimatorTolerance)
-        {
-            step *= -2;
-
-            fValue = norm - pFractal->Exit_Value;
-
-            if (fValue > pFractal->Precision * pFractal->Jump_Max * step)
-            {
-                return pFractal->Precision;
-            }
-            else if (fValue > pFractal->Precision * step)
-            {
-                return fValue / step;
-            }
-        }
-
-        return pFractal->Precision;
-    }
-
-    static const EstimatorType eType = kOrigNewtonEstimator;
-};
-
-class DistEstimatorSpecialOrig_QuatSqr
-{
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *rules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL tmp, nProd, pow;
-        int j;
-
-        typename Rules::IterationData *pIterStack =
-            reinterpret_cast<typename Rules::IterationData *>(pIterData);
-
-        tmp = dot(pFractal->SliceNorm, direction);
-
-        nProd = 1.0 + tmp * tmp;
-
-        pow = 1.0 / 2.0;
-
-        for (j = 0; j < iters; ++j)
-        {
-            nProd *= pIterStack[j].sNorm;
-            pow /= 2.0;
-        }
-
-        return pow / sqrt(nProd) * log(norm);
-    }
-
-    static const EstimatorType eType = kOrigSpecialEstimators;
-};
-
-class DistEstimatorSpecialOrig_QuatCube
-{
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *rules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL tmp, nProd, pow;
-        int j;
-
-        typename Rules::IterationData *pIterStack =
-            reinterpret_cast<typename Rules::IterationData *>(pIterData);
-
-        tmp = dot(pFractal->SliceNorm, direction);
-
-        nProd = 1.0 + tmp * tmp;
-
-        pow = 1.0 / 3.0;
-
-        for (j = 0; j < iters; ++j)
-        {
-            nProd *= pIterStack[j].sNorm;
-            pow /= 3.0;
-        }
-
-        return pow / sqrt(nProd) * log(norm);
-    }
-
-    static const EstimatorType eType = kOrigSpecialEstimators;
-};
+}
 
 }
 

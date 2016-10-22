@@ -47,17 +47,24 @@
 namespace pov
 {
 
+template <class Rules>
+FractalRulesPtr MakeCreatorFunc(const FractalConstructorData& data)
+{
+    return static_cast<FractalRulesPtr>(new Rules(data));
+}
+
 class RulesDispatch
 {
 public:
-    RulesDispatch(const FractalFuncType& fType, int priority = 0);
-    RulesDispatch(const std::set<FractalFuncType> fTypes, int priority = 0);
+    typedef FractalRulesPtr CreatorFunc(const FractalConstructorData&);
+
+    RulesDispatch(CreatorFunc *func, const FractalFuncType& fType, int priority = 0);
+    RulesDispatch(CreatorFunc *func, const std::set<FractalFuncType> fTypes, int priority = 0);
 
     static FractalRulesPtr CreateNew(const FractalConstructorData& data);
 
 protected:
-    virtual FractalRulesPtr MakeRules(const FractalConstructorData& data) const = 0;
-
+    CreatorFunc *mCreatorFunc;
     const int mPriority;
 
     static std::map<FractalFuncType, const RulesDispatch *>& DispatchMap()

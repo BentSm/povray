@@ -42,10 +42,6 @@
 #include "core/math/complexfn.h"
 #include "core/shape/fractal.h"
 #include "core/shape/fractal/dispatch.h"
-#include "core/shape/fractal/distestimator.h"
-#include "core/shape/fractal/estimmagic.h"
-#include "core/shape/fractal/magicimpl.h"
-#include "core/shape/fractal/util.h"
 
 // this must be the last file included
 #include "base/povdebug.h"
@@ -110,17 +106,15 @@ static inline void ComplexRecipDeriv(Complex& rC, const Complex& c)
     rC.x = (1 - 2 * c.x / mod) / mod;
 }
 
-template <class Estimator>
-inline void HypercomplexSqrFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexSqrFractalRules::
+IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     ComplexSqrAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
     ComplexSqrAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
 }
 
-template <class Estimator>
-inline void HypercomplexSqrFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexSqrFractalRules::
+DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Duplex tmp;
 
@@ -131,17 +125,15 @@ ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, v
     complex_fn::Mult(rD[1], rD[1], tmp[1]);
 }
 
-template <class Estimator>
-inline void HypercomplexCubeFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexCubeFractalRules::
+IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     ComplexCubeAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
     ComplexCubeAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
 }
 
-template <class Estimator>
-inline void HypercomplexCubeFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexCubeFractalRules::
+DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Duplex tmp;
 
@@ -152,18 +144,15 @@ ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, v
     complex_fn::Mult(rD[1], rD[1], tmp[1]);
 }
 
-template <class Estimator>
-inline void HypercomplexRecipFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm,
-                            int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexRecipFractalRules::
+IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     ComplexRecipAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
     ComplexRecipAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
 }
 
-template <class Estimator>
-inline void HypercomplexRecipFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexRecipFractalRules::
+DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Duplex tmp;
 
@@ -174,9 +163,8 @@ ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, v
     complex_fn::Mult(rD[1], rD[1], tmp[1]);
 }
 
-template <class Estimator>
-inline void HypercomplexFuncFractalRules<Estimator>::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexFuncFractalRules::
+IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     (*(mFunc.pFunc))(rC[0], rC[0], mExponent);
     (*(mFunc.pFunc))(rC[1], rC[1], mExponent);
@@ -188,9 +176,8 @@ IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIter
     rC[1].y += mDuplexJuliaParm[1].y;
 }
 
-template <class Estimator>
-inline void HypercomplexFuncFractalRules<Estimator>::
-ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const
+void HypercomplexFuncFractalRules::
+DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Duplex tmp;
 
@@ -201,10 +188,9 @@ ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, v
     complex_fn::Mult(rD[1], rD[1], tmp[1]);
 }
 
-template <class Estimator>
-bool HypercomplexFuncFractalRules<Estimator>::
+bool HypercomplexFuncFractalRules::
 DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
-                   int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
+                   int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     Complex tmp;
     DBL dist;
@@ -227,17 +213,17 @@ DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
 }
 
 void HypercomplexDispatchInit() {
-    static const MagicRulesDispatch<HypercomplexSqrFractalRules>
-        HyperSqrDispatch(CreateFuncType(kHypercomplex, kFunc_Sqr, kVar_Normal));
+    static const RulesDispatch HyperSqrDispatch(MakeCreatorFunc<HypercomplexSqrFractalRules>,
+                                                CreateFuncType(kHypercomplex, kFunc_Sqr, kVar_Normal));
 
-    static const MagicRulesDispatch<HypercomplexCubeFractalRules>
-        HyperCubeDispatch(CreateFuncType(kHypercomplex, kFunc_Cube, kVar_Normal));
+    static const RulesDispatch HyperCubeDispatch(MakeCreatorFunc<HypercomplexCubeFractalRules>,
+                                                 CreateFuncType(kHypercomplex, kFunc_Cube, kVar_Normal));
 
-    static const MagicRulesDispatch<HypercomplexRecipFractalRules>
-        HyperRecipDispatch(CreateFuncType(kHypercomplex, kFunc_Reciprocal, kVar_Normal));
+    static const RulesDispatch HyperRecipDispatch(MakeCreatorFunc<HypercomplexRecipFractalRules>,
+                                                  CreateFuncType(kHypercomplex, kFunc_Reciprocal, kVar_Normal));
 
-    static const MagicRulesDispatch<HypercomplexFuncFractalRules>
-        HyperFuncDispatch(Func_FuncTypeSet(kHypercomplex), -1);
+    static const RulesDispatch HyperFuncDispatch(MakeCreatorFunc<HypercomplexFuncFractalRules>,
+                                                 Func_FuncTypeSet(kHypercomplex), -1);
 }
 
 }

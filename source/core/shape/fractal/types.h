@@ -115,23 +115,101 @@ inline bool operator<(const FractalFuncType& a, const FractalFuncType& b)
     return (a.algebra < b.algebra || (a.algebra == b.algebra && (a.type < b.type || (a.type == b.type && a.variant < b.variant))));
 }
 
+class FractalDataStore
+{
+public:
+    FractalDataStore() : mData(NULL), mSize(-1) { }
+
+    FractalDataStore(int dataSize) : mData(NULL) { AllocateNewData(dataSize); }
+
+    ~FractalDataStore() { DeallocateData(); }
+
+    void AllocateNewData(int dataSize)
+    {
+        DeallocateData();
+        if (dataSize >= 0)
+            mData = operator new(dataSize);
+        mSize = dataSize;
+    }
+
+    void ReserveData(int dataSize)
+    {
+        if (mSize < dataSize)
+            AllocateNewData(dataSize);
+    }
+
+    void DeallocateData()
+    {
+        operator delete(mData);
+        mData = NULL;
+        mSize = -1;
+    }
+
+    void *data() const { return mData; }
+
+    int size() const { return mSize; }
+
+protected:
+    void *mData;
+    int mSize;
+};
+
+struct FractalIterData
+{
+    FractalDataStore fixed, mainIter, auxIter;
+
+    void ReserveStores(const FractalDataSizes& tSizes)
+    {
+        fixed.ReserveData(tSizes.fixedSize);
+        mainIter.ReserveData(tSizes.mainIterSize);
+        auxIter.ReserveData(tSizes.auxIterSize);
+    }
+
+    void ReserveStoresForIters(const FractalDataSizes& indSizes, int maxIters)
+    {
+        FractalDataSizes tSizes = { indSizes.fixedSize, indSizes.mainIterSize * (maxIters + 1),
+                                    indSizes.auxIterSize * (maxIters + 1) };
+        ReserveStores(tSizes);
+    }
+
+    const FractalDataSizes sizes()
+    {
+        FractalDataSizes sizes = { fixed.size(), mainIter.size(), auxIter.size() };
+        return sizes;
+    }
+};
+
 struct FractalRulesInfo
 {
     FractalFuncType funcType;
-    EstimatorType estimatorType;
     DiscontinuitySupportLevel discontinuitySupport;
-    int iterationDataSize;
+    FractalDataSizes sizes;
+    EstimatorType estimatorType;
+};
+
+struct NilData { };
+
+typedef Complex Duplex[2];
+
+typedef DBL EstimatorFunc(const FractalRules *pRules, DBL norm, int iters, const Vector3d& direction,
+                          const Fractal *pFractal, FractalIterData *pIterData);
+
+struct DistanceEstimator
+{
+    EstimatorFunc *pEstim;
+    EstimatorType eType;
 };
 
 struct FractalConstructorData
 {
     FractalFuncType funcType;
-    EstimatorType estimatorType;
     VECTOR_4D juliaParm;
     Complex exponent;
+    EstimatorType estimatorType;
 };
 
-typedef Complex Duplex[2];
+/* If we don't have C++11, we can't initialize const arrays... */
+#ifndef FRACTAL_USE_CXX11
 
 template <class T, unsigned N>
 class IArray
@@ -158,9 +236,6 @@ public:
 private:
     Array_Type value;
 };
-
-/* If we don't have C++11, we can't initialize const arrays... */
-#ifndef FRACTAL_USE_CXX11
 
 typedef IArray<Complex, 2> IDuplex;
 typedef IArray<DBL, 4> IVECTOR_4D;

@@ -46,75 +46,60 @@
 namespace pov
 {
 
-template <template <class> class RulesClass, class Estimator, class BaseRules = FractalRules>
-class HypercomplexFractalRulesBase : public MagicHypercomplexFractalRules<RulesClass, Estimator, BaseRules>
-{
-public:
-    typedef struct {
-        Duplex point;
-    } IterationData;
-
-    HypercomplexFractalRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport) :
-        MagicHypercomplexFractalRules<RulesClass, Estimator, BaseRules>(data, discontinuitySupport) {}
-};
-
-template <class Estimator>
-class HypercomplexSqrFractalRules : public HypercomplexFractalRulesBase<HypercomplexSqrFractalRules, Estimator>
+class HypercomplexSqrFractalRules : public MagicHypercomplexFractalRules
 {
 public:
     HypercomplexSqrFractalRules(const FractalConstructorData& data) :
-        HypercomplexFractalRulesBase<pov::HypercomplexSqrFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+        MagicHypercomplexFractalRules(data, kDiscontinuityUnneeded,
+                                      GetDataSizes<HypercomplexSqrFractalRules>(),
+                                      GetEstimatorFromType(data.estimatorType)) { }
 
-protected:
-    using MagicHypercomplexFractalRules<pov::HypercomplexSqrFractalRules, Estimator>::mDuplexJuliaParm;
+    virtual void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
-template <class Estimator>
-class HypercomplexCubeFractalRules : public HypercomplexFractalRulesBase<HypercomplexCubeFractalRules, Estimator>
+class HypercomplexCubeFractalRules : public MagicHypercomplexFractalRules
 {
 public:
     HypercomplexCubeFractalRules(const FractalConstructorData& data) :
-        HypercomplexFractalRulesBase<pov::HypercomplexCubeFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+        MagicHypercomplexFractalRules(data, kDiscontinuityUnneeded,
+                                      GetDataSizes<HypercomplexCubeFractalRules>(),
+                                      GetEstimatorFromType(data.estimatorType)) { }
 
-protected:
-    using MagicHypercomplexFractalRules<pov::HypercomplexCubeFractalRules, Estimator>::mDuplexJuliaParm;
+    virtual void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
-template <class Estimator>
-class HypercomplexRecipFractalRules : public HypercomplexFractalRulesBase<HypercomplexRecipFractalRules, Estimator>
+class HypercomplexRecipFractalRules : public MagicHypercomplexFractalRules
 {
 public:
     HypercomplexRecipFractalRules(const FractalConstructorData& data) :
-        HypercomplexFractalRulesBase<pov::HypercomplexRecipFractalRules, Estimator>(data, kDiscontinuityUnneeded) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+        MagicHypercomplexFractalRules(data, kDiscontinuityUnneeded,
+                                      GetDataSizes<HypercomplexRecipFractalRules>(),
+                                      GetEstimatorFromType(data.estimatorType)) { }
 
-protected:
-    using MagicHypercomplexFractalRules<pov::HypercomplexRecipFractalRules, Estimator>::mDuplexJuliaParm;
+    virtual void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
-template <class Estimator>
-class HypercomplexFuncFractalRules : public HypercomplexFractalRulesBase<HypercomplexFuncFractalRules, Estimator>
+class HypercomplexFuncFractalRules : public MagicHypercomplexFractalRules
 {
 public:
     HypercomplexFuncFractalRules(const FractalConstructorData& data) :
-        HypercomplexFractalRulesBase<pov::HypercomplexFuncFractalRules,
-                                     Estimator>(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType))),
-        mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) {}
-    inline void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, void *pIterData) const;
-    inline void ApplyDerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, void *pIterData) const;
+        MagicHypercomplexFractalRules(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType)),
+                                      GetDataSizes<HypercomplexFuncFractalRules>(),
+                                      GetEstimatorFromType(data.estimatorType)),
+        mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) { }
 
-    bool DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
-                            int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
+    virtual void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+
+    virtual bool DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+                                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:
     const FractalFunc mFunc;
     const Complex mExponent;
-    using MagicHypercomplexFractalRules<pov::HypercomplexFuncFractalRules, Estimator>::mDuplexJuliaParm;
 };
 
 void HypercomplexDispatchInit();

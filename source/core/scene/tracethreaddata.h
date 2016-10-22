@@ -82,7 +82,7 @@ class TraceThreadData : public ThreadData
          */
         RenderStatistics& Stats(void) { return renderStats; }
 
-        void **Fractal_IterData;
+        FractalIterData *Fractal_IterData;
         BBoxPriorityQueue Mesh_Queue;
         void **Blob_Queue;
         unsigned int Max_Blob_Queue_Size;

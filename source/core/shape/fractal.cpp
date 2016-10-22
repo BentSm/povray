@@ -104,8 +104,8 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
     Vector3d Direction;
     BasicRay New_Ray;
     int cIter, nIter, lIter, tIter;
-    void *cStack = Thread->Fractal_IterData[0], *nStack = Thread->Fractal_IterData[1],
-        *lStack = Thread->Fractal_IterData[2], *tmpStack, *tStack, *pStack;
+    FractalIterData *cStack = &(Thread->Fractal_IterData[0]), *nStack = &(Thread->Fractal_IterData[1]),
+        *lStack = &(Thread->Fractal_IterData[2]), *tmpStack, *tStack, *pStack;
 
     Thread->Stats()[Ray_Fractal_Tests]++;
 
@@ -375,11 +375,11 @@ bool Fractal::Inside(const Vector3d& IPoint, TraceThreadData *Thread) const
     {
         MInvTransPoint(New_Point, IPoint, Trans);
 
-        Result = BIteration(New_Point, this, Thread->Fractal_IterData[0]);
+        Result = BIteration(New_Point, this, &(Thread->Fractal_IterData[0]));
     }
     else
     {
-        Result = BIteration(IPoint, this, Thread->Fractal_IterData[0]);
+        Result = BIteration(IPoint, this, &(Thread->Fractal_IterData[0]));
     }
 
     if (Test_Flag(this, INVERTED_FLAG))
@@ -853,82 +853,9 @@ int Fractal::SetUp_Fractal()
     return Num_Iterations;
 }
 
-int Fractal::IterationDataSize() const
+const FractalDataSizes& Fractal::IterationDataSizes() const
 {
-    return Rules->Info().iterationDataSize;
-}
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   Pascal Massimino
-*
-* DESCRIPTION
-*
-*   -
-*
-* CHANGES
-*
-*   Dec 1994 : Creation.
-*
-******************************************************************************/
-
-void Fractal::Allocate_Iteration_Stacks(void **apIterData, int size)
-{
-    int i;
-    Free_Iteration_Stacks(apIterData);
-    if (size == 0)
-        return ;
-    for (i = 0; i < kNumIterStacks; i++)
-    {
-        apIterData[i] = POV_MALLOC(size, "fractal iteration stack");
-    }
-}
-
-/*****************************************************************************
-*
-* FUNCTION
-*
-* INPUT
-*
-* OUTPUT
-*
-* RETURNS
-*
-* AUTHOR
-*
-*   Pascal Massimino
-*
-* DESCRIPTION
-*
-*   -
-*
-* CHANGES
-*
-*   Dec 1994 : Creation.
-*
-******************************************************************************/
-
-void Fractal::Free_Iteration_Stacks(void **apIterData)
-{
-    int i;
-    for (i = 0; i < kNumIterStacks; i++)
-    {
-        if (apIterData[i] != NULL)
-        {
-            POV_FREE(apIterData[i]);
-            apIterData[i] = NULL;
-        }
-    }
+    return Rules->Info().sizes;
 }
 
 }

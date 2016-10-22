@@ -64,7 +64,7 @@ static inline void DumpDispatchMap(std::map<FractalFuncType, const RulesDispatch
 #endif
 }
 
-RulesDispatch::RulesDispatch(const FractalFuncType& funcType, int priority) : mPriority(priority)
+RulesDispatch::RulesDispatch(CreatorFunc *func, const FractalFuncType& funcType, int priority) : mCreatorFunc(func), mPriority(priority)
 {
     std::map<FractalFuncType, const RulesDispatch *>::const_iterator dispatchIter = DispatchMap().find(funcType);
     if (dispatchIter == DispatchMap().end() || dispatchIter->second->mPriority <= priority)
@@ -72,7 +72,7 @@ RulesDispatch::RulesDispatch(const FractalFuncType& funcType, int priority) : mP
     DumpDispatchMap(DispatchMap());
 }
 
-RulesDispatch::RulesDispatch(const std::set<FractalFuncType> funcTypes, int priority) : mPriority(priority)
+RulesDispatch::RulesDispatch(CreatorFunc *func, const std::set<FractalFuncType> funcTypes, int priority) : mCreatorFunc(func), mPriority(priority)
 {
     std::set<FractalFuncType>::const_iterator c = funcTypes.begin();
     std::map<FractalFuncType, const RulesDispatch *>::const_iterator dispatchIter;
@@ -96,7 +96,7 @@ FractalRulesPtr RulesDispatch::CreateNew(const FractalConstructorData& data)
         throw POV_EXCEPTION_STRING("Algebra/function type/variant combination unknown in fractal.");
     }
     else
-        return dispatchIter->second->MakeRules(data);
+        return (*(dispatchIter->second->mCreatorFunc))(data);
 }
 
 void InitDispatch() {

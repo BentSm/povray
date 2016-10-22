@@ -201,7 +201,7 @@ class SceneData
         vector<Camera> cameras; // TODO - this is support for an experimental feature and may be changed or removed
 
         // this is for fractal support
-        int Fractal_Iteration_Stack_Size; // TODO - move somewhere else
+        FractalDataSizes Fractal_Iteration_Stack_Sizes; // TODO - move somewhere else
         int Max_Blob_Components; // TODO - move somewhere else
         // lathe and sor support (bounding cylinders)
         unsigned int Max_Bounding_Cylinders; // TODO - move somewhere else

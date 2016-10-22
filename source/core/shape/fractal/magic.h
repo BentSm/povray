@@ -3,9 +3,9 @@
 /// @file core/shape/fractal/magic.h
 ///
 /// This module contains prototypes for the generic implementation of
-/// FractalRules subclasses in magicimpl.h.
+/// FractalRules subclasses in magic.cpp.
 ///
-/// (This was originally named for the templating 'magic' that it uses, but
+/// (This was originally named for the templating 'magic' that it used, but
 /// could equally well be described as the 'magic' that makes everything work!)
 ///
 /// @copyright
@@ -48,90 +48,88 @@
 namespace pov
 {
 
-template <class BaseRules = FractalRules>
-class InfoRulesBase : virtual public BaseRules
+class MagicRulesBase : public FractalRules
 {
 public:
-    InfoRulesBase(const FractalFuncType& funcType, EstimatorType estimatorType,
-                  DiscontinuitySupportLevel discontinuitySupport, int iterationDataSize) :
-        mInfo(CreateRulesInfo(funcType, estimatorType, discontinuitySupport, iterationDataSize)) {}
+    typedef NilData FixedData;
+    typedef NilData MainIterData;
+    typedef NilData AuxIterData;
+
+    MagicRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
+                   const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
+        mInfo(CreateRulesInfo(data.funcType, discontinuitySupport, sizes, estimator.eType)),
+        mEstimator(estimator) { }
+
+    virtual bool Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const;
     virtual const FractalRulesInfo& Info() const { return mInfo; }
 
 protected:
     const FractalRulesInfo mInfo;
+    const DistanceEstimator& mEstimator;
+
+    static const DistanceEstimator& GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator = kNewtonEstimator,
+                                                         EstimatorType legacyEstimator = kOrigNewtonEstimator,
+                                                         const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType) = NULL);
 };
 
-template <template <class> class RulesClass, class Estimator, class BaseRules = FractalRules>
-class MagicFractalRulesBase : public InfoRulesBase<BaseRules>
+class MagicQuaternionFractalRules : public MagicRulesBase
 {
 public:
-    MagicFractalRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport) :
-        InfoRulesBase<BaseRules>(data.funcType, Estimator::eType, discontinuitySupport,
-                                 sizeof(typename RulesClass<Estimator>::IterationData)) {}
-    virtual void CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData,
-                            void *pPIterData) const;
-    virtual bool Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const;
-};
+    typedef VECTOR_4D MainIterData;
 
-template <template <class> class RulesClass, class Estimator, class BaseRules = FractalRules>
-class MagicQuaternionFractalRules : public MagicFractalRulesBase<RulesClass, Estimator, BaseRules> {
-public:
-    MagicQuaternionFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport) :
+    MagicQuaternionFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
+                                const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
         INIT_VECTOR_4D(mJuliaParm, data.juliaParm[X], data.juliaParm[Y], data.juliaParm[Z], data.juliaParm[W]),
-        MagicFractalRulesBase<RulesClass, Estimator, BaseRules>(data, discontinuitySupport) {}
+        MagicRulesBase(data, discontinuitySupport, sizes, estimator) {}
+
     virtual int Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction,
-                        DBL *pDist, void *pIterData) const;
-    DBL CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, void *pIterData) const;
+                        DBL *pDist, FractalIterData *pIterData) const;
+    virtual void CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData,
+                            FractalIterData *pPIterData) const;
 
-    inline void NonVirtualCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pIterData) const
-    { TemplatedCalcNormal<false>(rResult, nMax, pFractal, pIterData, NULL); }
-    inline void NonVirtualCalcNormalWDisc(Vector3d& rResult, int nMax, const Fractal *pFractal,
-                                          void *pTIterData, void *pPIterData) const
-    { TemplatedCalcNormal<true>(rResult, nMax, pFractal, pTIterData, pPIterData); }
+    virtual DBL CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const;
 
-    bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
-                            int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
+    virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+                                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:
     const IVECTOR_4D mJuliaParm;
 
-    template <bool disc>
-    void TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData,
-                             void *pPIterData = NULL) const;
-
 };
 
-template <template <class> class RulesClass, class Estimator, class BaseRules = FractalRules>
-class MagicHypercomplexFractalRules : public MagicFractalRulesBase<RulesClass, Estimator, BaseRules> {
+class MagicHypercomplexFractalRules : public MagicRulesBase
+{
 public:
-    MagicHypercomplexFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport) :
+    typedef Duplex MainIterData;
+
+    MagicHypercomplexFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
+                                  const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
         INIT_DUPLEX(mDuplexJuliaParm, CreateComplex(data.juliaParm[X] - data.juliaParm[W], data.juliaParm[Y] + data.juliaParm[Z]),
                     CreateComplex(data.juliaParm[X] + data.juliaParm[W], data.juliaParm[Y] - data.juliaParm[Z])),
-        MagicFractalRulesBase<RulesClass, Estimator, BaseRules>(data, discontinuitySupport) {}
+        MagicRulesBase(data, discontinuitySupport, sizes, estimator) {}
+
     virtual int Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction,
-                        DBL *pDist, void *pIterData) const;
-    inline DBL CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, void *pIterData) const
+                        DBL *pDist, FractalIterData *pIterData) const;
+    virtual void CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData,
+                            FractalIterData *pPIterData) const;
+
+    virtual DBL CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
     {
         Vector3d normal;
-        NonVirtualCalcNormal(normal, nMax, pFractal, pIterData);
+        CalcNormal(normal, nMax, pFractal, pIterData, NULL);
         return dot(dir, normal);
     }
 
-    inline void NonVirtualCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pIterData) const
-    { TemplatedCalcNormal<false>(rResult, nMax, pFractal, pIterData, NULL); }
-    inline void NonVirtualCalcNormalWDisc(Vector3d& rResult, int nMax, const Fractal *pFractal,
-                                          void *pTIterData, void *pPIterData) const
-    { TemplatedCalcNormal<true>(rResult, nMax, pFractal, pTIterData, pPIterData); }
-
-    bool DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
-                            int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const;
+    virtual void IterateCalc(Duplex& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual void DerivCalc(Duplex& rD, const Duplex& v, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual bool DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+                                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:
     const IDuplex mDuplexJuliaParm;
 
-    template <bool disc>
-    void TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData,
-                             void *pPIterData = NULL) const;
 };
 
 }

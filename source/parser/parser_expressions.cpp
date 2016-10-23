@@ -1536,9 +1536,9 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
    *Old_Terms==1, then it sets all terms to Express[0].  Otherwise, it pads
    extra terms with 0.0.
 
-   To maximize the consistency of results, **DO NOT PROMOTE** until it is
-   actually required.  This is to ensure, as much as possible, that the same
-   expression will produce the same results regardless of the context.
+   To maximize the consistency of results, DO NOT promote until it is actually
+   required.  This is to ensure, as much as possible, that the same expression
+   will produce the same results regardless of the context.
 */
 
 void Parser::Promote_Express(EXPRESS& Express,int *Old_Terms,int New_Terms)
@@ -1726,10 +1726,12 @@ void Parser::Parse_Rel_Factor (EXPRESS& Express,int *Terms)
 *
 ******************************************************************************/
 
-void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms)
+void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Terms)
 {
     int Val, i;
     UCS2 *rhs = NULL;
+
+    *Terms = 1;
 
     EXPECT_ONE
         CASE (LEFT_ANGLE_TOKEN)
@@ -1737,7 +1739,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<Terms;i++)
+            for(i=0;i<*Terms;i++)
                 Express[i] = (DBL)(Val < 0);
         END_CASE
 
@@ -1746,7 +1748,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<Terms;i++)
+            for(i=0;i<*Terms;i++)
                 Express[i] = (DBL)(Val <= 0);
         END_CASE
 
@@ -1755,7 +1757,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<Terms;i++)
+            for(i=0;i<*Terms;i++)
                 Express[i] = (DBL)(Val == 0);
         END_CASE
 
@@ -1764,7 +1766,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<Terms;i++)
+            for(i=0;i<*Terms;i++)
                 Express[i] = (DBL)(Val != 0);
         END_CASE
 
@@ -1773,7 +1775,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<Terms;i++)
+            for(i=0;i<*Terms;i++)
                 Express[i] = (DBL)(Val >= 0);
         END_CASE
 
@@ -1782,7 +1784,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<Terms;i++)
+            for(i=0;i<*Terms;i++)
                 Express[i] = (DBL)(Val > 0);
         END_CASE
 
@@ -1823,7 +1825,7 @@ void Parser::Parse_Rel_Term (EXPRESS& Express,int *Terms)
     UCS2 *Local_String = Parse_String(false, false);
     if(Local_String != NULL)
     {
-            Parse_Rel_String_Term(Local_String, Express, 1);
+            Parse_Rel_String_Term(Local_String, Express, Terms);
             POV_FREE(Local_String);
             Ok_To_Declare = old_Ok_To_Declare;
             return;
@@ -1992,8 +1994,7 @@ void Parser::Parse_Express (EXPRESS& Express,int *Terms)
         END_CASE
 
         OTHERWISE
-            /* Not a (c)?a:b expression.  Don't promote.
-             */
+            /* Not a (c)?a:b expression. */
             *Terms=Local_Terms1;
             UNGET
             EXIT
@@ -2700,10 +2701,9 @@ void Parser::Parse_Colour (RGBFTColour& colour, bool expectFT)
             else
             {
                 // Note: Setting up for potential warning on single value float promote to
-                // five value color vector. Under the Parse_Express call there is code which
-                // promotes any single float to the full 'Terms' value on the call. This
-                // usually results in filter and trasmit values >0, which cause shadow artifacts
-                // back to at least version 3.6.1.
+                // five value color vector. Any single float will be promoted to the full
+                // 'tgtTerms' value. This usually results in filter and trasmit values >0,
+                // which caused shadow artifacts back to at least version 3.6.1.
                 if ((Token.Token_Id==FLOAT_FUNCT_TOKEN) || (Token.Token_Id==FUNCT_ID_TOKEN))
                     sawFloatOrFloatFnct = true;
                 else

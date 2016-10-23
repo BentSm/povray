@@ -298,6 +298,8 @@ class Parser : public SceneTask
         // constructor
         Parser(shared_ptr<BackendSceneData> sd, bool useclock, DBL clock);
 
+        ~Parser();
+
         void Run();
         void Stopped();
         void Finish();
@@ -757,7 +759,7 @@ class Parser : public SceneTask
         void Parse_Rel_Term (EXPRESS& Express, int *Terms);
 
         /// Parses a REL_TERM comparing two strings.
-        void Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int Terms);
+        void Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Terms);
 
         /// Parses a LOGICAL_EXPRESSION (including FLOAT) or VECTOR.
         void Parse_Logical (EXPRESS& Express, int *Terms);

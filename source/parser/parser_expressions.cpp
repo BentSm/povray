@@ -1107,8 +1107,7 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
             }
 
             *Terms = 1;
-            for (i=0; i < *Terms; i++)
-                Express[i]=Val;
+            Express[0]=Val;
             EXIT
         END_CASE
 
@@ -1262,8 +1261,7 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
         CASE (FUNCT_ID_TOKEN)
             *Terms = 1;
             Val = Parse_Function_Call();
-            for(i = 0; i < *Terms; i++)
-                Express[i] = Val;
+            Express[0] = Val;
             EXIT
         END_CASE
 
@@ -1367,7 +1365,7 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
 
             EXPECT
                 CASE_EXPRESS
-                    /* If a 3th float is found, parse it. */
+                    /* If a 3rd float is found, parse it. */
                     Express[2] = Parse_Float(); Parse_Comma();
                     *Terms=3;
                     EXPECT
@@ -1728,7 +1726,7 @@ void Parser::Parse_Rel_Factor (EXPRESS& Express,int *Terms)
 
 void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Terms)
 {
-    int Val, i;
+    int Val;
     UCS2 *rhs = NULL;
 
     *Terms = 1;
@@ -1739,8 +1737,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Term
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<*Terms;i++)
-                Express[i] = (DBL)(Val < 0);
+            Express[0] = (DBL)(Val < 0);
         END_CASE
 
         CASE (REL_LE_TOKEN)
@@ -1748,8 +1745,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Term
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<*Terms;i++)
-                Express[i] = (DBL)(Val <= 0);
+            Express[0] = (DBL)(Val <= 0);
         END_CASE
 
         CASE (EQUALS_TOKEN)
@@ -1757,8 +1753,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Term
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<*Terms;i++)
-                Express[i] = (DBL)(Val == 0);
+            Express[0] = (DBL)(Val == 0);
         END_CASE
 
         CASE (REL_NE_TOKEN)
@@ -1766,8 +1761,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Term
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<*Terms;i++)
-                Express[i] = (DBL)(Val != 0);
+            Express[0] = (DBL)(Val != 0);
         END_CASE
 
         CASE (REL_GE_TOKEN)
@@ -1775,8 +1769,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Term
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<*Terms;i++)
-                Express[i] = (DBL)(Val >= 0);
+            Express[0] = (DBL)(Val >= 0);
         END_CASE
 
         CASE (RIGHT_ANGLE_TOKEN)
@@ -1784,8 +1777,7 @@ void Parser::Parse_Rel_String_Term (const UCS2 *lhs, EXPRESS& Express, int *Term
             Val = UCS2_strcmp(lhs, rhs);
             POV_FREE(rhs);
 
-            for(i=0;i<*Terms;i++)
-                Express[i] = (DBL)(Val > 0);
+            Express[0] = (DBL)(Val > 0);
         END_CASE
 
         OTHERWISE
@@ -1981,12 +1973,12 @@ void Parser::Parse_Express (EXPRESS& Express,int *Terms)
             Parse_Express(Local_Express2,&Local_Terms2);
             if (ftrue(Express[0]))
             {
-                Chosen = reinterpret_cast<EXPRESS *>(&Local_Express1);
+                Chosen = &Local_Express1;
                 *Terms = Local_Terms1;
             }
             else
             {
-                Chosen = reinterpret_cast<EXPRESS *>(&Local_Express2);
+                Chosen = &Local_Express2;
                 *Terms = Local_Terms2;
             }
             POV_MEMCPY(Express,Chosen,sizeof(EXPRESS));
@@ -2788,7 +2780,7 @@ void Parser::Parse_Wavelengths (MathColour& colour)
 *
 *   Chris Young 11/94
 *
-* DESCRIPTION   :
+* DESCRIPTION
 *
 * CHANGES
 *
@@ -3391,8 +3383,8 @@ template TextureBlendMapPtr Parser::Parse_Item_Into_Blend_List<TextureBlendMap> 
 *
 *   POV-Ray Team
 *
-* DESCRIPTION   : This seperate routine parses color_maps only.  It
-*                 cannot be used for pigment_maps because it accomidates
+* DESCRIPTION   : This separate routine parses color_maps only.  It
+*                 cannot be used for pigment_maps because it accommodates
 *                 the old double entry color maps from vers 1.0
 *
 * CHANGES
@@ -3587,7 +3579,7 @@ TextureBlendMapPtr Parser::Parse_Colour_Map<TextureBlendMap> ()
 *
 *   Wolfgang Ortmann
 *
-* DESCRIPTION   : This seperate routine parses pure splines only. Splines in
+* DESCRIPTION   : This separate routine parses pure splines only. Splines in
 *   lathe objects and SOR are similar but not identical
 *
 * CHANGES
@@ -3944,7 +3936,7 @@ DBL Parser::Parse_Signed_Float(void)
         CASE (DASH_TOKEN)
             Sign=-1.0;
             Get_Token();
-            /* Deliberate fall through with no END_CASE */
+            // FALLTHROUGH
         CASE (FLOAT_FUNCT_TOKEN)
             if (Token.Function_Id==FLOAT_TOKEN)
             {

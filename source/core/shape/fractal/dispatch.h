@@ -38,7 +38,6 @@
 
 #include "core/coretypes.h"
 
-#include <cstdarg>
 #include <map>
 #include <set>
 
@@ -73,24 +72,6 @@ protected:
         return theMap;
     }
 };
-
-template <int n>
-static inline const std::set<FractalFuncType> CreateFuncTypeSet(const FractalFuncType t0, ...)
-{
-    std::set<FractalFuncType> s;
-    int i;
-    va_list typeList;
-    FractalFuncType f;
-    va_start(typeList, t0);
-    s.insert(t0);
-    for (i = 1; i < n; i++)
-    {
-        f = va_arg(typeList, const FractalFuncType);
-        s.insert(f);
-    }
-    va_end(typeList);
-    return s;
-}
 
 void InitDispatch();
 

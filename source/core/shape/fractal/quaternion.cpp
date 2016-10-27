@@ -520,8 +520,8 @@ void QuaternionDispatchInit() {
                                                 Func_FuncTypeSet(kQuaternion), -1);
 
     static const RulesDispatch QuatPwrDispatch(MakeCreatorFunc<QuaternionPwrFractalRules>,
-                                               CreateFuncTypeSet<2>(CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Left),
-                                                                    CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Right)));
+                                               CreateSet<2>(CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Left),
+                                                            CreateFuncType(kQuaternion, kFunc_Pwr, kVar_Right)));
 }
 
 }

@@ -38,6 +38,9 @@
 
 #include "core/coretypes.h"
 
+#include <cstdarg>
+#include <set>
+
 #include "base/pov_err.h"
 
 #include "core/shape/fractal/types.h"
@@ -85,6 +88,24 @@ static inline const FractalDataSizes GetDataSizes()
                                GetADataSize<typename Rules::MainIterData>(),
                                GetADataSize<typename Rules::AuxIterData>() };
     return sizes;
+}
+
+template <int n, typename T>
+static inline const std::set<T> CreateSet(T t0, ...)
+{
+    std::set<T> s;
+    int i;
+    va_list tList;
+    T t;
+    va_start(tList, t0);
+    s.insert(t0);
+    for (i = 1; i < n; i++)
+    {
+        t = va_arg(tList, T);
+        s.insert(t);
+    }
+    va_end(tList);
+    return s;
 }
 
 /* Helper functions to permit inline creation of certain const structs

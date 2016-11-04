@@ -111,53 +111,9 @@ DBL EstimatorNewtonOrig(const FractalRules *pRules, DBL norm, int iters, const V
     return pFractal->Precision;
 }
 
-DBL EstimatorSpecialOrig_QuatSqr(const FractalRules *rules, DBL norm, int iters, const Vector3d& direction,
-                                 const Fractal *pFractal, FractalIterData *pIterData)
-{
-    DBL tmp, nProd, pow;
-    int j;
-
-    QuaternionSqrFractalRules::AuxIterData *pAuxIterStack =
-        static_cast<QuaternionSqrFractalRules::AuxIterData *>(pIterData->auxIter.data());
-
-    tmp = dot(pFractal->SliceNorm, direction);
-
-    nProd = 1.0 + tmp * tmp;
-
-    pow = 1.0 / 2.0;
-
-    for (j = 0; j < iters; ++j)
-    {
-        nProd *= pAuxIterStack[j].sNorm;
-        pow /= 2.0;
-    }
-
-    return pow / sqrt(nProd) * log(norm);
-}
-
-DBL EstimatorSpecialOrig_QuatCube(const FractalRules *rules, DBL norm, int iters, const Vector3d& direction,
-                                  const Fractal *pFractal, FractalIterData *pIterData)
-{
-    DBL tmp, nProd, pow;
-    int j;
-
-    QuaternionCubeFractalRules::AuxIterData *pAuxIterStack =
-        static_cast<QuaternionCubeFractalRules::AuxIterData *>(pIterData->auxIter.data());
-
-    tmp = dot(pFractal->SliceNorm, direction);
-
-    nProd = 1.0 + tmp * tmp;
-
-    pow = 1.0 / 3.0;
-
-    for (j = 0; j < iters; ++j)
-    {
-        nProd *= pAuxIterStack[j].sNorm;
-        pow /= 3.0;
-    }
-
-    return pow / sqrt(nProd) * log(norm);
-}
+const DistanceEstimator kNone = { EstimatorNone, kNoEstimator };
+const DistanceEstimator kNewton = { EstimatorNewton, kNewtonEstimator };
+const DistanceEstimator kNewtonOrig = { EstimatorNewtonOrig, kOrigNewtonEstimator };
 
 }
 

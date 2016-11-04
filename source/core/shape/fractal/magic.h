@@ -42,6 +42,7 @@
 
 #include "core/coretypes.h"
 #include "core/math/vector.h"
+#include "core/shape/fractal/distestimator.h"
 #include "core/shape/fractal/types.h"
 #include "core/shape/fractal/util.h"
 
@@ -51,9 +52,9 @@ namespace pov
 class MagicRulesBase : public FractalRules
 {
 public:
-    typedef NilData FixedData;
-    typedef NilData MainIterData;
-    typedef NilData AuxIterData;
+    typedef NilFractalData FixedData;
+    typedef NilFractalData MainIterData;
+    typedef NilFractalData AuxIterData;
 
     MagicRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
                    const FractalDataSizes& sizes, const DistanceEstimator& estimator) :

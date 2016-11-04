@@ -41,8 +41,6 @@
 #include <cstdarg>
 #include <set>
 
-#include "base/pov_err.h"
-
 #include "core/shape/fractal/types.h"
 
 namespace pov
@@ -70,15 +68,10 @@ static inline void AssignDuplex(Duplex& rD, const Duplex& s)
     rD[1] = s[1];
 }
 
-static inline const DistanceEstimator& BadEstimator()
-{
-    throw POV_EXCEPTION_STRING("Unsupported distance estimator for fractal type.");
-}
-
 template <typename T>
 static inline int GetADataSize()
 {
-    return (typeid(NilData) == typeid(T) ? 0 : sizeof(T));
+    return (typeid(NilFractalData) == typeid(T) ? 0 : sizeof(T));
 }
 
 template <class Rules>

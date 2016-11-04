@@ -153,6 +153,14 @@ protected:
 
 void QuaternionDispatchInit();
 
+namespace estimators
+{
+
+extern const DistanceEstimator kSpecialOrig_QuatSqr;
+extern const DistanceEstimator kSpecialOrig_QuatCube;
+
+}
+
 }
 
 #endif // POVRAY_CORE_FRACTAL_QUATERNION_H

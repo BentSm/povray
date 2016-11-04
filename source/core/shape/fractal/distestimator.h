@@ -37,6 +37,9 @@
 #define POVRAY_CORE_FRACTAL_DISTESTIMATOR_H
 
 #include "core/coretypes.h"
+
+#include "base/pov_err.h"
+
 #include "core/math/vector.h"
 #include "core/shape/fractal.h"
 #include "core/shape/fractal/types.h"
@@ -50,20 +53,26 @@ namespace pov
    constants. */
 const DBL kDistanceEstimatorTolerance = 1e-8;
 
+typedef DBL EstimatorFunc(const FractalRules *pRules, DBL norm, int iters, const Vector3d& direction,
+                          const Fractal *pFractal, FractalIterData *pIterData);
+
+struct DistanceEstimator
+{
+    EstimatorFunc *pEstim;
+    EstimatorType eType;
+};
+
 namespace estimators
 {
 
-DBL EstimatorNone(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
-DBL EstimatorNewton(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
-DBL EstimatorNewtonOrig(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
-DBL EstimatorSpecialOrig_QuatSqr(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
-DBL EstimatorSpecialOrig_QuatCube(const FractalRules *, DBL, int, const Vector3d&, const Fractal *, FractalIterData *);
+extern const DistanceEstimator kNone;
+extern const DistanceEstimator kNewton;
+extern const DistanceEstimator kNewtonOrig;
 
-const DistanceEstimator kNone = { EstimatorNone, kNoEstimator };
-const DistanceEstimator kNewton = { EstimatorNewton, kNewtonEstimator };
-const DistanceEstimator kNewtonOrig = { EstimatorNewtonOrig, kOrigNewtonEstimator };
-const DistanceEstimator kSpecialOrig_QuatSqr = { EstimatorSpecialOrig_QuatSqr, kOrigSpecialEstimators };
-const DistanceEstimator kSpecialOrig_QuatCube = { EstimatorSpecialOrig_QuatCube, kOrigSpecialEstimators };
+static inline const DistanceEstimator& BadEstimator()
+{
+    throw POV_EXCEPTION_STRING("Unsupported distance estimator for fractal type.");
+}
 
 }
 

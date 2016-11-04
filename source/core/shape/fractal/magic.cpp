@@ -67,7 +67,7 @@ GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator
     switch (tgtType)
     {
     case kInvalidEstimator:
-        return BadEstimator();
+        return estimators::BadEstimator();
 
     case kNoEstimator:
         return estimators::kNone;
@@ -82,7 +82,7 @@ GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator
         if (ExtraEstimators != NULL)
             return (*ExtraEstimators)(tgtType);
         else
-            return BadEstimator();
+            return estimators::BadEstimator();
     }
 }
 

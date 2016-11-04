@@ -187,18 +187,9 @@ struct FractalRulesInfo
     EstimatorType estimatorType;
 };
 
-struct NilData { };
+struct NilFractalData { };
 
 typedef Complex Duplex[2];
-
-typedef DBL EstimatorFunc(const FractalRules *pRules, DBL norm, int iters, const Vector3d& direction,
-                          const Fractal *pFractal, FractalIterData *pIterData);
-
-struct DistanceEstimator
-{
-    EstimatorFunc *pEstim;
-    EstimatorType eType;
-};
 
 struct FractalConstructorData
 {

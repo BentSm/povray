@@ -482,6 +482,63 @@ DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4
         return false;
 }
 
+namespace estimators
+{
+
+
+DBL EstimatorSpecialOrig_QuatSqr(const FractalRules *rules, DBL norm, int iters, const Vector3d& direction,
+                                 const Fractal *pFractal, FractalIterData *pIterData)
+{
+    DBL tmp, nProd, pow;
+    int j;
+
+    QuaternionSqrFractalRules::AuxIterData *pAuxIterStack =
+        static_cast<QuaternionSqrFractalRules::AuxIterData *>(pIterData->auxIter.data());
+
+    tmp = dot(pFractal->SliceNorm, direction);
+
+    nProd = 1.0 + tmp * tmp;
+
+    pow = 1.0 / 2.0;
+
+    for (j = 0; j < iters; ++j)
+    {
+        nProd *= pAuxIterStack[j].sNorm;
+        pow /= 2.0;
+    }
+
+    return pow / sqrt(nProd) * log(norm);
+}
+
+DBL EstimatorSpecialOrig_QuatCube(const FractalRules *rules, DBL norm, int iters, const Vector3d& direction,
+                                  const Fractal *pFractal, FractalIterData *pIterData)
+{
+    DBL tmp, nProd, pow;
+    int j;
+
+    QuaternionCubeFractalRules::AuxIterData *pAuxIterStack =
+        static_cast<QuaternionCubeFractalRules::AuxIterData *>(pIterData->auxIter.data());
+
+    tmp = dot(pFractal->SliceNorm, direction);
+
+    nProd = 1.0 + tmp * tmp;
+
+    pow = 1.0 / 3.0;
+
+    for (j = 0; j < iters; ++j)
+    {
+        nProd *= pAuxIterStack[j].sNorm;
+        pow /= 3.0;
+    }
+
+    return pow / sqrt(nProd) * log(norm);
+}
+
+const DistanceEstimator kSpecialOrig_QuatSqr = { EstimatorSpecialOrig_QuatSqr, kOrigSpecialEstimators };
+const DistanceEstimator kSpecialOrig_QuatCube = { EstimatorSpecialOrig_QuatCube, kOrigSpecialEstimators };
+
+}
+
 const DistanceEstimator& QuaternionSqrFractalRules::
 ExtraEstimators(EstimatorType tgtType)
 {
@@ -490,7 +547,7 @@ ExtraEstimators(EstimatorType tgtType)
     case kOrigSpecialEstimators:
         return estimators::kSpecialOrig_QuatSqr;
     default:
-        return BadEstimator();
+        return estimators::BadEstimator();
     }
 }
 
@@ -502,7 +559,7 @@ ExtraEstimators(EstimatorType tgtType)
     case kOrigSpecialEstimators:
         return estimators::kSpecialOrig_QuatCube;
     default:
-        return BadEstimator();
+        return estimators::BadEstimator();
     }
 }
 

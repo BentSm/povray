@@ -41,4 +41,9 @@ The complex functions are currently implemented fairly naively: they do not take
 
 This implementation (introduced in 3.7.1) is significantly different from the implementation that preceded it.  See the user documentation for details.
 
+@section opt_warning Optimization Warning
+
+@warning
+Optimizations that violate the floating-point standards (e.g., @c -ffast-math) can affect the fractal computations.  This is, of course, an issue for reproducibility!
+
 */

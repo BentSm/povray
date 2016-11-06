@@ -284,7 +284,7 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
     for (i = 0; i < pFractal->Num_Iterations; i++)
     {
-        norm = 0.5 * (c0.x * c0.x + c0.y * c0.y + c1.x * c1.x + c1.y * c1.y);
+        norm = 0.5 * (complex_fn::Norm(c0) + complex_fn::Norm(c1));
 
         if (norm > exitValue)
         {
@@ -305,7 +305,7 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
     }
 
-    norm = 0.5 * (c0.x * c0.x + c0.y * c0.y + c1.x * c1.x + c1.y * c1.y);
+    norm = 0.5 * (complex_fn::Norm(c0) + complex_fn::Norm(c1));
 
     if (norm > exitValue)
     {
@@ -344,8 +344,7 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
      * and is a problem for many of even the most basic quaternionic functions (e.g., z^2).
      */
 
-    c0.x = 1.0; c0.y = 0.0;
-    c1.x = 1.0; c1.y = 0.0;
+    c0 = c1 = 1.0;
 
     typename RulesClass<Estimator>::IterationData *pTIterStack =
         reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pTIterData),
@@ -364,8 +363,8 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
                                    pPIterStack[i].point[0], pPIterStack[i].point[1],
                                    i, pFractal, pTIterData, pPIterData))
             {
-                c0.y *= -1.0;
-                c1.y *= -1.0;
+                c0.imag(-c0.imag());
+                c1.imag(-c1.imag());
 
                 complex_fn::Mult(c0, c0, dc0);
                 complex_fn::Mult(c1, c1, dc1);
@@ -384,8 +383,8 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
                            pTIterData);
     }
 
-    c0.y *= -1.0;
-    c1.y *= -1.0;
+    c0.imag(-c0.imag());
+    c1.imag(-c1.imag());
 
     complex_fn::Mult(c0, c0, pTIterStack[nMax].point[0]);
     complex_fn::Mult(c1, c1, pTIterStack[nMax].point[1]);

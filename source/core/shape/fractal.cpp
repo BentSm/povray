@@ -701,8 +701,7 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
     Rules.reset();
 
     Radius_Squared = 0.0;
-    exponent.x = 0.0;
-    exponent.y = 0.0;
+    exponent = Complex(0.0, 0.0);
 
     InitDispatch();
 }

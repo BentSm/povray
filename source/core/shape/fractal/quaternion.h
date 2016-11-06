@@ -37,6 +37,7 @@
 #define POVRAY_CORE_FRACTAL_QUATERNION_H
 
 #include "core/coretypes.h"
+#include "core/math/complexfn.h"
 #include "core/math/vector.h"
 #include "core/shape/fractal/func.h"
 #include "core/shape/fractal/magic.h"
@@ -152,7 +153,7 @@ public:
 
     QuaternionPwrFractalRules(const FractalConstructorData& data) :
         QuaternionFractalRulesBase<pov::QuaternionPwrFractalRules, Estimator>(data, kDiscontinuitySupported),
-        mExponent(data.exponent), mExponentConj(CreateComplex(data.exponent.x, -data.exponent.y)) {}
+        mExponent(data.exponent), mExponentConj(complex_fn::Conj(data.exponent)) {}
 
     inline void IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
                             int iter, const Fractal *pFractal, void *pIterData) const;

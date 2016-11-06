@@ -45,31 +45,23 @@ namespace pov
 
 static inline void ComputeDuplexFromHypercomplex(Complex& rc0, Complex& rc1, DBL x, DBL y, DBL z, DBL w)
 {
-    rc0.x = x - w;
-    rc0.y = y + z;
-    rc1.x = x + w;
-    rc1.y = y - z;
+    rc0 = Complex(x - w, y + z);
+    rc1 = Complex(x + w, y - z);
 }
 
 static inline void ComputeHypercomplexFromDuplex(DBL& rx, DBL& ry, DBL& rz, DBL& rw,
                                                  const Complex& c0, const Complex& c1)
 {
-    rx = .5 * (c0.x + c1.x);
-    ry = .5 * (c0.y + c1.y);
-    rz = .5 * (c0.y - c1.y);
-    rw = .5 * (c1.x - c0.x);
+    rx = .5 * (c0.real() + c1.real());
+    ry = .5 * (c0.imag() + c1.imag());
+    rz = .5 * (c0.imag() - c1.imag());
+    rw = .5 * (c1.real() - c0.real());
 }
 
 /* Helper functions to permit inline creation of certain const structs
    (and const arrays).  These are written in such a way as to permit simple
    replacement for C++11 or higher. */
 #ifndef FRACTAL_USE_CXX11
-
-static inline const Complex CreateComplex(DBL x, DBL y)
-{
-    Complex c = { x, y };
-    return c;
-}
 
 static inline const FractalFuncType CreateFuncType(FractalAlgebra algebra, FractalFunc_FuncType type, FractalFunc_VariantType variant)
 {
@@ -93,7 +85,6 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
 
 #define CREATE_GENERAL(...) {__VA_ARGS__}
 
-#define CreateComplex (Complex)CREATE_GENERAL
 #define CreateFuncType (FractalFuncType)CREATE_GENERAL
 #define CreateRulesInfo (FractalRulesInfo)CREATE_GENERAL
 

@@ -38,7 +38,12 @@
 
 #include "core/configcore.h"
 
+#include <complex>
 #include <stack>
+
+#ifndef HAVE_COMPLEX_INVERSE_TRIG
+#include <boost/math/complex.hpp>
+#endif
 
 #include "base/colour.h"
 #include "base/types.h"
@@ -55,12 +60,15 @@ using namespace pov_base;
 using std::min;
 using std::max;
 
-// from <cmath>; we don't want to always type the namespace for these.
+// from <cmath> and <complex> (and maybe elsewhere); we don't want to always type the namespace for these.
 using std::abs;
 using std::acos;
+using std::acosh;
 using std::asin;
+using std::asinh;
 using std::atan;
 using std::atan2;
+using std::atanh;
 using std::ceil;
 using std::cos;
 using std::cosh;
@@ -484,10 +492,7 @@ inline void VUnpack(Vector3d& dest_vec, const BYTE_XYZ * pack_vec)
     dest_vec.normalize(); // already good to about 1%, but we can do better
 }
 
-struct Complex
-{
-    DBL x, y;
-};
+typedef std::complex<DBL> Complex;
 
 class Fractal;
 

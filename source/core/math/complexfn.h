@@ -5,7 +5,7 @@
 /// This file contains prototypes, etc., for complex math (used for julia_fractal).
 ///
 /// @todo   It might be a good thing to replace much of this with C++03 and
-/// TR1 ~= C99 ~= boost/math/complex functions.
+/// TR1 ~= C99 ~= boost/math/complex functions. -- In progress...
 ///
 /// @copyright
 /// @parblock
@@ -65,7 +65,10 @@ typedef bool DiscontinuityTestFn(Complex&, DBL&, const Complex&, const Complex&,
 ******************************************************************************/
 
 /* It really does not matter at all what this is! */
-static const Complex kCDummy = {0.0, 0.0};
+static const Complex kCDummy(0.0, 0.0);
+
+/* This matters, though! :) */
+static const Complex kImag_Unit(0.0, 1.0);
 
 /*****************************************************************************
 * Global functions
@@ -73,23 +76,22 @@ static const Complex kCDummy = {0.0, 0.0};
 
 inline void Mult(Complex& rTarget, const Complex& source1, const Complex& source2)
 {
-    DBL tmpx;
-    tmpx = source1.x * source2.x - source1.y * source2.y;
-    rTarget.y = source1.x * source2.y + source1.y * source2.x;
-    rTarget.x = tmpx;
+    rTarget = source1 * source2;
 }
 
 inline void Div(Complex& rTarget, const Complex& source1, const Complex& source2)
 {
-    DBL mod, tmpx, yxmod, yymod;
-    mod = pov::Sqr(source2.x) + pov::Sqr(source2.y);
-    if (mod==0)
-        return;
-    yxmod = source2.x/mod;
-    yymod = - source2.y/mod;
-    tmpx = source1.x * yxmod - source1.y * yymod;
-    rTarget.y = source1.x * yymod + source1.y * yxmod;
-    rTarget.x = tmpx;
+    rTarget = source1 / source2;
+}
+
+inline DBL Norm(const Complex& source)
+{
+    return std::norm(source);
+}
+
+inline Complex Conj(const Complex& source)
+{
+    return std::conj(source);
 }
 
 void Exp(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);

@@ -2735,7 +2735,7 @@ ObjectPtr Parser::Parse_Isosurface()
 ObjectPtr Parser::Parse_Julia_Fractal ()
 {
     Fractal *Object;
-    DBL P;
+    DBL P, cx, cy;
     int k;
     bool legacy = false;
 
@@ -2944,7 +2944,8 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
 
         CASE(PWR_TOKEN)
             Object->Func_Type.type = kFunc_Pwr;
-            Parse_Float_Param2(&Object->exponent.x,&Object->exponent.y);
+            Parse_Float_Param2(&cx,&cy);
+            Object->exponent = Complex(cx, cy);
         END_CASE
 
         CASE(CUBE_TOKEN)

@@ -61,53 +61,43 @@ static inline void ComplexRecipAdd(Complex& rC, const Complex& c, const Complex&
 static inline void ComplexRecipDeriv(Complex& rC, const Complex& c);
 
 static inline void ComplexSqrAdd(Complex& rC, const Complex& c, const Complex& a) {
-    DBL tmp;
-    tmp = Sqr(c.x) - Sqr(c.y) + a.x;
-    rC.y = 2 * c.x * c.y + a.y;
-    rC.x = tmp;
+    Complex temp;
+    complex_fn::Sqr(temp, c);
+    rC = temp + a;
 }
 
 static inline void ComplexSqrDeriv(Complex& rC, const Complex& c)
 {
-    rC.x = 2.0 * c.x;
-    rC.y = 2.0 * c.y;
+    rC = 2.0 * c;
 }
 
 static inline void ComplexCubeAdd(Complex& rC, const Complex& c, const Complex& a)
 {
     DBL tmpxx, tmpyy;
-    tmpxx = Sqr(c.x);
-    tmpyy = Sqr(c.y);
-    rC.x = c.x * (tmpxx - 3 * tmpyy) + a.x;
-    rC.y = c.y * (3 * tmpxx - tmpyy) + a.y;
+    tmpxx = Sqr(c.real());
+    tmpyy = Sqr(c.imag());
+    rC = Complex(c.real() * (tmpxx - 3 * tmpyy), c.imag() * (3 * tmpxx - tmpyy)) + a;
 }
 
 static inline void ComplexCubeDeriv(Complex& rC, const Complex& c)
 {
-    DBL tmp;
-    tmp = Sqr(c.x) - Sqr(c.y);
-    rC.y = 6 * c.x * c.y;
-    rC.x = 3 * tmp;
+    Complex temp;
+    complex_fn::Sqr(temp, c);
+    rC = 3.0 * temp;
 }
 
 static inline void ComplexRecipAdd(Complex& rC, const Complex& c, const Complex& a)
 {
-    DBL mod = Sqr(c.x) + Sqr(c.y);
-    if (mod == 0.0)
-        return;
-
-    rC.x = c.x / mod + a.x;
-    rC.y = -c.y / mod + a.y;
+    Complex temp;
+    complex_fn::Recip(temp, c);
+    rC = temp + a;
 }
 
 static inline void ComplexRecipDeriv(Complex& rC, const Complex& c)
 {
-    DBL mod = Sqr(c.x) + Sqr(c.y);
-    if (mod == 0.0)
-        return;
+    DBL mod = complex_fn::Norm(c);
 
-    rC.y = 2 * c.x * c.y / Sqr(mod);
-    rC.x = (1 - 2 * c.x / mod) / mod;
+    rC = Complex((1.0 - 2.0 * c.real() / mod) / mod, 2.0 * c.real() * c.imag() / Sqr(mod));
 }
 
 template <class Estimator>
@@ -187,11 +177,9 @@ IterateCalc(Complex& rC0, Complex& rC1, DBL norm,
     (*(mFunc.pFunc))(rC0, rC0, mExponent);
     (*(mFunc.pFunc))(rC1, rC1, mExponent);
 
-    rC0.x += mDuplexJuliaParm[0].x;
-    rC0.y += mDuplexJuliaParm[0].y;
+    rC0 += mDuplexJuliaParm[0];
 
-    rC1.x += mDuplexJuliaParm[1].x;
-    rC1.y += mDuplexJuliaParm[1].y;
+    rC1 += mDuplexJuliaParm[1];
 }
 
 template <class Estimator>
@@ -219,13 +207,13 @@ DiscontinuityCheck(Complex& rD0, Complex& rD1, DBL& rDist,
     if ((*(mFunc.pDisc))(tmp, dist, t0, p0, mExponent))
     {
         rD0 = tmp;
-        rD1.x = rD1.y = 0.0;
+        rD1 = 0.0;
         rDist = dist;
         return true;
     }
     else if ((*(mFunc.pDisc))(tmp, dist, t1, p1, mExponent))
     {
-        rD0.x = rD0.y = 0.0;
+        rD0 = 0.0;
         rD1 = tmp;
         rDist = dist;
         return true;

@@ -682,6 +682,20 @@ AC_CHECK_FUNCS([asinh],
   [AC_DEFINE([NEED_INVHYP], [], [Inverse hyperbolic functions.])]
 )
 
+# asin(std::complex<T>) and friends
+AC_MSG_CHECKING([for inverse trigonometric functions for std::complex<T>])
+AC_LINK_IFELSE([
+  AC_LANG_PROGRAM(
+    [[#include <complex>]],
+    [[std::complex<double> c = std::atan(std::complex<double>(0.0, 0.0));]]
+  )],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([HAVE_COMPLEX_INVERSE_TRIG], [], [Have inverse trigonometric functions for std::complex<T>.])
+  ],
+  [AC_MSG_RESULT([no])]
+)
+
 # support for non-IEEE compilers (requires libm)
 if test x"$C99_COMPATIBLE_RADIOSITY" != x"" || test x"$ac_cv_sizeof_int" != x"4" || test x"$ac_cv_sizeof_float" != x"4"; then
   AC_CHECK_FUNCS([copysign],

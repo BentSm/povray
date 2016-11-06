@@ -106,8 +106,8 @@ template <template <class> class RulesClass, class Estimator, class BaseRules = 
 class MagicHypercomplexFractalRules : public MagicFractalRulesBase<RulesClass, Estimator, BaseRules> {
 public:
     MagicHypercomplexFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport) :
-        INIT_DUPLEX(mDuplexJuliaParm, CreateComplex(data.juliaParm[X] - data.juliaParm[W], data.juliaParm[Y] + data.juliaParm[Z]),
-                    CreateComplex(data.juliaParm[X] + data.juliaParm[W], data.juliaParm[Y] - data.juliaParm[Z])),
+        INIT_DUPLEX(mDuplexJuliaParm, Complex(data.juliaParm[X] - data.juliaParm[W], data.juliaParm[Y] + data.juliaParm[Z]),
+                    Complex(data.juliaParm[X] + data.juliaParm[W], data.juliaParm[Y] - data.juliaParm[Z])),
         MagicFractalRulesBase<RulesClass, Estimator, BaseRules>(data, discontinuitySupport) {}
     virtual int Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction,
                         DBL *pDist, void *pIterData) const;

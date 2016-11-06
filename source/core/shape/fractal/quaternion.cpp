@@ -54,29 +54,30 @@ namespace pov
 {
 
 #define CalcGenDerivs(n1,n2,n3,n4,normFVal,ny,nz,nw,tmp2)               \
-    tmpx = (n1) * tmp2.x - tmp2.y *                                     \
+    tmpx = (n1) * tmp2.real() - tmp2.imag() *                           \
         ((n2) * ny + (n3) * nz + (n4) * nw);				\
     tmpy = (n2) * (1.0 - ny * ny) * normFVal + ny *                     \
-        ((n1) * tmp2.y + (n2) * ny * tmp2.x +				\
-         (n3) * nz * (tmp2.x - normFVal) +                              \
-         (n4) * nw * (tmp2.x - normFVal));                              \
+        ((n1) * tmp2.imag() + (n2) * ny * tmp2.real() +                 \
+         (n3) * nz * (tmp2.real() - normFVal) +                         \
+         (n4) * nw * (tmp2.real() - normFVal));                         \
     tmpz = (n3) * (1.0 - nz * nz) * normFVal + nz *                     \
-        ((n1) * tmp2.y + (n3) * nz * tmp2.x +				\
-         (n2) * ny * (tmp2.x - normFVal) +                              \
-         (n4) * nw * (tmp2.x - normFVal));                              \
+        ((n1) * tmp2.imag() + (n3) * nz * tmp2.real() +                 \
+         (n2) * ny * (tmp2.real() - normFVal) +                         \
+         (n4) * nw * (tmp2.real() - normFVal));                         \
     tmpw = (n4) * (1.0 - nw * nw) * normFVal + nw *                     \
-        ((n1) * tmp2.y + (n4) * nw * tmp2.x +				\
-         (n2) * ny * (tmp2.x - normFVal) +                              \
-         (n3) * nz * (tmp2.x - normFVal));                              \
+        ((n1) * tmp2.imag() + (n4) * nw * tmp2.real() +                 \
+         (n2) * ny * (tmp2.real() - normFVal) +                         \
+         (n3) * nz * (tmp2.real() - normFVal));                         \
                                                                         \
     (n1) = tmpx; (n2) = tmpy; (n3) = tmpz; (n4) = tmpw
 
 #define AltGenDerivs(n1,n2,n3,n4,tmp2)                                  \
-    (n1) *= tmp2.x; (n2) *= tmp2.x; (n3) *= tmp2.x; (n4) *= tmp2.x
+    (n1) *= tmp2.real(); (n2) *= tmp2.real();                           \
+    (n3) *= tmp2.real(); (n4) *= tmp2.real()
 
-#define ComponentComplexMult(n1,n2,c0)          \
-    tmpx = (n1) * (c0).x - (n2) * (c0).y;       \
-    (n2) = (n2) * (c0).x + (n1) * (c0).y;       \
+#define ComponentComplexMult(n1,n2,c0)                  \
+    tmpx = (n1) * (c0).real() - (n2) * (c0).imag();     \
+    (n2) = (n2) * (c0).real() + (n1) * (c0).imag();     \
     (n1) = tmpx
 
 template <class Estimator>
@@ -212,23 +213,22 @@ IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
 
     pIterStack[iter].nNorm = nNorm = sqrt(rY * rY + rZ * rZ + rW * rW);
 
-    tmp1.x = rX;
-    tmp1.y = nNorm;
+    tmp1 = Complex(rX, nNorm);
 
     (*(mFunc.pFunc))(tmp2, tmp1, mExponent);
 
     if (nNorm == 0.0)
     {
-        pIterStack[iter].normFVal = normFVal = tmp2.y;
+        pIterStack[iter].normFVal = normFVal = tmp2.imag();
         if (normFVal != 0.0)
             return;
     }
     else
     {
-        pIterStack[iter].normFVal = normFVal = tmp2.y / nNorm;
+        pIterStack[iter].normFVal = normFVal = tmp2.imag() / nNorm;
     }
 
-    rX = tmp2.x + mJuliaParm[X];
+    rX = tmp2.real() + mJuliaParm[X];
     rY = rY * normFVal + mJuliaParm[Y];
     rZ = rZ * normFVal + mJuliaParm[Z];
     rW = rW * normFVal + mJuliaParm[W];
@@ -256,8 +256,7 @@ ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, D
         if (nNorm == 0.0 && normFVal != 0.0)
             return;
 
-        tmp1.x = x;
-        tmp1.y = nNorm;
+        tmp1 = Complex(x, nNorm);
 
         (*(mFunc.pDeriv))(tmp2, tmp1, mExponent);
 
@@ -294,23 +293,21 @@ DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
         reinterpret_cast<typename QuaternionFuncFractalRules::IterationData *>(pTIterData),
         *pPIterStack = reinterpret_cast<typename QuaternionFuncFractalRules::IterationData *>(pPIterData);
 
-    tPt.x = tx;
-    tPt.y = pTIterStack[iter].nNorm;
+    tPt = Complex(tx, pTIterStack[iter].nNorm);
 
-    pPt.x = px;
-    pPt.y = pPIterStack[iter].nNorm;
+    pPt = Complex(px, pPIterStack[iter].nNorm);
 
     if ((*(mFunc.pDisc))(tmp, dist, tPt, pPt, mExponent))
     {
-        rDx = tmp.x;
+        rDx = tmp.real();
         if (pTIterStack[iter].nNorm == 0.0)
         {
-            rDy = tmp.y;
+            rDy = tmp.imag();
             rDz = rDw = 0.0;
         }
         else
         {
-            nc = tmp.y / pTIterStack[iter].nNorm;
+            nc = tmp.imag() / pTIterStack[iter].nNorm;
             rDy = ty * nc;
             rDz = tz * nc;
             rDw = tw * nc;
@@ -335,25 +332,22 @@ IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
 
     pIterStack[iter].nNorm[0] = nNorm1 = sqrt(rY * rY + rZ * rZ + rW * rW);
 
-    tmp1.x = rX;
-    tmp1.y = nNorm1;
+    tmp1 = Complex(rX, nNorm1);
 
     complex_fn::Ln(tmp1, tmp1);
 
     if (nNorm1 == 0.0)
     {
-        pIterStack[iter].normFVal[0] = normFVal1 = tmp1.y;
+        pIterStack[iter].normFVal[0] = normFVal1 = tmp1.imag();
     }
     else
     {
-        pIterStack[iter].normFVal[0] = normFVal1 = tmp1.y / nNorm1;
+        pIterStack[iter].normFVal[0] = normFVal1 = tmp1.imag() / nNorm1;
     }
 
-    lg0.x = tmp1.x;
-    lg0.y = rY * normFVal1;
+    lg0 = Complex(tmp1.real(), rY * normFVal1);
 
-    lg1.x = rZ * normFVal1;
-    lg1.y = rW * normFVal1;
+    lg1 = Complex(rZ * normFVal1, rW * normFVal1);
 
     complex_fn::Mult(lg0, lg0, mExponent);
     if (InfoRulesBase<>::mInfo.funcType.variant == kVar_Left)
@@ -368,10 +362,9 @@ IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
     pIterStack[iter].lg[0] = lg0;
     pIterStack[iter].lg[1] = lg1;
 
-    pIterStack[iter].nNorm[1] = nNorm2 = sqrt(lg0.y * lg0.y + lg1.x * lg1.x + lg1.y * lg1.y);
+    pIterStack[iter].nNorm[1] = nNorm2 = sqrt(complex_fn::Norm(lg0) + complex_fn::Norm(lg1));
 
-    tmp1.x = lg0.x;
-    tmp1.y = nNorm2;
+    tmp1 = Complex(lg0.real(), nNorm2);
 
     complex_fn::Exp(tmp1, tmp1);
 
@@ -379,17 +372,17 @@ IterateCalc(DBL& rX, DBL& rY, DBL& rZ, DBL& rW, DBL norm,
 
     if (nNorm2 == 0.0)
     {
-        pIterStack[iter].normFVal[1] = normFVal2 = tmp1.y;
+        pIterStack[iter].normFVal[1] = normFVal2 = tmp1.imag();
     }
     else
     {
-        pIterStack[iter].normFVal[1] = normFVal2 = tmp1.y / nNorm2;
+        pIterStack[iter].normFVal[1] = normFVal2 = tmp1.imag() / nNorm2;
     }
 
-    rX = tmp1.x + mJuliaParm[X];
-    rY = lg0.y * normFVal2 + mJuliaParm[Y];
-    rZ = lg1.x * normFVal2 + mJuliaParm[Z];
-    rW = lg1.y * normFVal2 + mJuliaParm[W];
+    rX = tmp1.real() + mJuliaParm[X];
+    rY = lg0.imag() * normFVal2 + mJuliaParm[Y];
+    rZ = lg1.real() * normFVal2 + mJuliaParm[Z];
+    rW = lg1.imag() * normFVal2 + mJuliaParm[W];
 }
 
 template <class Estimator>
@@ -411,8 +404,7 @@ ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, D
         nNorm1 = pIterStack[iter].nNorm[0];
         normFVal1 = pIterStack[iter].normFVal[0];
 
-        tmp1.x = x;
-        tmp1.y = nNorm1;
+        tmp1 = Complex(x, nNorm1);
 
         complex_fn::Recip(tmp21, tmp1);
 
@@ -430,9 +422,9 @@ ApplyDirDerivCalc(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL x, DBL y, DBL z, D
 
         if (nNorm2 != 0.0)
         {
-            ny2 = pIterStack[iter].lg[0].y / nNorm2;
-            nz2 = pIterStack[iter].lg[1].x / nNorm2;
-            nw2 = pIterStack[iter].lg[1].y / nNorm2;
+            ny2 = pIterStack[iter].lg[0].imag() / nNorm2;
+            nz2 = pIterStack[iter].lg[1].real() / nNorm2;
+            nw2 = pIterStack[iter].lg[1].imag() / nNorm2;
         }
     }
 
@@ -478,23 +470,21 @@ DiscontinuityCheck(DBL& rDx, DBL& rDy, DBL& rDz, DBL& rDw, DBL& rDist,
         reinterpret_cast<typename QuaternionPwrFractalRules::IterationData *>(pTIterData),
         *pPIterStack = reinterpret_cast<typename QuaternionPwrFractalRules::IterationData *>(pPIterData);
 
-    tPt.x = tx;
-    tPt.y = pTIterStack[iter].nNorm[0];
+    tPt = Complex(tx, pTIterStack[iter].nNorm[0]);
 
-    pPt.x = px;
-    pPt.y = pPIterStack[iter].nNorm[0];
+    pPt = Complex(px, pPIterStack[iter].nNorm[0]);
 
     if (complex_fn::NegReal_DTest(tmp, dist, tPt, pPt, mExponent))
     {
-        rDx = tmp.x;
+        rDx = tmp.real();
         if (pTIterStack[iter].nNorm[0] == 0.0)
         {
-            rDy = tmp.y;
+            rDy = tmp.imag();
             rDz = rDw = 0.0;
         }
         else
         {
-            nc = tmp.y / pTIterStack[iter].nNorm[0];
+            nc = tmp.imag() / pTIterStack[iter].nNorm[0];
             rDy = ty * nc;
             rDz = tz * nc;
             rDw = tw * nc;

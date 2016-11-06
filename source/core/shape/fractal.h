@@ -51,14 +51,6 @@ namespace pov
 * Global preprocessor defines
 ******************************************************************************/
 
-static const Vector3d kDummyVector;
-
-#define BIteration(V,F,IS) ( (F)->Rules->Iterate(V,F,kDummyVector,NULL,IS) == (F)->Num_Iterations + 1 )
-#define Iteration(V,F,IS,n) ( (n = (F)->Rules->Iterate(V,F,kDummyVector,NULL,IS)) == (F)->Num_Iterations + 1 )
-#define Normal_Calc(F,V,IST,ISP,n) ( (F)->Rules->CalcNormal(V,n,F,IST,ISP) )
-#define F_Bound(R,F,dm,dM) ( (F)->Rules->Bound(R,F,dm,dM) )
-#define D_Iteration(V,F,I,D,IS,n) ( (n = (F)->Rules->Iterate(V,F,I,D,IS)) == (F)->Num_Iterations + 1 )
-
 /*****************************************************************************
 * Global typedefs
 ******************************************************************************/
@@ -105,11 +97,8 @@ public:
 
     static const int kNumIterStacks = 3;
 
-    static void Free_Iteration_Stacks(void **apIterData);
-    static void Allocate_Iteration_Stacks(void **apIterData, int size);
-
     int SetUp_Fractal();
-    int IterationDataSize() const;
+    const FractalDataSizes& IterationDataSizes() const;
 
 };
 

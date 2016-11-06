@@ -2,13 +2,13 @@
 ///
 /// @file core/shape/fractal/distestimator.h
 ///
-/// This module implements distance estimators for use in fractals.
+/// This module contains prototypes and definitions for `distestimator.cpp'.
 ///
 /// @copyright
 /// @parblock
 ///
 /// Persistence of Vision Ray Tracer ('POV-Ray') version 3.7.
-/// Copyright 1991-2015 Persistence of Vision Raytracer Pty. Ltd.
+/// Copyright 1991-2016 Persistence of Vision Raytracer Pty. Ltd.
 ///
 /// POV-Ray is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Affero General Public License as
@@ -37,6 +37,9 @@
 #define POVRAY_CORE_FRACTAL_DISTESTIMATOR_H
 
 #include "core/coretypes.h"
+
+#include "base/pov_err.h"
+
 #include "core/math/vector.h"
 #include "core/shape/fractal.h"
 #include "core/shape/fractal/types.h"
@@ -50,150 +53,28 @@ namespace pov
    constants. */
 const DBL kDistanceEstimatorTolerance = 1e-8;
 
-class DistEstimatorNone
-{
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *, DBL, int, const Vector3d&, const Fractal *pFractal, void *)
-    {
-        return pFractal->Precision;
-    }
+typedef DBL EstimatorFunc(const FractalRules *pRules, DBL norm, int iters, const Vector3d& direction,
+                          const Fractal *pFractal, FractalIterData *pIterData);
 
-    static const EstimatorType eType = kNoEstimator;
+struct DistanceEstimator
+{
+    EstimatorFunc *pEstim;
+    EstimatorType eType;
 };
 
-class DistEstimatorNewton
+namespace estimators
 {
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *pRules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL step, fValue, trustAmt;
-        Vector3d normal;
 
-        trustAmt = pow(pFractal->Jump_Decay, iters) * pFractal->Jump_Max * pFractal->Precision;
-        if (trustAmt < pFractal->Precision * pFractal->Jump_Min)
-        {
-            return pFractal->Precision;
-        }
+extern const DistanceEstimator kNone;
+extern const DistanceEstimator kNewton;
+extern const DistanceEstimator kNewtonOrig;
 
-        step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
-
-        step *= (step < 0 ? -2 : 2);
-
-        fValue = norm - pFractal->Exit_Value;
-
-        if (fValue > trustAmt * step)
-        {
-            return trustAmt;
-        }
-        else if (fValue > pFractal->Precision * step)
-        {
-            return fValue / step;
-        }
-
-        return pFractal->Precision;
-    }
-
-    static const EstimatorType eType = kNewtonEstimator;
-};
-
-class DistEstimatorNewtonOrig
+static inline const DistanceEstimator& BadEstimator()
 {
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *pRules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL step, fValue;
-        Vector3d normal;
+    throw POV_EXCEPTION_STRING("Unsupported distance estimator for fractal type.");
+}
 
-        step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
-
-        if (step < -kDistanceEstimatorTolerance)
-        {
-            step *= -2;
-
-            fValue = norm - pFractal->Exit_Value;
-
-            if (fValue > pFractal->Precision * pFractal->Jump_Max * step)
-            {
-                return pFractal->Precision;
-            }
-            else if (fValue > pFractal->Precision * step)
-            {
-                return fValue / step;
-            }
-        }
-
-        return pFractal->Precision;
-    }
-
-    static const EstimatorType eType = kOrigNewtonEstimator;
-};
-
-class DistEstimatorSpecialOrig_QuatSqr
-{
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *rules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL tmp, nProd, pow;
-        int j;
-
-        typename Rules::IterationData *pIterStack =
-            reinterpret_cast<typename Rules::IterationData *>(pIterData);
-
-        tmp = dot(pFractal->SliceNorm, direction);
-
-        nProd = 1.0 + tmp * tmp;
-
-        pow = 1.0 / 2.0;
-
-        for (j = 0; j < iters; ++j)
-        {
-            nProd *= pIterStack[j].sNorm;
-            pow /= 2.0;
-        }
-
-        return pow / sqrt(nProd) * log(norm);
-    }
-
-    static const EstimatorType eType = kOrigSpecialEstimators;
-};
-
-class DistEstimatorSpecialOrig_QuatCube
-{
-public:
-    template <class Rules>
-    static inline DBL Call(const Rules *rules, DBL norm, int iters, const Vector3d& direction,
-                           const Fractal *pFractal, void *pIterData)
-    {
-        DBL tmp, nProd, pow;
-        int j;
-
-        typename Rules::IterationData *pIterStack =
-            reinterpret_cast<typename Rules::IterationData *>(pIterData);
-
-        tmp = dot(pFractal->SliceNorm, direction);
-
-        nProd = 1.0 + tmp * tmp;
-
-        pow = 1.0 / 3.0;
-
-        for (j = 0; j < iters; ++j)
-        {
-            nProd *= pIterStack[j].sNorm;
-            pow /= 3.0;
-        }
-
-        return pow / sqrt(nProd) * log(norm);
-    }
-
-    static const EstimatorType eType = kOrigSpecialEstimators;
-};
+}
 
 }
 

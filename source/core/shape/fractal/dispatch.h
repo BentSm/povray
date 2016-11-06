@@ -8,7 +8,7 @@
 /// @parblock
 ///
 /// Persistence of Vision Ray Tracer ('POV-Ray') version 3.7.
-/// Copyright 1991-2015 Persistence of Vision Raytracer Pty. Ltd.
+/// Copyright 1991-2016 Persistence of Vision Raytracer Pty. Ltd.
 ///
 /// POV-Ray is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Affero General Public License as
@@ -38,7 +38,6 @@
 
 #include "core/coretypes.h"
 
-#include <cstdarg>
 #include <map>
 #include <set>
 
@@ -47,17 +46,24 @@
 namespace pov
 {
 
+template <class Rules>
+FractalRulesPtr MakeCreatorFunc(const FractalConstructorData& data)
+{
+    return static_cast<FractalRulesPtr>(new Rules(data));
+}
+
 class RulesDispatch
 {
 public:
-    RulesDispatch(const FractalFuncType& fType, int priority = 0);
-    RulesDispatch(const std::set<FractalFuncType> fTypes, int priority = 0);
+    typedef FractalRulesPtr CreatorFunc(const FractalConstructorData&);
+
+    RulesDispatch(CreatorFunc *func, const FractalFuncType& fType, int priority = 0);
+    RulesDispatch(CreatorFunc *func, const std::set<FractalFuncType> fTypes, int priority = 0);
 
     static FractalRulesPtr CreateNew(const FractalConstructorData& data);
 
 protected:
-    virtual FractalRulesPtr MakeRules(const FractalConstructorData& data) const = 0;
-
+    CreatorFunc *mCreatorFunc;
     const int mPriority;
 
     static std::map<FractalFuncType, const RulesDispatch *>& DispatchMap()
@@ -66,24 +72,6 @@ protected:
         return theMap;
     }
 };
-
-template <int n>
-static inline const std::set<FractalFuncType> CreateFuncTypeSet(const FractalFuncType t0, ...)
-{
-    std::set<FractalFuncType> s;
-    int i;
-    va_list typeList;
-    FractalFuncType f;
-    va_start(typeList, t0);
-    s.insert(t0);
-    for (i = 1; i < n; i++)
-    {
-        f = va_arg(typeList, const FractalFuncType);
-        s.insert(f);
-    }
-    va_end(typeList);
-    return s;
-}
 
 void InitDispatch();
 

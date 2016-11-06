@@ -1,17 +1,17 @@
 //******************************************************************************
 ///
-/// @file core/shape/fractal/magicimpl.h
+/// @file core/shape/fractal/magic.cpp
 ///
 /// This module contains the generic implementation of FractalRules subclasses.
 ///
-/// (This was originally named for the templating 'magic' that it uses, but
+/// (This was originally named for the templating 'magic' that it used, but
 /// could equally well be described as the 'magic' that makes everything work!)
 ///
 /// @copyright
 /// @parblock
 ///
 /// Persistence of Vision Ray Tracer ('POV-Ray') version 3.7.
-/// Copyright 1991-2015 Persistence of Vision Raytracer Pty. Ltd.
+/// Copyright 1991-2016 Persistence of Vision Raytracer Pty. Ltd.
 ///
 /// POV-Ray is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Affero General Public License as
@@ -36,10 +36,9 @@
 ///
 //******************************************************************************
 
-#ifndef POVRAY_CORE_FRACTAL_MAGICIMPL_H
-#define POVRAY_CORE_FRACTAL_MAGICIMPL_H
+// configcore.h must always be the first POV file included in core *.cpp files (pulls in platform config)
+#include "core/configcore.h"
 
-#include "core/coretypes.h"
 #include "core/shape/fractal/magic.h"
 
 #include "base/pov_err.h"
@@ -47,21 +46,48 @@
 #include "core/math/complexfn.h"
 #include "core/math/vector.h"
 #include "core/shape/fractal.h"
+#include "core/shape/fractal/distestimator.h"
 #include "core/shape/fractal/util.h"
+
+// this must be the last file included
+#include "base/povdebug.h"
 
 namespace pov
 {
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-void MagicFractalRulesBase<RulesClass, Estimator, BaseRules>::
-CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
+const DistanceEstimator& MagicRulesBase::
+GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator, EstimatorType legacyEstimator,
+                     const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType))
 {
-    static_cast<const RulesClass<Estimator> *>(this)->NonVirtualCalcNormalWDisc(rResult, nMax, pFractal, pTIterData, pPIterData);
+    EstimatorType tgtType = estimatorType;
+    if (tgtType == kDefaultEstimator)
+        tgtType = defaultEstimator;
+    if (tgtType == kLegacyEstimator)
+        tgtType = legacyEstimator;
+    switch (tgtType)
+    {
+    case kInvalidEstimator:
+        return estimators::BadEstimator();
+
+    case kNoEstimator:
+        return estimators::kNone;
+
+    case kNewtonEstimator:
+        return estimators::kNewton;
+
+    case kOrigNewtonEstimator:
+        return estimators::kNewtonOrig;
+
+    default:
+        if (ExtraEstimators != NULL)
+            return (*ExtraEstimators)(tgtType);
+        else
+            return estimators::BadEstimator();
+    }
 }
 
 // This was adapted from the Sphere::Intersect code
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-bool MagicFractalRulesBase<RulesClass, Estimator, BaseRules>::
+bool MagicRulesBase::
 Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const
 {
     DBL OCSquared, t_Closest_Approach, Half_Chord, t_Half_Chord_Squared, OCWComp, DirSquared, DirWComp;
@@ -80,7 +106,7 @@ Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthM
     t_Closest_Approach = -(dot(Center_To_Origin, ray.Direction) + OCWComp * DirWComp) / DirSquared;
 
     if ((OCSquared >= pFractal->Radius_Squared) && (t_Closest_Approach < EPSILON))
-        return(false);
+        return false;
 
     t_Half_Chord_Squared = (pFractal->Radius_Squared - OCSquared) / DirSquared + Sqr(t_Closest_Approach);
 
@@ -91,25 +117,24 @@ Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthM
         *pDepthMin = t_Closest_Approach - Half_Chord;
         *pDepthMax = t_Closest_Approach + Half_Chord;
 
-        return(true);
+        return true;
     }
 
-    return(false);
+    return false;
 }
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-int MagicQuaternionFractalRules<RulesClass, Estimator, BaseRules>::
+
+int MagicQuaternionFractalRules::
 Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction, DBL *pDist,
-        void *pIterData) const
+        FractalIterData *pIterData) const
 {
     int i;
     VECTOR_4D v = {iPoint[X], iPoint[Y], iPoint[Z], pFractal->SliceDistNorm - dot(pFractal->SliceNorm, iPoint)};
     DBL norm, exitValue;
 
-    typename RulesClass<Estimator>::IterationData *pIterStack =
-        reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pIterData);
+    VECTOR_4D *pIterStack = static_cast<VECTOR_4D *>(pIterData->mainIter.data());
 
-    Assign_Vector_4D(pIterStack[0].point, v);
+    Assign_Vector_4D(pIterStack[0], v);
 
     exitValue = pFractal->Exit_Value;
 
@@ -121,17 +146,15 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
         {
             if (pDist != NULL)
             {
-                *pDist = Estimator::Call(static_cast<const RulesClass<Estimator> *>(this), norm, i, direction,
-                                         pFractal, pIterData);
+                *pDist = (*(mEstimator.pEstim))(this, norm, i, direction, pFractal, pIterData);
             }
 
             return i;
         }
 
-        static_cast<const RulesClass<Estimator> *>(this)->
-            IterateCalc(v, norm, i, pFractal, pIterData);
+        IterateCalc(v, norm, i, pFractal, pIterData);
 
-        Assign_Vector_4D(pIterStack[i+1].point, v);
+        Assign_Vector_4D(pIterStack[i+1], v);
 
     }
 
@@ -141,8 +164,7 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
     {
         if (pDist != NULL)
         {
-            *pDist = Estimator::Call(static_cast<const RulesClass<Estimator> *>(this), norm,
-                                     pFractal->Num_Iterations, direction, pFractal, pIterData);
+            *pDist = (*(mEstimator.pEstim))(this, norm, pFractal->Num_Iterations, direction, pFractal, pIterData);
         }
 
         return pFractal->Num_Iterations;
@@ -157,28 +179,24 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
 }
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-template <bool disc>
-void MagicQuaternionFractalRules<RulesClass, Estimator, BaseRules>::
-TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
+void MagicQuaternionFractalRules::
+CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     VECTOR_4D nX = {1.0, 0.0, 0.0, -pFractal->SliceNorm[X]},
               nY = {0.0, 1.0, 0.0, -pFractal->SliceNorm[Y]},
               nZ = {0.0, 0.0, 1.0, -pFractal->SliceNorm[Z]};
     int i;
 
-    typename RulesClass<Estimator>::IterationData *pTIterStack =
-        reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pTIterData),
-        *pPIterStack = reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pPIterData);
+    VECTOR_4D *pTIterStack = static_cast<VECTOR_4D *>(pTIterData->mainIter.data()),
+        *pPIterStack = (pPIterData != NULL ? static_cast<VECTOR_4D *>(pPIterData->mainIter.data()) : NULL);
 
     for (i = 0; i < nMax; i++)
     {
-        if (disc && pFractal->Discontinuity_Test > 0)
+        if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
         {
             VECTOR_4D d;
             DBL dist;
-            if (static_cast<const RulesClass<Estimator> *>(this)->
-                DiscontinuityCheck(d, dist, pTIterStack[i].point, pPIterStack[i].point,
+            if (DiscontinuityCheck(d, dist, pTIterStack[i], pPIterStack[i],
                                    i, pFractal, pTIterData, pPIterData))
             {
                 V4D_Dot(rResult[X], nX, d);
@@ -188,65 +206,56 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
             }
         }
 
-        static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(nX, pTIterStack[i].point, i, false, pFractal, pTIterData);
-        static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(nY, pTIterStack[i].point, i, true, pFractal, pTIterData);
-        static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(nZ, pTIterStack[i].point, i, true, pFractal, pTIterData);
+        DirDerivCalc(nX, pTIterStack[i], i, false, pFractal, pTIterData);
+        DirDerivCalc(nY, pTIterStack[i], i, true, pFractal, pTIterData);
+        DirDerivCalc(nZ, pTIterStack[i], i, true, pFractal, pTIterData);
     }
 
-    V4D_Dot(rResult[X], nX, pTIterStack[nMax].point);
-    V4D_Dot(rResult[Y], nY, pTIterStack[nMax].point);
-    V4D_Dot(rResult[Z], nZ, pTIterStack[nMax].point);
+    V4D_Dot(rResult[X], nX, pTIterStack[nMax]);
+    V4D_Dot(rResult[Y], nY, pTIterStack[nMax]);
+    V4D_Dot(rResult[Z], nZ, pTIterStack[nMax]);
 }
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-DBL MagicQuaternionFractalRules<RulesClass, Estimator, BaseRules>::
-CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, void *pIterData) const
+DBL MagicQuaternionFractalRules::
+CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     VECTOR_4D d = {dir[X], dir[Y], dir[Z], -dot(pFractal->SliceNorm, dir)};
     int i;
     DBL res;
 
-    typename RulesClass<Estimator>::IterationData *pIterStack =
-        reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pIterData);
+    VECTOR_4D *pIterStack = static_cast<VECTOR_4D *>(pIterData->mainIter.data());
 
     for (i = 0; i < nMax; i++)
     {
-        static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDirDerivCalc(d, pIterStack[i].point, i, false, pFractal, pIterData);
+        DirDerivCalc(d, pIterStack[i], i, false, pFractal, pIterData);
     }
 
-    V4D_Dot(res, d, pIterStack[nMax].point);
+    V4D_Dot(res, d, pIterStack[nMax]);
     return res;
 }
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-bool MagicQuaternionFractalRules<RulesClass, Estimator, BaseRules>::
+bool MagicQuaternionFractalRules::
 DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
-                   int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
+                   int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     throw POV_EXCEPTION_STRING("Discontinuity detection not supported for this fractal type.");
 }
 
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-int MagicHypercomplexFractalRules<RulesClass, Estimator, BaseRules>::
+int MagicHypercomplexFractalRules::
 Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction, DBL *pDist,
-        void *pIterData) const
+        FractalIterData *pIterData) const
 {
     int i;
     Duplex d;
     DBL norm, exitValue;
     VECTOR_4D v = {iPoint[X], iPoint[Y], iPoint[Z], pFractal->SliceDistNorm - dot(pFractal->SliceNorm, iPoint)};
 
-    typename RulesClass<Estimator>::IterationData *pIterStack =
-        reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pIterData);
+    Duplex *pIterStack = static_cast<Duplex *>(pIterData->mainIter.data());
 
     ComputeDuplexFromHypercomplex(d, v);
 
-    AssignDuplex(pIterStack[0].point, d);
+    AssignDuplex(pIterStack[0], d);
 
     exitValue = pFractal->Exit_Value;
 
@@ -258,16 +267,15 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
         {
             if (pDist != NULL)
             {
-                *pDist = Estimator::Call(static_cast<const RulesClass<Estimator> *>(this), norm, i, direction,
-                                         pFractal, pIterData);
+                *pDist = (*(mEstimator.pEstim))(this, norm, i, direction, pFractal, pIterData);
             }
 
             return i;
         }
 
-        static_cast<const RulesClass<Estimator> *>(this)->IterateCalc(d, norm, i, pFractal, pIterData);
+        IterateCalc(d, norm, i, pFractal, pIterData);
 
-        AssignDuplex(pIterStack[i+1].point, d);
+        AssignDuplex(pIterStack[i+1], d);
 
     }
 
@@ -277,8 +285,7 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
     {
         if (pDist != NULL)
         {
-            *pDist = Estimator::Call(static_cast<const RulesClass<Estimator> *>(this), norm,
-                                     pFractal->Num_Iterations, direction, pFractal, pIterData);
+            *pDist = (*(mEstimator.pEstim))(this, norm, pFractal->Num_Iterations, direction, pFractal, pIterData);
         }
 
         return pFractal->Num_Iterations;
@@ -293,10 +300,8 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
 }
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-template <bool disc>
-void MagicHypercomplexFractalRules<RulesClass, Estimator, BaseRules>::
-TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
+void MagicHypercomplexFractalRules::
+CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     int i;
     Duplex d = {{1.0, 0.0}, {1.0, 0.0}};
@@ -310,19 +315,16 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
      * and is a problem for many of even the most basic quaternionic functions (e.g., z^2).
      */
 
-    typename RulesClass<Estimator>::IterationData *pTIterStack =
-        reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pTIterData),
-        *pPIterStack = reinterpret_cast<typename RulesClass<Estimator>::IterationData *>(pPIterData);
-
+    Duplex *pTIterStack = static_cast<Duplex *>(pTIterData->mainIter.data()),
+        *pPIterStack = (pPIterData != NULL ? static_cast<Duplex *>(pPIterData->mainIter.data()) : NULL);
 
     for (i = 0; i < nMax; i++)
     {
-        if (disc && pFractal->Discontinuity_Test > 0)
+        if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
         {
             Duplex dc;
             DBL dist;
-            if (static_cast<const RulesClass<Estimator> *>(this)->
-                DiscontinuityCheck(dc, dist, pTIterStack[i].point, pPIterStack[i].point,
+            if (DiscontinuityCheck(dc, dist, pTIterStack[i], pPIterStack[i],
                                    i, pFractal, pTIterData, pPIterData))
             {
                 d[0].y *= -1.0;
@@ -340,15 +342,15 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
                 return;
             }
         }
-        static_cast<const RulesClass<Estimator> *>(this)->
-            ApplyDerivCalc(d, pTIterStack[i].point, i, pFractal, pTIterData);
+
+        DerivCalc(d, pTIterStack[i], i, pFractal, pTIterData);
     }
 
     d[0].y *= -1.0;
     d[1].y *= -1.0;
 
-    complex_fn::Mult(d[0], d[0], pTIterStack[nMax].point[0]);
-    complex_fn::Mult(d[1], d[1], pTIterStack[nMax].point[1]);
+    complex_fn::Mult(d[0], d[0], pTIterStack[nMax][0]);
+    complex_fn::Mult(d[1], d[1], pTIterStack[nMax][1]);
 
     ComputeHypercomplexFromDuplex(v, d);
 
@@ -357,14 +359,12 @@ TemplatedCalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, void *
     rResult[Z] = (v[Z] - v[W] * pFractal->SliceNorm[Z]);
 }
 
-template <template <class> class RulesClass, class Estimator, class BaseRules>
-bool MagicHypercomplexFractalRules<RulesClass, Estimator, BaseRules>::
+bool MagicHypercomplexFractalRules::
 DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
-                   int iter, const Fractal *pFractal, void *pTIterData, void *pPIterData) const
+                   int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     throw POV_EXCEPTION_STRING("Discontinuity detection not supported for this fractal type.");
 }
 
 }
 
-#endif

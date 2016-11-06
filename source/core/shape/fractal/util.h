@@ -8,7 +8,7 @@
 /// @parblock
 ///
 /// Persistence of Vision Ray Tracer ('POV-Ray') version 3.7.
-/// Copyright 1991-2015 Persistence of Vision Raytracer Pty. Ltd.
+/// Copyright 1991-2016 Persistence of Vision Raytracer Pty. Ltd.
 ///
 /// POV-Ray is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Affero General Public License as
@@ -38,6 +38,9 @@
 
 #include "core/coretypes.h"
 
+#include <cstdarg>
+#include <set>
+
 #include "core/shape/fractal/types.h"
 
 namespace pov
@@ -65,6 +68,39 @@ static inline void AssignDuplex(Duplex& rD, const Duplex& s)
     rD[1] = s[1];
 }
 
+template <typename T>
+static inline int GetADataSize()
+{
+    return (typeid(NilFractalData) == typeid(T) ? 0 : sizeof(T));
+}
+
+template <class Rules>
+static inline const FractalDataSizes GetDataSizes()
+{
+    FractalDataSizes sizes = { GetADataSize<typename Rules::FixedData>(),
+                               GetADataSize<typename Rules::MainIterData>(),
+                               GetADataSize<typename Rules::AuxIterData>() };
+    return sizes;
+}
+
+template <int n, typename T>
+static inline const std::set<T> CreateSet(T t0, ...)
+{
+    std::set<T> s;
+    int i;
+    va_list tList;
+    T t;
+    va_start(tList, t0);
+    s.insert(t0);
+    for (i = 1; i < n; i++)
+    {
+        t = va_arg(tList, T);
+        s.insert(t);
+    }
+    va_end(tList);
+    return s;
+}
+
 /* Helper functions to permit inline creation of certain const structs
    (and const arrays).  These are written in such a way as to permit simple
    replacement for C++11 or higher. */
@@ -82,10 +118,10 @@ static inline const FractalFuncType CreateFuncType(FractalAlgebra algebra, Fract
     return f;
 }
 
-static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& funcType, EstimatorType estimatorType,
-                                                     DiscontinuitySupportLevel discontinuitySupport, int iterationDataSize)
+static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& funcType, DiscontinuitySupportLevel discontinuitySupport,
+                                                     const FractalDataSizes& sizes, EstimatorType estimatorType)
 {
-    FractalRulesInfo f = { funcType, estimatorType, discontinuitySupport, iterationDataSize };
+    FractalRulesInfo f = { funcType, discontinuitySupport, sizes, estimatorType };
     return f;
 }
 

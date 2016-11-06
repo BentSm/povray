@@ -63,6 +63,8 @@ namespace pov
 * Local variables
 ******************************************************************************/
 
+static const Vector3d kDummyVector;
+
 const DBL Fractal_Tolerance = 1e-7;
 
 /*****************************************************************************
@@ -146,7 +148,7 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
 
     /* Bound fractal. */
 
-    if (!F_Bound(New_Ray, this, &Depth, &Depth_Max))
+    if (!Rules->Bound(New_Ray, this, &Depth, &Depth_Max))
     {
         return (false);
     }
@@ -165,7 +167,9 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
 
     Next_Point = New_Ray.Origin + Direction * Depth;
 
-    CurrentIsInside = D_Iteration(Next_Point, this, Direction, &Dist, cStack, cIter);
+    cIter = Rules->Iterate(Next_Point, this, Direction, &Dist, cStack);
+
+    CurrentIsInside = (cIter == Num_Iterations + 1);
 
     /* Light ray starting inside ? */
 
@@ -180,7 +184,9 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
             return (false);
         }
 
-        CurrentIsInside = D_Iteration(Next_Point, this, Direction, &Dist, cStack, cIter);
+        cIter = Rules->Iterate(Next_Point, this, Direction, &Dist, cStack);
+
+        CurrentIsInside = (cIter == Num_Iterations + 1);
     }
 
     /* Ok. Trace it */
@@ -218,7 +224,9 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
             IPoint = Next_Point;
             Next_Point += Dist * Direction;
 
-            NextIsInside = D_Iteration(Next_Point, this, Direction, &Dist_Next, nStack, nIter);
+            nIter = Rules->Iterate(Next_Point, this, Direction, &Dist_Next, nStack);
+
+            NextIsInside = (nIter == Num_Iterations + 1);
 
             if (NextIsInside != CurrentIsInside)
             {
@@ -242,7 +250,9 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
             Dist *= 0.5;
             Mid_Point = IPoint + Dist * Direction;
 
-            LastIsInside = Iteration(Mid_Point, this, lStack, lIter);
+            lIter = Rules->Iterate(Mid_Point, this, kDummyVector, NULL, lStack);
+
+            LastIsInside = (lIter == Num_Iterations + 1);
 
             if (LastIsInside == CurrentIsInside)
             {
@@ -280,7 +290,7 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
             {
                 IPoint += Dist * Direction;
 
-                BIteration(IPoint, this, nStack);
+                Rules->Iterate(IPoint, this, kDummyVector, NULL, nStack);
             }
             else
             {
@@ -296,20 +306,20 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
 
             if (!LastIsInside) /* Mid_Point isn't inside the set */
             {
-                BIteration(IPoint, this, cStack);
+                Rules->Iterate(IPoint, this, kDummyVector, NULL, cStack);
             }
         }
 
         if (Trans != NULL)
         {
             MTransPoint(Real_Pt, IPoint, Trans);
-            Normal_Calc(this, F_Normal, tStack, pStack, tIter);
+            Rules->CalcNormal(F_Normal, tIter, this, tStack, pStack);
             MTransNormal(Real_Normal, F_Normal, Trans);
         }
         else
         {
             Real_Pt = IPoint;
-            Normal_Calc(this, Real_Normal, tStack, pStack, tIter);
+            Rules->CalcNormal(Real_Normal, tIter, this, tStack, pStack);
         }
 
         if (Clip.empty() || Point_In_Clip(Real_Pt, Clip, Thread))
@@ -375,11 +385,13 @@ bool Fractal::Inside(const Vector3d& IPoint, TraceThreadData *Thread) const
     {
         MInvTransPoint(New_Point, IPoint, Trans);
 
-        Result = BIteration(New_Point, this, &(Thread->Fractal_IterData[0]));
+        Result = (Rules->Iterate(New_Point, this, kDummyVector, NULL,
+                                 &(Thread->Fractal_IterData[0])) == Num_Iterations + 1);
     }
     else
     {
-        Result = BIteration(IPoint, this, &(Thread->Fractal_IterData[0]));
+        Result = (Rules->Iterate(IPoint, this, kDummyVector, NULL,
+                                 &(Thread->Fractal_IterData[0])) == Num_Iterations + 1);
     }
 
     if (Test_Flag(this, INVERTED_FLAG))

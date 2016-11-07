@@ -285,7 +285,6 @@ class Parser : public SceneTask
             pov_base::ITextStream *In_File;
             pov_base::OTextStream *Out_File;
             bool R_Flag;
-            SYM_ENTRY* Sym_Entry;
         };
 
         enum IdentifierMode

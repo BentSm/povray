@@ -3514,6 +3514,7 @@ void Parser::Parse_Fopen(void)
     New->In_File=NULL;
     New->Out_File=NULL;
     New->fopenCompleted = false;
+    New->inUse = false;
 
     GET(IDENTIFIER_TOKEN)
     Entry = Add_Symbol (1,Token.Token_String,FILE_ID_TOKEN);
@@ -3580,6 +3581,10 @@ void Parser::Parse_Fclose(void)
             Data=reinterpret_cast<DATA_FILE *>(Token.Data);
             if (!Data->fopenCompleted)
                 Error ("#fopen statement incomplete.");
+            if (Data->inUse)
+                Error("File %s closed during file access.", (Data->In_File != NULL ?
+                                                             UCS2toASCIIString(UCS2String(Data->In_File->name())).c_str() :
+                                                             UCS2toASCIIString(UCS2String(Data->Out_File->name())).c_str()));
             if(Data->In_File != NULL)
                 delete Data->In_File;
             if(Data->Out_File != NULL)
@@ -3613,6 +3618,12 @@ void Parser::Parse_Read()
         Error ("#fopen statement incomplete.");
     if(User_File->In_File == NULL)
         Error("Cannot read from file %s because the file is open for writing only.", UCS2toASCIIString(UCS2String(User_File->Out_File->name())).c_str());
+    if (User_File->inUse)
+        Error("File %s is already in use.", (User_File->In_File != NULL ?
+                                             UCS2toASCIIString(UCS2String(User_File->In_File->name())).c_str() :
+                                             UCS2toASCIIString(UCS2String(User_File->Out_File->name())).c_str()));
+
+    User_File->inUse = true;
 
     Parse_Comma(); /* Scene file comma between File_Id and 1st data ident */
 
@@ -3673,6 +3684,8 @@ void Parser::Parse_Read()
     END_EXPECT
 
     LValue_Ok = false;
+
+    User_File->inUse = false;
 
     if (End_File)
     {
@@ -3826,6 +3839,12 @@ void Parser::Parse_Write(void)
         Error ("#fopen statement incomplete.");
     if(User_File->Out_File == NULL)
         Error("Cannot write to file %s because the file is open for reading only.", UCS2toASCIIString(UCS2String(User_File->In_File->name())).c_str());
+    if (User_File->inUse)
+        Error("File %s is already in use.", (User_File->In_File != NULL ?
+                                             UCS2toASCIIString(UCS2String(User_File->In_File->name())).c_str() :
+                                             UCS2toASCIIString(UCS2String(User_File->Out_File->name())).c_str()));
+
+    User_File->inUse = true;
 
     Parse_Comma();
 
@@ -3943,6 +3962,8 @@ void Parser::Parse_Write(void)
             Expectation_Error("string");
         END_CASE
     END_EXPECT
+
+    User_File->inUse = false;
 }
 
 DBL Parser::Parse_Cond_Param(void)

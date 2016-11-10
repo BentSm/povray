@@ -119,7 +119,7 @@ public:
     virtual DBL CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
     {
         Vector3d normal;
-        CalcNormal(normal, nMax, pFractal, pIterData, NULL);
+        MagicHypercomplexFractalRules::CalcNormal(normal, nMax, pFractal, pIterData, NULL);
         return dot(dir, normal);
     }
 

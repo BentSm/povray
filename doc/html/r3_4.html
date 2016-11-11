@@ -4964,7 +4964,7 @@ FUNCTION_TYPE      : sqr
 max_iteration      : 20
 bailout            : 4 (*)
 precision          : 20
-slice, DISTANCE    : &lt;0,0,0,1&gt;, 0.0
+slice, DISTANCE    : &lt;0,0,0,1&gt;, 0
 discontinuity_test : on
 distance_estimator : 1
 jump_max           : 30
@@ -5000,15 +5000,23 @@ none is specified, the default is <code>max_iteration 20</code>.</p>
 <p>Since the mathematical object described by this algorithm is four-dimensional
 and POV-Ray renders three dimensional objects, there must be a way to reduce
 the number of dimensions of the object from four dimensions to three. This is
-accomplished by intersecting the 4-D fractal with a 3-D plane defined by the <code>slice</code> modifier and then projecting the
-intersection to 3-D space. The keyword is followed by 4-D vector and a float
-separated by a comma. The slice plane is the 3-D space that is perpendicular
+accomplished by intersecting the 4-D fractal with a 3-D plane defined by the
+<code>slice</code> modifier and then <em>projecting</em> the intersection to
+3-D space. The keyword is followed by 4-D vector and a float, separated by a
+comma. The slice plane is the 3-D space that is perpendicular
 to <em><code>&lt;4D_Normal&gt;</code></em> and is <em><code>
 Distance</code></em> units from the origin. Zero length <em><code>
 &lt;4D_Normal&gt;</code></em> vectors or a <em><code>
 &lt;4D_Normal&gt;</code></em> vector with a zero fourth component are
 illegal. If none is specified, the default is <code>slice
 &lt;0,0,0,1&gt;,0</code>.</p>
+
+<p class="Note">
+<strong>Note:</strong>
+Projecting the slice plane onto 3-D space (instead of, say, rotating it into
+3-D space) tends to produce an object that is distorted relative to its 4-D
+actuality. (This is not a problem, though, with the default slice.)
+<em>Caveat lector.</em></p>
 
 <p>You can get a good feel for the four dimensional nature of a julia fractal by
 using POV-Ray's animation feature to vary a slice's <em><code>

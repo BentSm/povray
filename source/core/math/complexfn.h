@@ -74,22 +74,22 @@ static const Complex kCDummy = {0.0, 0.0};
 inline void Mult(Complex& rTarget, const Complex& source1, const Complex& source2)
 {
     DBL tmpx;
-    tmpx = source1.x * source2.x - source1.y * source2.y;
-    rTarget.y = source1.x * source2.y + source1.y * source2.x;
-    rTarget.x = tmpx;
+    tmpx = source1[X] * source2[X] - source1[Y] * source2[Y];
+    rTarget[Y] = source1[X] * source2[Y] + source1[Y] * source2[X];
+    rTarget[X] = tmpx;
 }
 
 inline void Div(Complex& rTarget, const Complex& source1, const Complex& source2)
 {
     DBL mod, tmpx, yxmod, yymod;
-    mod = pov::Sqr(source2.x) + pov::Sqr(source2.y);
+    mod = pov::Sqr(source2[X]) + pov::Sqr(source2[Y]);
     if (mod==0)
         return;
-    yxmod = source2.x/mod;
-    yymod = - source2.y/mod;
-    tmpx = source1.x * yxmod - source1.y * yymod;
-    rTarget.y = source1.x * yymod + source1.y * yxmod;
-    rTarget.x = tmpx;
+    yxmod = source2[X]/mod;
+    yymod = - source2[Y]/mod;
+    tmpx = source1[X] * yxmod - source1[Y] * yymod;
+    rTarget[Y] = source1[X] * yymod + source1[Y] * yxmod;
+    rTarget[X] = tmpx;
 }
 
 void Exp(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);

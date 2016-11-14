@@ -58,52 +58,52 @@ static inline void ComplexRecipDeriv(Complex& rC, const Complex& c);
 
 static inline void ComplexSqrAdd(Complex& rC, const Complex& c, const Complex& a) {
     DBL tmp;
-    tmp = Sqr(c.x) - Sqr(c.y) + a.x;
-    rC.y = 2 * c.x * c.y + a.y;
-    rC.x = tmp;
+    tmp = Sqr(c[X]) - Sqr(c[Y]) + a[X];
+    rC[Y] = 2 * c[X] * c[Y] + a[Y];
+    rC[X] = tmp;
 }
 
 static inline void ComplexSqrDeriv(Complex& rC, const Complex& c)
 {
-    rC.x = 2.0 * c.x;
-    rC.y = 2.0 * c.y;
+    rC[X] = 2.0 * c[X];
+    rC[Y] = 2.0 * c[Y];
 }
 
 static inline void ComplexCubeAdd(Complex& rC, const Complex& c, const Complex& a)
 {
     DBL tmpxx, tmpyy;
-    tmpxx = Sqr(c.x);
-    tmpyy = Sqr(c.y);
-    rC.x = c.x * (tmpxx - 3 * tmpyy) + a.x;
-    rC.y = c.y * (3 * tmpxx - tmpyy) + a.y;
+    tmpxx = Sqr(c[X]);
+    tmpyy = Sqr(c[Y]);
+    rC[X] = c[X] * (tmpxx - 3 * tmpyy) + a[X];
+    rC[Y] = c[Y] * (3 * tmpxx - tmpyy) + a[Y];
 }
 
 static inline void ComplexCubeDeriv(Complex& rC, const Complex& c)
 {
     DBL tmp;
-    tmp = Sqr(c.x) - Sqr(c.y);
-    rC.y = 6 * c.x * c.y;
-    rC.x = 3 * tmp;
+    tmp = Sqr(c[X]) - Sqr(c[Y]);
+    rC[Y] = 6 * c[X] * c[Y];
+    rC[X] = 3 * tmp;
 }
 
 static inline void ComplexRecipAdd(Complex& rC, const Complex& c, const Complex& a)
 {
-    DBL mod = Sqr(c.x) + Sqr(c.y);
+    DBL mod = Sqr(c[X]) + Sqr(c[Y]);
     if (mod == 0.0)
         return;
 
-    rC.x = c.x / mod + a.x;
-    rC.y = -c.y / mod + a.y;
+    rC[X] = c[X] / mod + a[X];
+    rC[Y] = -c[Y] / mod + a[Y];
 }
 
 static inline void ComplexRecipDeriv(Complex& rC, const Complex& c)
 {
-    DBL mod = Sqr(c.x) + Sqr(c.y);
+    DBL mod = Sqr(c[X]) + Sqr(c[Y]);
     if (mod == 0.0)
         return;
 
-    rC.y = 2 * c.x * c.y / Sqr(mod);
-    rC.x = (1 - 2 * c.x / mod) / mod;
+    rC[Y] = 2 * c[X] * c[Y] / Sqr(mod);
+    rC[X] = (1 - 2 * c[X] / mod) / mod;
 }
 
 void HypercomplexSqrFractalRules::
@@ -169,11 +169,11 @@ IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIter
     (*(mFunc.pFunc))(rC[0], rC[0], mExponent);
     (*(mFunc.pFunc))(rC[1], rC[1], mExponent);
 
-    rC[0].x += mDuplexJuliaParm[0].x;
-    rC[0].y += mDuplexJuliaParm[0].y;
+    rC[0][X] += mDuplexJuliaParm[0][X];
+    rC[0][Y] += mDuplexJuliaParm[0][Y];
 
-    rC[1].x += mDuplexJuliaParm[1].x;
-    rC[1].y += mDuplexJuliaParm[1].y;
+    rC[1][X] += mDuplexJuliaParm[1][X];
+    rC[1][Y] += mDuplexJuliaParm[1][Y];
 }
 
 void HypercomplexFuncFractalRules::
@@ -196,15 +196,15 @@ DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
     DBL dist;
     if ((*(mFunc.pDisc))(tmp, dist, t[0], p[0], mExponent))
     {
-        rD[0] = tmp;
-        rD[1].x = rD[1].y = 0.0;
+        AssignComplex(rD[0], tmp);
+        rD[1][X] = rD[1][Y] = 0.0;
         rDist = dist;
         return true;
     }
     else if ((*(mFunc.pDisc))(tmp, dist, t[1], p[1], mExponent))
     {
-        rD[0].x = rD[0].y = 0.0;
-        rD[1] = tmp;
+        rD[0][X] = rD[0][Y] = 0.0;
+        AssignComplex(rD[1], tmp);
         rDist = dist;
         return true;
     }

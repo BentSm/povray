@@ -48,25 +48,32 @@ namespace pov
 
 static inline void ComputeDuplexFromHypercomplex(Duplex& rd, const VECTOR_4D& h)
 {
-    rd[0].x = h[X] - h[W];
-    rd[0].y = h[Y] + h[Z];
-    rd[1].x = h[X] + h[W];
-    rd[1].y = h[Y] - h[Z];
+    rd[0][X] = h[X] - h[W];
+    rd[0][Y] = h[Y] + h[Z];
+    rd[1][X] = h[X] + h[W];
+    rd[1][Y] = h[Y] - h[Z];
 }
 
 static inline void ComputeHypercomplexFromDuplex(VECTOR_4D& rh, const Duplex &d)
 {
-    rh[X] = .5 * (d[0].x + d[1].x);
-    rh[Y] = .5 * (d[0].y + d[1].y);
-    rh[Z] = .5 * (d[0].y - d[1].y);
-    rh[W] = .5 * (d[1].x - d[0].x);
+    rh[X] = .5 * (d[0][X] + d[1][X]);
+    rh[Y] = .5 * (d[0][Y] + d[1][Y]);
+    rh[Z] = .5 * (d[0][Y] - d[1][Y]);
+    rh[W] = .5 * (d[1][X] - d[0][X]);
+}
+
+static inline void AssignComplex(Complex& rC, const Complex &c)
+{
+    rC[X] = c[X];
+    rC[Y] = c[Y];
 }
 
 static inline void AssignDuplex(Duplex& rD, const Duplex& s)
 {
-    rD[0] = s[0];
-    rD[1] = s[1];
+    AssignComplex(rD[0], s[0]);
+    AssignComplex(rD[1], s[1]);
 }
+
 
 template <typename T>
 static inline int GetADataSize()
@@ -106,12 +113,6 @@ static inline const std::set<T> CreateSet(T t0, ...)
    replacement for C++11 or higher. */
 #ifndef FRACTAL_USE_CXX11
 
-static inline const Complex CreateComplex(DBL x, DBL y)
-{
-    Complex c = { x, y };
-    return c;
-}
-
 static inline const FractalFuncType CreateFuncType(FractalAlgebra algebra, FractalFunc_FuncType type, FractalFunc_VariantType variant)
 {
     FractalFuncType f = { algebra, type, variant };
@@ -125,7 +126,8 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
     return f;
 }
 
-#define INIT_DUPLEX(var, v0, v1) var(v0, v1)
+#define INIT_COMPLEX(var, v0, v1) var(v0, v1)
+#define INIT_DUPLEX(var, hx, hy, hz, hw) var(hx, hy, hz, hw)
 #define INIT_VECTOR_4D(var, qx, qy, qz, qw) var(qx, qy, qz, qw)
 
 #else
@@ -133,13 +135,14 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
 /* The easy part. */
 
 #define CREATE_GENERAL(...) {__VA_ARGS__}
+#define INIT_GENERAL(var, ...) var{__VA_ARGS__}
 
-#define CreateComplex (Complex)CREATE_GENERAL
 #define CreateFuncType (FractalFuncType)CREATE_GENERAL
 #define CreateRulesInfo (FractalRulesInfo)CREATE_GENERAL
 
-#define INIT_DUPLEX(var, v0, v1) var{v0, v1}
-#define INIT_VECTOR_4D(var, qx, qy, qz, qw) var{qx, qy, qz, qw}
+#define INIT_COMPLEX INIT_GENERAL
+#define INIT_DUPLEX INIT_GENERAL
+#define INIT_VECTOR_4D INIT_GENERAL
 
 #endif
 

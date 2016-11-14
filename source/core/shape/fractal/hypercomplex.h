@@ -89,7 +89,7 @@ public:
         MagicHypercomplexFractalRules(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType)),
                                       GetDataSizes<HypercomplexFuncFractalRules>(),
                                       GetEstimatorFromType(data.estimatorType)),
-        mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) { }
+        mFunc(FractalFuncForType(data.funcType)), INIT_COMPLEX(mExponent, data.exponent[X], data.exponent[Y]) { }
 
     virtual void IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
     virtual void DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
@@ -99,7 +99,7 @@ public:
 
 protected:
     const FractalFunc mFunc;
-    const Complex mExponent;
+    const IComplex mExponent;
 };
 
 void HypercomplexDispatchInit();

@@ -107,8 +107,8 @@ public:
 
     MagicHypercomplexFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
                                   const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
-        INIT_DUPLEX(mDuplexJuliaParm, CreateComplex(data.juliaParm[X] - data.juliaParm[W], data.juliaParm[Y] + data.juliaParm[Z]),
-                    CreateComplex(data.juliaParm[X] + data.juliaParm[W], data.juliaParm[Y] - data.juliaParm[Z])),
+        INIT_DUPLEX(mDuplexJuliaParm, data.juliaParm[X] - data.juliaParm[W], data.juliaParm[Y] + data.juliaParm[Z],
+                    data.juliaParm[X] + data.juliaParm[W], data.juliaParm[Y] - data.juliaParm[Z]),
         MagicRulesBase(data, discontinuitySupport, sizes, estimator) {}
 
     virtual int Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction,

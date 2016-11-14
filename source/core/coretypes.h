@@ -528,10 +528,7 @@ struct FrameSettings
 ///
 /// @{
 
-struct Complex
-{
-    DBL x, y;
-};
+typedef DBL Complex[2];
 
 class Fractal;
 

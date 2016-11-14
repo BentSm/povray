@@ -2947,7 +2947,7 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
 
         CASE(PWR_TOKEN)
             Object->Func_Type.type = kFunc_Pwr;
-            Parse_Float_Param2(&Object->exponent.x,&Object->exponent.y);
+            Parse_Float_Param2(&Object->exponent[X],&Object->exponent[Y]);
         END_CASE
 
         CASE(CUBE_TOKEN)

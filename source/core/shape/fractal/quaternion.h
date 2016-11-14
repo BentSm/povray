@@ -114,7 +114,7 @@ public:
         MagicQuaternionFractalRules(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType)),
                                     GetDataSizes<QuaternionFuncFractalRules>(),
                                     GetEstimatorFromType(data.estimatorType)),
-        mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) { }
+        mFunc(FractalFuncForType(data.funcType)), INIT_COMPLEX(mExponent, data.exponent[X], data.exponent[Y]) { }
 
     virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
     virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
@@ -124,7 +124,7 @@ public:
 
 protected:
     const FractalFunc mFunc;
-    const Complex mExponent;
+    const IComplex mExponent;
 };
 
 class QuaternionPwrFractalRules : public MagicQuaternionFractalRules
@@ -139,7 +139,7 @@ public:
         MagicQuaternionFractalRules(data, kDiscontinuitySupported,
                                     GetDataSizes<QuaternionPwrFractalRules>(),
                                     GetEstimatorFromType(data.estimatorType)),
-        mExponent(data.exponent), mExponentConj(CreateComplex(data.exponent.x, -data.exponent.y)) { }
+        INIT_COMPLEX(mExponent, data.exponent[X], data.exponent[Y]), INIT_COMPLEX(mExponentConj, data.exponent[X], -data.exponent[Y]) { }
 
     virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
     virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
@@ -148,7 +148,7 @@ public:
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:
-    const Complex mExponent, mExponentConj;
+    const IComplex mExponent, mExponentConj;
 };
 
 void QuaternionDispatchInit();

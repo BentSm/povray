@@ -48,6 +48,7 @@
 #include "core/scene/tracethreaddata.h"
 #include "core/shape/fractal/dispatch.h"
 #include "core/shape/fractal/types.h"
+#include "core/shape/fractal/util.h"
 
 // this must be the last file included
 #include "base/povdebug.h"
@@ -713,8 +714,8 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
     Rules.reset();
 
     Radius_Squared = 0.0;
-    exponent.x = 0.0;
-    exponent.y = 0.0;
+    exponent[X] = 0.0;
+    exponent[Y] = 0.0;
 
     InitDispatch();
 }
@@ -816,7 +817,7 @@ int Fractal::SetUp_Fractal()
 
     ctorData.estimatorType = Distance_Estimator;
     ctorData.funcType = Func_Type;
-    ctorData.exponent = exponent;
+    AssignComplex(ctorData.exponent, exponent);
 
     /* ... And this is [one reason] why all that dispatch stuff is nice! */
     Rules = RulesDispatch::CreateNew(ctorData);

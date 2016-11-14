@@ -202,20 +202,21 @@ struct FractalConstructorData
 /* If we don't have C++11, we can't initialize const arrays... */
 #ifndef FRACTAL_USE_CXX11
 
-template <class T, unsigned N>
+template <class T, unsigned N, class U = T, unsigned M = N>
 class IArray
 {
 public:
-    IArray(const T t0, ...)
+    IArray(const U u0, ...)
     {
         va_list vals;
         int i;
-        va_start(vals, t0);
-        value[0] = t0;
-        for (i = 1; i < N; i++)
-            value[i] = va_arg(vals, const T);
+        va_start(vals, u0);
+        reinterpret_cast<U *>(value)[0] = u0;
+        for (i = 1; i < M; i++)
+            reinterpret_cast<U *>(value)[i] = va_arg(vals, const U);
         va_end(vals);
     }
+
     T& operator[](unsigned k) { return value[k]; }
     const T& operator[](unsigned k) const { return value[k]; }
 
@@ -228,11 +229,13 @@ private:
     Array_Type value;
 };
 
-typedef IArray<Complex, 2> IDuplex;
+typedef IArray<DBL, 2> IComplex;
+typedef IArray<Complex, 2, DBL, 4> IDuplex;
 typedef IArray<DBL, 4> IVECTOR_4D;
 
 #else
 
+typedef Complex IComplex;
 typedef Duplex IDuplex;
 typedef VECTOR_4D IVECTOR_4D;
 

@@ -261,7 +261,7 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
     for (i = 0; i < pFractal->Num_Iterations; i++)
     {
-        norm = 0.5 * (d[0].x * d[0].x + d[0].y * d[0].y + d[1].x * d[1].x + d[1].y * d[1].y);
+        norm = 0.5 * (d[0][X] * d[0][X] + d[0][Y] * d[0][Y] + d[1][X] * d[1][X] + d[1][Y] * d[1][Y]);
 
         if (norm > exitValue)
         {
@@ -279,7 +279,7 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
     }
 
-    norm = 0.5 * (d[0].x * d[0].x + d[0].y * d[0].y + d[1].x * d[1].x + d[1].y * d[1].y);
+    norm = 0.5 * (d[0][X] * d[0][X] + d[0][Y] * d[0][Y] + d[1][X] * d[1][X] + d[1][Y] * d[1][Y]);
 
     if (norm > exitValue)
     {
@@ -327,8 +327,8 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
             if (DiscontinuityCheck(dc, dist, pTIterStack[i], pPIterStack[i],
                                    i, pFractal, pTIterData, pPIterData))
             {
-                d[0].y *= -1.0;
-                d[1].y *= -1.0;
+                d[0][Y] *= -1.0;
+                d[1][Y] *= -1.0;
 
                 complex_fn::Mult(d[0], d[0], dc[0]);
                 complex_fn::Mult(d[1], d[1], dc[1]);
@@ -346,8 +346,8 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
         DerivCalc(d, pTIterStack[i], i, pFractal, pTIterData);
     }
 
-    d[0].y *= -1.0;
-    d[1].y *= -1.0;
+    d[0][Y] *= -1.0;
+    d[1][Y] *= -1.0;
 
     complex_fn::Mult(d[0], d[0], pTIterStack[nMax][0]);
     complex_fn::Mult(d[1], d[1], pTIterStack[nMax][1]);

@@ -484,10 +484,7 @@ inline void VUnpack(Vector3d& dest_vec, const BYTE_XYZ * pack_vec)
     dest_vec.normalize(); // already good to about 1%, but we can do better
 }
 
-struct Complex
-{
-    DBL x, y;
-};
+typedef DBL Complex[2];
 
 class Fractal;
 

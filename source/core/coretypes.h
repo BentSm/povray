@@ -484,16 +484,31 @@ inline void VUnpack(Vector3d& dest_vec, const BYTE_XYZ * pack_vec)
     dest_vec.normalize(); // already good to about 1%, but we can do better
 }
 
+struct Complex
+{
+    DBL x, y;
+};
+
 class Fractal;
+
+struct FractalRulesInfo;
+
+struct FractalIterData;
+
+struct FractalDataSizes
+{
+    int fixedSize, mainIterSize, auxIterSize;
+};
 
 class FractalRules
 {
     public:
         virtual ~FractalRules() {}
-        virtual void CalcNormal (Vector3d&, int, const Fractal *, DBL **) const = 0;
-        virtual bool Iterate (const Vector3d&, const Fractal *, DBL **) const = 0;
-        virtual bool Iterate (const Vector3d&, const Fractal *, const Vector3d&, DBL *, DBL **) const = 0;
-        virtual bool Bound (const BasicRay&, const Fractal *, DBL *, DBL *) const = 0;
+        virtual int Iterate(const Vector3d&, const Fractal *, const Vector3d&, DBL *, FractalIterData *) const = 0;
+        virtual void CalcNormal(Vector3d&, int, const Fractal *, FractalIterData *, FractalIterData *) const = 0;
+        virtual DBL CalcDirDeriv(const Vector3d&, int, const Fractal *, FractalIterData *) const = 0;
+        virtual bool Bound(const BasicRay&, const Fractal *, DBL *, DBL *) const = 0;
+        virtual const FractalRulesInfo& Info() const = 0;
 };
 
 typedef shared_ptr<FractalRules> FractalRulesPtr;

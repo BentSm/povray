@@ -528,8 +528,6 @@ struct FrameSettings
 ///
 /// @{
 
-typedef DBL Complex[2];
-
 class Fractal;
 
 struct FractalRulesInfo;
@@ -545,10 +543,11 @@ class FractalRules
 {
     public:
         virtual ~FractalRules() {}
-        virtual int Iterate(const Vector3d&, const Fractal *, const Vector3d&, DBL *, FractalIterData *) const = 0;
-        virtual void CalcNormal(Vector3d&, int, const Fractal *, FractalIterData *, FractalIterData *) const = 0;
-        virtual DBL CalcDirDeriv(const Vector3d&, int, const Fractal *, FractalIterData *) const = 0;
         virtual bool Bound(const BasicRay&, const Fractal *, DBL *, DBL *) const = 0;
+        virtual void TransformTo4D(Vector4d&, const Vector3d&, const Fractal *) const = 0;
+        virtual int Iterate(const Vector4d&, const Fractal *, const Vector4d&, DBL *, FractalIterData *) const = 0;
+        virtual DBL CalcDirDeriv(const Vector4d&, int, const Fractal *, FractalIterData *) const = 0;
+        virtual void CalcNormal(Vector3d&, int, const Fractal *, FractalIterData *, FractalIterData *) const = 0;
         virtual const FractalRulesInfo& Info() const = 0;
 };
 

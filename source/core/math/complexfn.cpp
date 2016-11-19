@@ -71,7 +71,7 @@ namespace complex_fn
  *
  ******************************************************************************/
 
-void Sqr(Complex& rTarget, const Complex& source, const Complex&)
+void Sqr(Complex rTarget, const Complex source, const Complex)
 {
     DBL tmpx;
     tmpx = pov::Sqr(source[X]) - pov::Sqr(source[Y]);
@@ -79,7 +79,7 @@ void Sqr(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[X] = tmpx;
 }
 
-void Sqrt(Complex& rTarget, const Complex& source, const Complex&)
+void Sqrt(Complex rTarget, const Complex source, const Complex)
 {
     DBL mag;
     DBL theta;
@@ -97,7 +97,7 @@ void Sqrt(Complex& rTarget, const Complex& source, const Complex&)
     }
 }
 
-void Ln(Complex& rTarget, const Complex& source, const Complex&)
+void Ln(Complex rTarget, const Complex source, const Complex)
 {
     DBL mod, zx, zy;
     mod = pov::Sqr(source[X]) + pov::Sqr(source[Y]);
@@ -108,7 +108,7 @@ void Ln(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[Y] = zy;
 }
 
-void Recip(Complex& rTarget, const Complex& source, const Complex&)
+void Recip(Complex rTarget, const Complex source, const Complex)
 {
     DBL mod = pov::Sqr(source[X]) + pov::Sqr(source[Y]);
     if (mod == 0.0)
@@ -117,7 +117,7 @@ void Recip(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[Y] = -source[Y] / mod;
 }
 
-void Exp(Complex& rTarget, const Complex& source, const Complex&)
+void Exp(Complex rTarget, const Complex source, const Complex)
 {
     DBL expx;
     expx = exp(source[X]);
@@ -125,32 +125,32 @@ void Exp(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[Y] = expx * sin(source[Y]);
 }
 
-void Sin(Complex& rTarget, const Complex& source, const Complex&)
+void Sin(Complex rTarget, const Complex source, const Complex)
 {
     rTarget[X] = sin(source[X]) * cosh(source[Y]);
     rTarget[Y] = cos(source[X]) * sinh(source[Y]);
 }
 
-void Sinh(Complex& rTarget, const Complex& source, const Complex&)
+void Sinh(Complex rTarget, const Complex source, const Complex)
 {
     rTarget[X] = sinh(source[X]) * cos(source[Y]);
     rTarget[Y] = cosh(source[X]) * sin(source[Y]);
 }
 
 
-void Cos(Complex& rTarget, const Complex& source, const Complex&)
+void Cos(Complex rTarget, const Complex source, const Complex)
 {
     rTarget[X] = cos(source[X]) * cosh(source[Y]);
     rTarget[Y] = -sin(source[X]) * sinh(source[Y]);
 }
 
-void Cos_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void Cos_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     rTarget[X] = -sin(source[X]) * cosh(source[Y]);
     rTarget[Y] = -cos(source[X]) * sinh(source[Y]);
 }
 
-void Cosh(Complex& rTarget, const Complex& source, const Complex&)
+void Cosh(Complex rTarget, const Complex source, const Complex)
 {
     rTarget[X] = cosh(source[X]) * cos(source[Y]);
     rTarget[Y] = sinh(source[X]) * sin(source[Y]);
@@ -158,7 +158,7 @@ void Cosh(Complex& rTarget, const Complex& source, const Complex&)
 
 
 /* rz=Arcsin(z)=-i*Log{i*z+sqrt(1-z*z)} */
-void ASin(Complex& rTarget, const Complex& source, const Complex&)
+void ASin(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp1, temp2;
 
@@ -173,7 +173,7 @@ void ASin(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[X] = temp1[Y];  rTarget[Y] = -temp1[X];
 }
 
-void ASin_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void ASin_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
     Sqr(temp, source);
@@ -183,7 +183,7 @@ void ASin_Deriv(Complex& rTarget, const Complex& source, const Complex&)
     Recip(rTarget, temp);
 }
 
-void ACos(Complex& rTarget, const Complex& source, const Complex&)
+void ACos(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
 
@@ -205,7 +205,7 @@ void ACos(Complex& rTarget, const Complex& source, const Complex&)
 }
 
 /* There are some oddities with this function, due to branch cuts. */
-void ACos_Alt(Complex& rTarget, const Complex& source, const Complex&)
+void ACos_Alt(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
 
@@ -219,7 +219,7 @@ void ACos_Alt(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[X] = temp[Y];  rTarget[Y] = -temp[X];
 }
 
-void ACos_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void ACos_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
     Sqr(temp, source);
@@ -230,7 +230,7 @@ void ACos_Deriv(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[X] = temp[Y]; rTarget[Y] = -temp[X];
 }
 
-void ASinh(Complex& rTarget, const Complex& source, const Complex&)
+void ASinh(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
 
@@ -241,7 +241,7 @@ void ASinh(Complex& rTarget, const Complex& source, const Complex&)
     Ln(rTarget, temp);
 }
 
-void ASinh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void ASinh_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
     Sqr(temp, source);
@@ -252,7 +252,7 @@ void ASinh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
 }
 
 /* rz=Arccosh(z)=Log(z+sqrt(z*z-1)} */
-void ACosh(Complex& rTarget, const Complex& source, const Complex&)
+void ACosh(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
 
@@ -272,7 +272,7 @@ void ACosh(Complex& rTarget, const Complex& source, const Complex&)
 }
 
 /* There are some oddities with this function, due to branch cuts. */
-void ACosh_Alt(Complex& rTarget, const Complex& source, const Complex&)
+void ACosh_Alt(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
     Sqr(temp, source);
@@ -282,7 +282,7 @@ void ACosh_Alt(Complex& rTarget, const Complex& source, const Complex&)
     Ln(rTarget, temp);
 }
 
-void ACosh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void ACosh_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
     Sqr(temp, source);
@@ -293,7 +293,7 @@ void ACosh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
 }
 
 /* rz=Arctanh(z)=1/2*Log{(1+z)/(1-z)} */
-void ATanh(Complex& rTarget, const Complex& source, const Complex&)
+void ATanh(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp0, temp1, temp2;
 
@@ -327,7 +327,7 @@ void ATanh(Complex& rTarget, const Complex& source, const Complex&)
     }
 }
 
-void ATanh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void ATanh_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
     Sqr(temp, source);
@@ -336,7 +336,7 @@ void ATanh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
 }
 
 /* rz=Arctan(z)=i/2*Log{(1-i*z)/(1+i*z)} */
-void ATan(Complex& rTarget, const Complex& source, const Complex&)
+void ATan(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp0, temp1, temp2, temp3;
     if (source[X] == 0.0 && source[Y] == 0.0)
@@ -364,7 +364,7 @@ void ATan(Complex& rTarget, const Complex& source, const Complex&)
     }
 }
 
-void ATan_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void ATan_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     Complex temp;
     Sqr(temp, source);
@@ -372,7 +372,7 @@ void ATan_Deriv(Complex& rTarget, const Complex& source, const Complex&)
     Recip(rTarget, temp);
 }
 
-void Tan(Complex& rTarget, const Complex& source, const Complex&)
+void Tan(Complex rTarget, const Complex source, const Complex)
 {
     DBL x, y, sinx, cosx, sinhy, coshy, denom;
     x = 2 * source[X];
@@ -386,7 +386,7 @@ void Tan(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[Y] = sinhy / denom;
 }
 
-void Tan_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void Tan_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     DBL x, y, sinx, cosx, sinhy, coshy, denom;
     x = 2 * source[X];
@@ -400,7 +400,7 @@ void Tan_Deriv(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[Y] = sinx * sinhy / denom;
 }
 
-void Tanh(Complex& rTarget, const Complex& source, const Complex&)
+void Tanh(Complex rTarget, const Complex source, const Complex)
 {
     DBL x, y, siny, cosy, sinhx, coshx, denom;
     x = 2 * source[X];
@@ -414,7 +414,7 @@ void Tanh(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[Y] = siny / denom;
 }
 
-void Tanh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
+void Tanh_Deriv(Complex rTarget, const Complex source, const Complex)
 {
     DBL x, y, siny, cosy, sinhx, coshx, denom;
     x = 2 * source[X];
@@ -428,7 +428,7 @@ void Tanh_Deriv(Complex& rTarget, const Complex& source, const Complex&)
     rTarget[Y] = -sinhx * siny / denom;
 }
 
-void Pwr(Complex& rTarget, const Complex& source1, const Complex& source2)
+void Pwr(Complex rTarget, const Complex source1, const Complex source2)
 {
     Complex cLog, t;
     DBL e2x;
@@ -450,7 +450,7 @@ void Pwr(Complex& rTarget, const Complex& source1, const Complex& source2)
     rTarget[Y] = e2x * sin(t[Y]);
 }
 
-void Pwr_Deriv(Complex& rTarget, const Complex& source1, const Complex& source2)
+void Pwr_Deriv(Complex rTarget, const Complex source1, const Complex source2)
 {
     Complex cLog, t, aMul, temp;
     DBL e2x;
@@ -475,12 +475,12 @@ void Pwr_Deriv(Complex& rTarget, const Complex& source1, const Complex& source2)
     Mult(rTarget, temp, source2);
 }
 
-bool False_DTest(Complex&, DBL&, const Complex&, const Complex&, const Complex&)
+bool False_DTest(Complex, DBL&, const Complex, const Complex, const Complex)
 {
     return false;
 }
 
-bool NegReal_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
+bool NegReal_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused)
 {
     DBL tmp;
     if (((cT[Y] >= 0.0) ^ (cP[Y] >= 0.0)) && (cT[X] < 0.0 || cP[X] < 0.0))
@@ -497,7 +497,7 @@ bool NegReal_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Comple
     return false;
 }
 
-bool ASin_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
+bool ASin_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused)
 {
     DBL tmp;
     if (((cT[Y] >= 0.0) ^ (cP[Y] >= 0.0)) && (fabs(cT[X]) > 1.0 || fabs(cP[X]) > 1.0))
@@ -514,7 +514,7 @@ bool ASin_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& 
     return false;
 }
 
-bool ASinh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
+bool ASinh_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused)
 {
     DBL tmp;
     if (((cT[X] >= 0.0) ^ (cP[X] >= 0.0)) && (fabs(cT[Y]) > 1.0 || fabs(cP[Y]) > 1.0))
@@ -531,7 +531,7 @@ bool ASinh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex&
     return false;
 }
 
-bool ACos_Alt_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
+bool ACos_Alt_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused)
 {
     DBL tmp;
     if ((cT[X] >= 0.0) ^ (cP[X] >= 0.0))
@@ -554,7 +554,7 @@ bool ACos_Alt_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Compl
     return false;
 }
 
-bool ACosh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused)
+bool ACosh_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused)
 {
     DBL tmp;
     if (((cT[Y] >= 0.0) ^ (cP[Y] >= 0.0)) && (cT[X] < 1.0 || cP[X] < 1.0))

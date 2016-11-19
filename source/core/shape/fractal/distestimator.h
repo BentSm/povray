@@ -53,7 +53,7 @@ namespace pov
    constants. */
 const DBL kDistanceEstimatorTolerance = 1e-8;
 
-typedef DBL EstimatorFunc(const FractalRules *pRules, DBL norm, int iters, const Vector3d& direction,
+typedef DBL EstimatorFunc(const FractalRules *pRules, DBL norm, int iters, const Vector4d& direction,
                           const Fractal *pFractal, FractalIterData *pIterData);
 
 struct DistanceEstimator

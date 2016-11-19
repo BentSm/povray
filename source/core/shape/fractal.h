@@ -67,8 +67,8 @@ class Fractal : public ObjectBase
 {
 public:
     Vector3d Center;
-    VECTOR_4D Julia_Parm;
-    VECTOR_4D Slice;              /* vector perpendicular to slice plane */
+    Vector4d Julia_Parm;
+    Vector4d Slice;              /* vector perpendicular to slice plane */
     Vector3d SliceNorm;
     DBL SliceDist;                /* distance from slice plane to origin */
     DBL SliceDistNorm;

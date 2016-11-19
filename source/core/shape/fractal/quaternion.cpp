@@ -78,7 +78,7 @@ namespace pov
     (n1) = tmpx
 
 void QuaternionSqrFractalRules::
-IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d &rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL tmp;
 
@@ -96,7 +96,7 @@ IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, FractalI
 }
 
 void QuaternionSqrFractalRules::
-DirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
+DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL tmp;
 
@@ -110,7 +110,7 @@ DirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const 
 }
 
 void QuaternionCubeFractalRules::
-IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL cVal;
 
@@ -128,7 +128,7 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalI
 }
 
 void QuaternionCubeFractalRules::
-DirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
+DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     static DBL tmp1, cVal, norm;
     DBL tmp2;
@@ -152,7 +152,7 @@ DirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const 
 }
 
 void QuaternionRecipFractalRules::
-IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d &rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     QuaternionRecipFractalRules::AuxIterData *pAuxIterStack =
         static_cast<QuaternionRecipFractalRules::AuxIterData *>(pIterData->auxIter.data());
@@ -166,7 +166,7 @@ IterateCalc(VECTOR_4D &rV, DBL norm, int iter, const Fractal *pFractal, FractalI
 }
 
 void QuaternionRecipFractalRules::
-DirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
+DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     static DBL norm;
     DBL tmp;
@@ -188,7 +188,7 @@ DirDerivCalc(VECTOR_4D &rD, const VECTOR_4D& v, int iter, bool samePoint, const 
 }
 
 void QuaternionFuncFractalRules::
-IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Complex tmp1, tmp2;
     DBL nNorm, normFVal;
@@ -221,7 +221,7 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalI
 }
 
 void QuaternionFuncFractalRules::
-DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
+DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     static DBL ny, nz, nw, nNorm, normFVal;
     static Complex tmp2;
@@ -266,7 +266,7 @@ DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const 
 }
 
 bool QuaternionFuncFractalRules::
-DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     Complex tmp, tPt, pPt;
@@ -305,7 +305,7 @@ DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4
 }
 
 void QuaternionPwrFractalRules::
-IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Complex tmp, lg0, lg1;
     DBL nNorm1, nNorm2, normFVal1, normFVal2;
@@ -373,7 +373,7 @@ IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalI
 }
 
 void QuaternionPwrFractalRules::
-DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
+DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     static DBL ny1, ny2, nz1, nz2, nw1, nw2, nNorm1, nNorm2, normFVal1, normFVal2;
     static Complex tmp21, tmp22;
@@ -444,7 +444,7 @@ DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const 
 }
 
 bool QuaternionPwrFractalRules::
-DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     Complex tmp, tPt, pPt;

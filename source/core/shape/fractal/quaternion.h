@@ -59,8 +59,8 @@ public:
                                     GetEstimatorFromType(data.estimatorType, kOrigSpecialEstimators,
                                                          kOrigSpecialEstimators, QuaternionSqrFractalRules::ExtraEstimators)) { }
 
-    virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
 
 protected:
     static const DistanceEstimator& ExtraEstimators(EstimatorType tgtType);
@@ -79,8 +79,8 @@ public:
                                     GetEstimatorFromType(data.estimatorType, kOrigSpecialEstimators,
                                                          kOrigSpecialEstimators, QuaternionCubeFractalRules::ExtraEstimators)) { }
 
-    virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
 
 protected:
     static const DistanceEstimator& ExtraEstimators(EstimatorType tgtType);
@@ -98,15 +98,15 @@ public:
                                     GetDataSizes<QuaternionRecipFractalRules>(),
                                     GetEstimatorFromType(data.estimatorType)) { }
 
-    virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
 class QuaternionFuncFractalRules : public MagicQuaternionFractalRules
 {
 public:
     typedef struct {
-        VECTOR_4D point;
+        Vector4d point;
         DBL nNorm, normFVal;
     } AuxIterData;
 
@@ -114,12 +114,12 @@ public:
         MagicQuaternionFractalRules(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType)),
                                     GetDataSizes<QuaternionFuncFractalRules>(),
                                     GetEstimatorFromType(data.estimatorType)),
-        mFunc(FractalFuncForType(data.funcType)), INIT_COMPLEX(mExponent, data.exponent[X], data.exponent[Y]) { }
+        mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) { }
 
-    virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
 
-    virtual bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+    virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:
@@ -139,12 +139,12 @@ public:
         MagicQuaternionFractalRules(data, kDiscontinuitySupported,
                                     GetDataSizes<QuaternionPwrFractalRules>(),
                                     GetEstimatorFromType(data.estimatorType)),
-        INIT_COMPLEX(mExponent, data.exponent[X], data.exponent[Y]), INIT_COMPLEX(mExponentConj, data.exponent[X], -data.exponent[Y]) { }
+        mExponent(data.exponent), mExponentConj(data.exponent[X], -data.exponent[Y]) { }
 
-    virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const;
 
-    virtual bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+    virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:

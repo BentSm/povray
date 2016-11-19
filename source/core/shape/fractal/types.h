@@ -42,6 +42,8 @@
 #include <cstdarg>
 #endif
 
+#include "core/math/complexfn.h"
+
 namespace pov
 {
 
@@ -101,6 +103,13 @@ enum DiscontinuitySupportLevel
     kDiscontinuityUnneeded = -1,
     kDiscontinuityNotImplemented = 0,
     kDiscontinuitySupported = 1
+};
+
+enum FractalTransformMethod
+{
+    kTransformProjectedOld = -1,
+    kTransformProjected = 0,
+    kTransformOrthogonal
 };
 
 struct FractalFuncType
@@ -189,57 +198,18 @@ struct FractalRulesInfo
 
 struct NilFractalData { };
 
-typedef Complex Duplex[2];
-
 struct FractalConstructorData
 {
     FractalFuncType funcType;
-    VECTOR_4D juliaParm;
+    Vector4d juliaParm;
     Complex exponent;
     EstimatorType estimatorType;
+    Vector4d slice;
+    DBL sliceDist;
+    FractalTransformMethod transformMethod;
 };
 
-/* If we don't have C++11, we can't initialize const arrays... */
-#ifndef FRACTAL_USE_CXX11
-
-template <class T, unsigned N, class U = T, unsigned M = N>
-class IArray
-{
-public:
-    IArray(const U u0, ...)
-    {
-        va_list vals;
-        int i;
-        va_start(vals, u0);
-        reinterpret_cast<U *>(value)[0] = u0;
-        for (i = 1; i < M; i++)
-            reinterpret_cast<U *>(value)[i] = va_arg(vals, const U);
-        va_end(vals);
-    }
-
-    T& operator[](unsigned k) { return value[k]; }
-    const T& operator[](unsigned k) const { return value[k]; }
-
-    typedef T Array_Type[N];
-
-    operator Array_Type&() { return value; }
-    operator const Array_Type&() const { return value; }
-
-private:
-    Array_Type value;
-};
-
-typedef IArray<DBL, 2> IComplex;
-typedef IArray<Complex, 2, DBL, 4> IDuplex;
-typedef IArray<DBL, 4> IVECTOR_4D;
-
-#else
-
-typedef Complex IComplex;
-typedef Duplex IDuplex;
-typedef VECTOR_4D IVECTOR_4D;
-
-#endif
+typedef Vector2d IComplex;
 
 }
 

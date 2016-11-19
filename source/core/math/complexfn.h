@@ -44,6 +44,8 @@
 namespace pov
 {
 
+typedef DBL Complex[2];
+
 namespace complex_fn
 {
 
@@ -51,27 +53,22 @@ namespace complex_fn
 * Global preprocessor defines
 ******************************************************************************/
 
-#define cNULL pov::complex_fn::kCDummy
-
 /*****************************************************************************
 * Global typedefs
 ******************************************************************************/
 
-typedef void FuncType(Complex&, const Complex&, const Complex&);
-typedef bool DiscontinuityTestFn(Complex&, DBL&, const Complex&, const Complex&, const Complex&);
+typedef void FuncType(Complex, const Complex, const Complex);
+typedef bool DiscontinuityTestFn(Complex, DBL&, const Complex, const Complex, const Complex);
 
 /*****************************************************************************
 * Global variables
 ******************************************************************************/
 
-/* It really does not matter at all what this is! */
-static const Complex kCDummy = {0.0, 0.0};
-
 /*****************************************************************************
 * Global functions
 ******************************************************************************/
 
-inline void Mult(Complex& rTarget, const Complex& source1, const Complex& source2)
+inline void Mult(Complex rTarget, const Complex source1, const Complex source2)
 {
     DBL tmpx;
     tmpx = source1[X] * source2[X] - source1[Y] * source2[Y];
@@ -79,7 +76,7 @@ inline void Mult(Complex& rTarget, const Complex& source1, const Complex& source
     rTarget[X] = tmpx;
 }
 
-inline void Div(Complex& rTarget, const Complex& source1, const Complex& source2)
+inline void Div(Complex rTarget, const Complex source1, const Complex source2)
 {
     DBL mod, tmpx, yxmod, yymod;
     mod = pov::Sqr(source2[X]) + pov::Sqr(source2[Y]);
@@ -92,44 +89,44 @@ inline void Div(Complex& rTarget, const Complex& source1, const Complex& source2
     rTarget[X] = tmpx;
 }
 
-void Exp(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Ln(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Sin(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ASin(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Sinh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ASinh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Cos(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ACos(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ACos_Alt(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Cosh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ACosh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ACosh_Alt(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Tan(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ATan(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Tanh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ATanh(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Sqrt(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Sqr(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Recip(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Pwr(Complex& rTarget, const Complex& source1, const Complex& source2);
+void Exp(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Ln(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Sin(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ASin(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Sinh(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ASinh(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Cos(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ACos(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ACos_Alt(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Cosh(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ACosh(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ACosh_Alt(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Tan(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ATan(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Tanh(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ATanh(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Sqrt(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Sqr(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Recip(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Pwr(Complex rTarget, const Complex source1, const Complex source2);
 
-void ASin_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ASinh_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Cos_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ACos_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ACosh_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Tan_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ATan_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Tanh_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void ATanh_Deriv(Complex& rTarget, const Complex& source, const Complex& unused = cNULL);
-void Pwr_Deriv(Complex& rTarget, const Complex& source1, const Complex& source2);
+void ASin_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ASinh_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Cos_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ACos_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ACosh_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Tan_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ATan_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Tanh_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void ATanh_Deriv(Complex rTarget, const Complex source, const Complex unused = NULL);
+void Pwr_Deriv(Complex rTarget, const Complex source1, const Complex source2);
 
-bool False_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
-bool NegReal_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
-bool ASin_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
-bool ASinh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
-bool ACos_Alt_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
-bool ACosh_DTest(Complex& rNormal, DBL& rDist, const Complex& cT, const Complex& cP, const Complex& unused = cNULL);
+bool False_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused = NULL);
+bool NegReal_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused = NULL);
+bool ASin_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused = NULL);
+bool ASinh_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused = NULL);
+bool ACos_Alt_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused = NULL);
+bool ACosh_DTest(Complex rNormal, DBL& rDist, const Complex cT, const Complex cP, const Complex unused = NULL);
 
 }
 

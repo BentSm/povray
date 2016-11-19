@@ -46,34 +46,32 @@
 namespace pov
 {
 
-static inline void ComputeDuplexFromHypercomplex(Duplex& rd, const VECTOR_4D& h)
+static inline const Vector4d DuplexFromHypercomplex(const Vector4d& h)
 {
-    rd[0][X] = h[X] - h[W];
-    rd[0][Y] = h[Y] + h[Z];
-    rd[1][X] = h[X] + h[W];
-    rd[1][Y] = h[Y] - h[Z];
+    return Vector4d(h[X] - h[W], h[Y] + h[Z], h[X] + h[W], h[Y] - h[Z]);
 }
 
-static inline void ComputeHypercomplexFromDuplex(VECTOR_4D& rh, const Duplex &d)
+static inline const Vector4d HypercomplexFromDuplex(const Vector4d &d)
 {
-    rh[X] = .5 * (d[0][X] + d[1][X]);
-    rh[Y] = .5 * (d[0][Y] + d[1][Y]);
-    rh[Z] = .5 * (d[0][Y] - d[1][Y]);
-    rh[W] = .5 * (d[1][X] - d[0][X]);
+    return Vector4d(.5 * (d[X] + d[Z]), .5 * (d[Y] + d[W]),
+                    .5 * (d[Y] - d[W]), .5 * (d[Z] - d[X]));
 }
 
-static inline void AssignComplex(Complex& rC, const Complex &c)
+static inline void AssignComplex(Complex r, const Complex c)
 {
-    rC[X] = c[X];
-    rC[Y] = c[Y];
+    r[X] = c[X];
+    r[Y] = c[Y];
 }
 
-static inline void AssignDuplex(Duplex& rD, const Duplex& s)
+static inline DBL *AsComplex(Vector4d& rV, int p)
 {
-    AssignComplex(rD[0], s[0]);
-    AssignComplex(rD[1], s[1]);
+    return &(*rV)[2*p];
 }
 
+static inline const DBL *AsComplex(const Vector4d& v, int p)
+{
+    return &(*v)[2*p];
+}
 
 template <typename T>
 static inline int GetADataSize()
@@ -127,8 +125,6 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
 }
 
 #define INIT_COMPLEX(var, v0, v1) var(v0, v1)
-#define INIT_DUPLEX(var, hx, hy, hz, hw) var(hx, hy, hz, hw)
-#define INIT_VECTOR_4D(var, qx, qy, qz, qw) var(qx, qy, qz, qw)
 
 #else
 
@@ -141,8 +137,6 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
 #define CreateRulesInfo (FractalRulesInfo)CREATE_GENERAL
 
 #define INIT_COMPLEX INIT_GENERAL
-#define INIT_DUPLEX INIT_GENERAL
-#define INIT_VECTOR_4D INIT_GENERAL
 
 #endif
 

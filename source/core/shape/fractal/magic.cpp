@@ -55,6 +55,52 @@
 namespace pov
 {
 
+MagicTransform::MagicTransform(FractalTransformMethod transformMethod, FractalAlgebra algebra, const Vector4d& slice, DBL sliceDist)
+{
+    Vector4d sliceNorm;
+
+    switch (transformMethod)
+    {
+    case kTransformProjectedOld:
+    case kTransformProjected:
+        sliceNorm = slice / slice.w();
+        tX = Vector4d(1.0, 0.0, 0.0, -sliceNorm.x());
+        tY = Vector4d(1.0, 0.0, 0.0, -sliceNorm.y());
+        tZ = Vector4d(1.0, 0.0, 0.0, -sliceNorm.z());
+        t0 = Vector4d(0.0, 0.0, 0.0, sliceDist / slice.w() * (transformMethod == kTransformProjected ? slice.length() : 1.0));
+        break;
+    case kTransformOrthogonal:
+        sliceNorm = slice.normalized();
+        tX = Vector4d(-sliceNorm.y(), sliceNorm.x(), -sliceNorm.w(), sliceNorm.z());
+        tY = Vector4d(-sliceNorm.z(), sliceNorm.w(), sliceNorm.x(), -sliceNorm.y());
+        tZ = Vector4d(-sliceNorm.w(), -sliceNorm.z(), sliceNorm.y(), sliceNorm.x());
+        t0 = sliceNorm * sliceDist;
+        break;
+    default:
+        throw POV_EXCEPTION_STRING("Unknown fractal projection type.");
+    }
+
+    switch (algebra)
+    {
+    case kQuaternion:
+        break;
+    case kHypercomplex:
+        tX = DuplexFromHypercomplex(tX);
+        tY = DuplexFromHypercomplex(tY);
+        tZ = DuplexFromHypercomplex(tZ);
+        t0 = DuplexFromHypercomplex(t0);
+        break;
+    default:
+        throw POV_EXCEPTION_STRING("Unknown algebra for fractal projection.");
+    }
+}
+
+void MagicRulesBase::
+TransformTo4D(Vector4d& rResult, const Vector3d& point, const Fractal *pFractal) const
+{
+    rResult = tX * point.x() + tY * point.y() + tZ * point.z() + t0;
+}
+
 const DistanceEstimator& MagicRulesBase::
 GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator, EstimatorType legacyEstimator,
                      const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType))
@@ -123,24 +169,23 @@ Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthM
     return false;
 }
 
-
 int MagicQuaternionFractalRules::
-Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction, DBL *pDist,
+Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& direction, DBL *pDist,
         FractalIterData *pIterData) const
 {
     int i;
-    VECTOR_4D v = {iPoint[X], iPoint[Y], iPoint[Z], pFractal->SliceDistNorm - dot(pFractal->SliceNorm, iPoint)};
+    Vector4d v = iPoint;
     DBL norm, exitValue;
 
-    VECTOR_4D *pIterStack = static_cast<VECTOR_4D *>(pIterData->mainIter.data());
+    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
 
-    Assign_Vector_4D(pIterStack[0], v);
+    pIterStack[0] = v;
 
     exitValue = pFractal->Exit_Value;
 
     for (i = 0; i < pFractal->Num_Iterations; i++)
     {
-        V4D_Dot(norm, v, v);
+        norm = v.lengthSqr();
 
         if (norm > exitValue)
         {
@@ -154,11 +199,11 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
         IterateCalc(v, norm, i, pFractal, pIterData);
 
-        Assign_Vector_4D(pIterStack[i+1], v);
+        pIterStack[i+1] = v;
 
     }
 
-    V4D_Dot(norm, v, v);
+    norm = v.lengthSqr();
 
     if (norm > exitValue)
     {
@@ -179,29 +224,43 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
 }
 
+DBL MagicQuaternionFractalRules::
+CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
+{
+    Vector4d d = dir;
+    int i;
+
+    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
+
+    for (i = 0; i < nMax; i++)
+    {
+        DirDerivCalc(d, pIterStack[i], i, false, pFractal, pIterData);
+    }
+
+    return dot(d, pIterStack[nMax]);
+}
+
 void MagicQuaternionFractalRules::
 CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
-    VECTOR_4D nX = {1.0, 0.0, 0.0, -pFractal->SliceNorm[X]},
-              nY = {0.0, 1.0, 0.0, -pFractal->SliceNorm[Y]},
-              nZ = {0.0, 0.0, 1.0, -pFractal->SliceNorm[Z]};
+    Vector4d nX = mTransform.transformedX(), nY = mTransform.transformedY(), nZ = mTransform.transformedZ();
     int i;
 
-    VECTOR_4D *pTIterStack = static_cast<VECTOR_4D *>(pTIterData->mainIter.data()),
-        *pPIterStack = (pPIterData != NULL ? static_cast<VECTOR_4D *>(pPIterData->mainIter.data()) : NULL);
+    Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data()),
+        *pPIterStack = (pPIterData != NULL ? static_cast<Vector4d *>(pPIterData->mainIter.data()) : NULL);
 
     for (i = 0; i < nMax; i++)
     {
         if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
         {
-            VECTOR_4D d;
+            Vector4d d;
             DBL dist;
             if (DiscontinuityCheck(d, dist, pTIterStack[i], pPIterStack[i],
                                    i, pFractal, pTIterData, pPIterData))
             {
-                V4D_Dot(rResult[X], nX, d);
-                V4D_Dot(rResult[Y], nY, d);
-                V4D_Dot(rResult[Z], nZ, d);
+                rResult[X] = dot(nX, d);
+                rResult[Y] = dot(nY, d);
+                rResult[Z] = dot(nZ, d);
                 return;
             }
         }
@@ -211,31 +270,13 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
         DirDerivCalc(nZ, pTIterStack[i], i, true, pFractal, pTIterData);
     }
 
-    V4D_Dot(rResult[X], nX, pTIterStack[nMax]);
-    V4D_Dot(rResult[Y], nY, pTIterStack[nMax]);
-    V4D_Dot(rResult[Z], nZ, pTIterStack[nMax]);
-}
-
-DBL MagicQuaternionFractalRules::
-CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
-{
-    VECTOR_4D d = {dir[X], dir[Y], dir[Z], -dot(pFractal->SliceNorm, dir)};
-    int i;
-    DBL res;
-
-    VECTOR_4D *pIterStack = static_cast<VECTOR_4D *>(pIterData->mainIter.data());
-
-    for (i = 0; i < nMax; i++)
-    {
-        DirDerivCalc(d, pIterStack[i], i, false, pFractal, pIterData);
-    }
-
-    V4D_Dot(res, d, pIterStack[nMax]);
-    return res;
+    rResult[X] = dot(nX, pTIterStack[nMax]);
+    rResult[Y] = dot(nY, pTIterStack[nMax]);
+    rResult[Z] = dot(nZ, pTIterStack[nMax]);
 }
 
 bool MagicQuaternionFractalRules::
-DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     throw POV_EXCEPTION_STRING("Discontinuity detection not supported for this fractal type.");
@@ -243,25 +284,22 @@ DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4
 
 
 int MagicHypercomplexFractalRules::
-Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction, DBL *pDist,
+Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& direction, DBL *pDist,
         FractalIterData *pIterData) const
 {
     int i;
-    Duplex d;
+    Vector4d d = iPoint;
     DBL norm, exitValue;
-    VECTOR_4D v = {iPoint[X], iPoint[Y], iPoint[Z], pFractal->SliceDistNorm - dot(pFractal->SliceNorm, iPoint)};
 
-    Duplex *pIterStack = static_cast<Duplex *>(pIterData->mainIter.data());
+    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
 
-    ComputeDuplexFromHypercomplex(d, v);
-
-    AssignDuplex(pIterStack[0], d);
+    pIterStack[0] = d;
 
     exitValue = pFractal->Exit_Value;
 
     for (i = 0; i < pFractal->Num_Iterations; i++)
     {
-        norm = 0.5 * (d[0][X] * d[0][X] + d[0][Y] * d[0][Y] + d[1][X] * d[1][X] + d[1][Y] * d[1][Y]);
+        norm = 0.5 * d.lengthSqr();
 
         if (norm > exitValue)
         {
@@ -275,11 +313,11 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
         IterateCalc(d, norm, i, pFractal, pIterData);
 
-        AssignDuplex(pIterStack[i+1], d);
+        pIterStack[i+1] = d;
 
     }
 
-    norm = 0.5 * (d[0][X] * d[0][X] + d[0][Y] * d[0][Y] + d[1][X] * d[1][X] + d[1][Y] * d[1][Y]);
+    norm = 0.5 * d.lengthSqr();
 
     if (norm > exitValue)
     {
@@ -300,12 +338,33 @@ Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& directi
 
 }
 
+DBL MagicHypercomplexFractalRules::
+CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
+{
+    int i;
+    Vector4d d(1.0, 0.0, 1.0, 0.0);
+
+    Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data());
+
+    for (i = 0; i < nMax; i++)
+    {
+        DerivCalc(d, pTIterStack[i], i, pFractal, pTIterData);
+    }
+
+    d[Y] *= -1.0;
+    d[W] *= -1.0;
+
+    complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(pTIterStack[nMax], 0));
+    complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(pTIterStack[nMax], 1));
+
+    return dot(dir, d);
+}
+
 void MagicHypercomplexFractalRules::
 CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     int i;
-    Duplex d = {{1.0, 0.0}, {1.0, 0.0}};
-    VECTOR_4D v;
+    Vector4d d(1.0, 0.0, 1.0, 0.0);
 
     /*
      * The fact that the functions used for iterating are well-behaved in the hypercomplexes
@@ -315,29 +374,29 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
      * and is a problem for many of even the most basic quaternionic functions (e.g., z^2).
      */
 
-    Duplex *pTIterStack = static_cast<Duplex *>(pTIterData->mainIter.data()),
-        *pPIterStack = (pPIterData != NULL ? static_cast<Duplex *>(pPIterData->mainIter.data()) : NULL);
+    Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data()),
+        *pPIterStack = (pPIterData != NULL ? static_cast<Vector4d *>(pPIterData->mainIter.data()) : NULL);
 
     for (i = 0; i < nMax; i++)
     {
         if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
         {
-            Duplex dc;
+            Vector4d dc;
             DBL dist;
             if (DiscontinuityCheck(dc, dist, pTIterStack[i], pPIterStack[i],
                                    i, pFractal, pTIterData, pPIterData))
             {
-                d[0][Y] *= -1.0;
-                d[1][Y] *= -1.0;
+                d[Y] *= -1.0;
+                d[W] *= -1.0;
 
-                complex_fn::Mult(d[0], d[0], dc[0]);
-                complex_fn::Mult(d[1], d[1], dc[1]);
+                complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(dc, 0));
+                complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(dc, 1));
 
-                ComputeHypercomplexFromDuplex(v, d);
+                d = HypercomplexFromDuplex(d);
 
-                rResult[X] = (v[X] - v[W] * pFractal->SliceNorm[X]);
-                rResult[Y] = (v[Y] - v[W] * pFractal->SliceNorm[Y]);
-                rResult[Z] = (v[Z] - v[W] * pFractal->SliceNorm[Z]);
+                rResult[X] = 0.5 * dot(d, mTransform.transformedX());
+                rResult[Y] = 0.5 * dot(d, mTransform.transformedY());
+                rResult[Z] = 0.5 * dot(d, mTransform.transformedZ());
 
                 return;
             }
@@ -346,21 +405,19 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
         DerivCalc(d, pTIterStack[i], i, pFractal, pTIterData);
     }
 
-    d[0][Y] *= -1.0;
-    d[1][Y] *= -1.0;
+    d[Y] *= -1.0;
+    d[W] *= -1.0;
 
-    complex_fn::Mult(d[0], d[0], pTIterStack[nMax][0]);
-    complex_fn::Mult(d[1], d[1], pTIterStack[nMax][1]);
+    complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(pTIterStack[nMax], 0));
+    complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(pTIterStack[nMax], 1));
 
-    ComputeHypercomplexFromDuplex(v, d);
-
-    rResult[X] = (v[X] - v[W] * pFractal->SliceNorm[X]);
-    rResult[Y] = (v[Y] - v[W] * pFractal->SliceNorm[Y]);
-    rResult[Z] = (v[Z] - v[W] * pFractal->SliceNorm[Z]);
+    rResult[X] = 0.5 * dot(d, mTransform.transformedX());
+    rResult[Y] = 0.5 * dot(d, mTransform.transformedY());
+    rResult[Z] = 0.5 * dot(d, mTransform.transformedZ());
 }
 
 bool MagicHypercomplexFractalRules::
-DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     throw POV_EXCEPTION_STRING("Discontinuity detection not supported for this fractal type.");

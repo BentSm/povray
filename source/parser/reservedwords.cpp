@@ -283,6 +283,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { IOR_TOKEN,                    "ior" },
     { IRID_TOKEN,                   "irid" },
     { IRID_WAVELENGTH_TOKEN,        "irid_wavelength" },
+    { ISOMETRIC_TOKEN,              "isometric" },
     { ISOSURFACE_TOKEN,             "isosurface" },
 
     { JITTER_TOKEN,                 "jitter" },
@@ -416,6 +417,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { PRETRACE_START_TOKEN,         "pretrace_start" },
     { PRISM_TOKEN,                  "prism" },
     { PROD_TOKEN,                   "prod" },
+    { PROJECTED_TOKEN,              "projected" },
     { PROJECTED_THROUGH_TOKEN,      "projected_through" },
     { PWR_TOKEN,                    "pwr" },
 

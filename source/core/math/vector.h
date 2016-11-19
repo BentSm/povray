@@ -56,6 +56,8 @@ enum
 /// 3D and 4D Vector array elements.
 /// @deprecated When using @ref pov::GenericVector3d, call the x(), y() and z() access functions
 ///             instead of using the index operator with one of these as parameter.
+/// @deprecated When using @ref pov::GenericVector4d, call the x(), y(), z() and t() access functions
+///             instead of using the index operator with one of these as parameter.
 enum
 {
     X = 0,
@@ -66,6 +68,7 @@ enum
 };
 
 typedef DBL VECTOR_4D[4]; ///< @todo       Make this obsolete.
+                          // (Working on it...)
 
 /*****************************************************************************
 * Inline functions
@@ -114,7 +117,6 @@ inline void V4D_Dot(DBL& a, const VECTOR_4D b, const VECTOR_4D c)
 {
     a = b[X] * c[X] + b[Y] * c[Y] + b[Z] * c[Z] + b[T] * c[T];
 }
-
 
 template<typename T>
 class GenericVector3d;
@@ -571,12 +573,264 @@ class GenericVector3d
         VECTOR_T vect;
 };
 
+/// Generic template class to hold a 4D vector.
+///
+/// @tparam T   Floating-point type to use for the individual vector components.
+///
+template<typename T>
+class GenericVector4d
+{
+    public:
+
+        typedef T VECTOR_4D_T[4];
+
+        inline GenericVector4d()
+        {
+            vect[X] = 0.0;
+            vect[Y] = 0.0;
+            vect[Z] = 0.0;
+            vect[W] = 0.0;
+        }
+
+        inline explicit GenericVector4d(T d)
+        {
+            vect[X] = d;
+            vect[Y] = d;
+            vect[Z] = d;
+            vect[W] = d;
+        }
+
+        inline GenericVector4d(T x, T y, T z, T w)
+        {
+            vect[X] = x;
+            vect[Y] = y;
+            vect[Z] = z;
+            vect[W] = w;
+        }
+
+        inline explicit GenericVector4d(const DBL* vi)
+        {
+            vect[X] = T(vi[X]);
+            vect[Y] = T(vi[Y]);
+            vect[Z] = T(vi[Z]);
+            vect[W] = T(vi[W]);
+        }
+
+        template<typename T2>
+        inline explicit GenericVector4d(const GenericVector4d<T2>& b)
+        {
+            vect[X] = T(b[X]);
+            vect[Y] = T(b[Y]);
+            vect[Z] = T(b[Z]);
+            vect[W] = T(b[W]);
+        }
+
+        inline GenericVector4d(const GenericVector4d& b)
+        {
+            vect[X] = b[X];
+            vect[Y] = b[Y];
+            vect[Z] = b[Z];
+            vect[W] = b[W];
+        }
+
+        inline GenericVector4d& operator=(const GenericVector4d& b)
+        {
+            vect[X] = b[X];
+            vect[Y] = b[Y];
+            vect[Z] = b[Z];
+            vect[W] = b[W];
+            return *this;
+        }
+
+        inline T operator[](int idx) const { return vect[idx]; }
+        inline T& operator[](int idx) { return vect[idx]; }
+
+        inline GenericVector4d operator+(const GenericVector4d& b) const
+        {
+            return GenericVector4d(vect[X] + b[X], vect[Y] + b[Y], vect[Z] + b[Z], vect[W] + b[W]);
+        }
+
+        inline GenericVector4d operator-(const GenericVector4d& b) const
+        {
+            return GenericVector4d(vect[X] - b[X], vect[Y] - b[Y], vect[Z] - b[Z], vect[W] - b[W]);
+        }
+
+        inline GenericVector4d operator*(const GenericVector4d& b) const
+        {
+            return GenericVector4d(vect[X] * b[X], vect[Y] * b[Y], vect[Z] * b[Z], vect[W] * b[W]);
+        }
+
+        inline GenericVector4d operator/(const GenericVector4d& b) const
+        {
+            return GenericVector4d(vect[X] / b[X], vect[Y] / b[Y], vect[Z] / b[Z], vect[W] / b[W]);
+        }
+
+        inline GenericVector4d& operator+=(const GenericVector4d& b)
+        {
+            vect[X] += b[X];
+            vect[Y] += b[Y];
+            vect[Z] += b[Z];
+            vect[W] += b[W];
+            return *this;
+        }
+
+        inline GenericVector4d& operator-=(const GenericVector4d& b)
+        {
+            vect[X] -= b[X];
+            vect[Y] -= b[Y];
+            vect[Z] -= b[Z];
+            vect[W] -= b[W];
+            return *this;
+        }
+
+        inline GenericVector4d& operator*=(const GenericVector4d& b)
+        {
+            vect[X] *= b[X];
+            vect[Y] *= b[Y];
+            vect[Z] *= b[Z];
+            vect[W] *= b[W];
+            return *this;
+        }
+
+        inline GenericVector4d& operator/=(const GenericVector4d& b)
+        {
+            vect[X] /= b[X];
+            vect[Y] /= b[Y];
+            vect[Z] /= b[Z];
+            vect[W] /= b[W];
+            return *this;
+        }
+
+        inline GenericVector4d operator-() const
+        {
+            return GenericVector4d(-vect[X], -vect[Y], -vect[Z], -vect[W]);
+        }
+
+        inline GenericVector4d operator+(T b) const
+        {
+            return GenericVector4d(vect[X] + b, vect[Y] + b, vect[Z] + b, vect[W] + b);
+        }
+
+        inline GenericVector4d operator-(T b) const
+        {
+            return GenericVector4d(vect[X] - b, vect[Y] - b, vect[Z] - b, vect[W] - b);
+        }
+
+        inline GenericVector4d operator*(T b) const
+        {
+            return GenericVector4d(vect[X] * b, vect[Y] * b, vect[Z] * b, vect[W] * b);
+        }
+
+        inline GenericVector4d operator/(T b) const
+        {
+            return GenericVector4d(vect[X] / b, vect[Y] / b, vect[Z] / b, vect[W] / b);
+        }
+
+        inline GenericVector4d& operator+=(T b)
+        {
+            vect[X] += b;
+            vect[Y] += b;
+            vect[Z] += b;
+            vect[W] += b;
+            return *this;
+        }
+
+        inline GenericVector4d& operator-=(T b)
+        {
+            vect[X] -= b;
+            vect[Y] -= b;
+            vect[Z] -= b;
+            vect[W] -= b;
+            return *this;
+        }
+
+        inline GenericVector4d& operator*=(T b)
+        {
+            vect[X] *= b;
+            vect[Y] *= b;
+            vect[Z] *= b;
+            vect[W] *= b;
+            return *this;
+        }
+
+        inline GenericVector4d& operator/=(T b)
+        {
+            vect[X] /= b;
+            vect[Y] /= b;
+            vect[Z] /= b;
+            vect[W] /= b;
+            return *this;
+        }
+
+        inline const VECTOR_4D_T& operator*() const { return vect; }
+        inline VECTOR_4D_T& operator*() { return vect; }
+
+        inline T x() const { return vect[X]; }
+        inline T& x() { return vect[X]; }
+
+        inline T y() const { return vect[Y]; }
+        inline T& y() { return vect[Y]; }
+
+        inline T z() const { return vect[Z]; }
+        inline T& z() { return vect[Z]; }
+
+        inline T t() const { return vect[W]; }
+        inline T& t() { return vect[W]; }
+
+        inline T w() const { return vect[W]; }
+        inline T& w() { return vect[W]; }
+
+        inline T length() const
+        {
+            return sqrt(vect[X] * vect[X] + vect[Y] * vect[Y] + vect[Z] * vect[Z] + vect[W] * vect[W]);
+        }
+        inline T lengthSqr() const
+        {
+            return vect[X] * vect[X] + vect[Y] * vect[Y] + vect[Z] * vect[Z] + vect[W] * vect[W];
+        }
+        inline bool IsNull() const
+        {
+            return (vect[X] == 0.0) &&
+                   (vect[Y] == 0.0) &&
+                   (vect[Z] == 0.0) &&
+                   (vect[W] == 0.0);
+        }
+        inline bool IsNearNull(T epsilon) const
+        {
+            return (fabs(vect[X]) < epsilon) &&
+                   (fabs(vect[Y]) < epsilon) &&
+                   (fabs(vect[Z]) < epsilon) &&
+                   (fabs(vect[W]) < epsilon);
+        }
+        inline GenericVector4d normalized() const
+        {
+            T l = length();
+            if (l != 0)
+                return *this / l;
+            else
+                return *this;
+        }
+        inline void normalize()
+        {
+            T l = length();
+            if (l != 0)
+                *this /= l;
+            // no else
+        }
+
+    private:
+
+        VECTOR_4D_T vect;
+};
+
 typedef GenericVector2d<DBL> Vector2d;      ///< Double-precision 2D vector.
 typedef GenericVector2d<SNGL> SnglVector2d; ///< Single-precision 2D vector.
 
 typedef GenericVector3d<DBL> Vector3d;      ///< Double-precision 3D vector.
 typedef GenericVector3d<SNGL> SnglVector3d; ///< Single-precision 3D vector.
 typedef GenericVector3d<int> IntVector3d;   ///< Integer 3D vector.
+
+typedef GenericVector4d<DBL> Vector4d;      ///< Double-precision 3D vector.
 
 typedef Vector3d Matrix3x3[3];              ///< Double-precision 3x3 matrix.
 
@@ -592,6 +846,13 @@ template<typename T>
 inline T dot(const GenericVector3d<T>& a, const GenericVector3d<T>& b)
 {
     return ((a.x() * b.x()) + (a.y() * b.y()) + (a.z() * b.z()));
+}
+
+///@relates GenericVector4d
+template<typename T>
+inline T dot(const GenericVector4d<T>& a, const GenericVector4d<T>& b)
+{
+    return ((a.x() * b.x()) + (a.y() * b.y()) + (a.z() * b.z()) + (a.t() * b.t()));
 }
 
 ///@relates GenericVector3d
@@ -624,6 +885,10 @@ inline GenericVector2d<T> operator* (T a, const GenericVector2d<T>& b) { return 
 ///@relates GenericVector3d
 template<typename T>
 inline GenericVector3d<T> operator* (T a, const GenericVector3d<T>& b) { return b * a; }
+
+///@relates GenericVector4d
+template<typename T>
+inline GenericVector4d<T> operator* (T a, const GenericVector4d<T>& b) { return b * a; }
 
 ///@relates GenericVector3d
 template<typename T>

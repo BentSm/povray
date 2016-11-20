@@ -2752,7 +2752,7 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         legacy = true;
     }
 
-    Parse_Vector4D(Object->Julia_Parm);
+    Parse_Vector4D(*(Object->Julia_Parm));
 
     EXPECT
 
@@ -2766,23 +2766,35 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         END_CASE
 
         CASE(SLICE_TOKEN)
-            Parse_Vector4D(Object->Slice);
+            EXPECT_ONE
+                CASE(PROJECTED_TOKEN)
+                    Object->TransformMethod = kTransformProjected;
+                END_CASE
+
+                CASE(ISOMETRIC_TOKEN)
+                    Object->TransformMethod = kTransformIsometric;
+                END_CASE
+
+                OTHERWISE
+                    UNGET
+                END_CASE
+            END_EXPECT
+
+            Parse_Vector4D(*(Object->Slice));
             Parse_Comma();
             Object->SliceDist = Parse_Float();
 
             /* normalize slice vector */
-            V4D_Dot(P,Object->Slice, Object->Slice);
-            if (fabs(P) < EPSILON)
+            if (fabs(Object->Slice.length()) < EPSILON)
             {
                 Error("Slice vector is zero.");
             }
-            if (fabs(Object->Slice[T]) < EPSILON)
+            if (Object->TransformMethod == kTransformProjected &&
+                fabs(Object->Slice[T]) < EPSILON)
             {
-                Error("Slice t component is zero.");
+                Error("Slice t component is zero for projected fractal.");
             }
-            P = sqrt(P);
-            V4D_InverseScaleEq(Object->Slice, P);
-
+            Object->Slice.normalize();
         END_CASE
 
         CASE(PRECISION_TOKEN)

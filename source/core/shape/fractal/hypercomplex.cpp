@@ -49,27 +49,27 @@
 namespace pov
 {
 
-static inline void ComplexSqrAdd(Complex& rC, const Complex& c, const Complex& a);
-static inline void ComplexSqrDeriv(Complex& rC, const Complex& c);
-static inline void ComplexCubeAdd(Complex& rC, const Complex& c, const Complex& a);
-static inline void ComplexCubeDeriv(Complex& rC, const Complex& c);
-static inline void ComplexRecipAdd(Complex& rC, const Complex& c, const Complex& a);
-static inline void ComplexRecipDeriv(Complex& rC, const Complex& c);
+static inline void ComplexSqrAdd(Complex rC, const Complex c, const Complex a);
+static inline void ComplexSqrDeriv(Complex rC, const Complex c);
+static inline void ComplexCubeAdd(Complex rC, const Complex c, const Complex a);
+static inline void ComplexCubeDeriv(Complex rC, const Complex c);
+static inline void ComplexRecipAdd(Complex rC, const Complex c, const Complex a);
+static inline void ComplexRecipDeriv(Complex rC, const Complex c);
 
-static inline void ComplexSqrAdd(Complex& rC, const Complex& c, const Complex& a) {
+static inline void ComplexSqrAdd(Complex rC, const Complex c, const Complex a) {
     DBL tmp;
     tmp = Sqr(c[X]) - Sqr(c[Y]) + a[X];
     rC[Y] = 2 * c[X] * c[Y] + a[Y];
     rC[X] = tmp;
 }
 
-static inline void ComplexSqrDeriv(Complex& rC, const Complex& c)
+static inline void ComplexSqrDeriv(Complex rC, const Complex c)
 {
     rC[X] = 2.0 * c[X];
     rC[Y] = 2.0 * c[Y];
 }
 
-static inline void ComplexCubeAdd(Complex& rC, const Complex& c, const Complex& a)
+static inline void ComplexCubeAdd(Complex rC, const Complex c, const Complex a)
 {
     DBL tmpxx, tmpyy;
     tmpxx = Sqr(c[X]);
@@ -78,7 +78,7 @@ static inline void ComplexCubeAdd(Complex& rC, const Complex& c, const Complex& 
     rC[Y] = c[Y] * (3 * tmpxx - tmpyy) + a[Y];
 }
 
-static inline void ComplexCubeDeriv(Complex& rC, const Complex& c)
+static inline void ComplexCubeDeriv(Complex rC, const Complex c)
 {
     DBL tmp;
     tmp = Sqr(c[X]) - Sqr(c[Y]);
@@ -86,7 +86,7 @@ static inline void ComplexCubeDeriv(Complex& rC, const Complex& c)
     rC[X] = 3 * tmp;
 }
 
-static inline void ComplexRecipAdd(Complex& rC, const Complex& c, const Complex& a)
+static inline void ComplexRecipAdd(Complex rC, const Complex c, const Complex a)
 {
     DBL mod = Sqr(c[X]) + Sqr(c[Y]);
     if (mod == 0.0)
@@ -96,7 +96,7 @@ static inline void ComplexRecipAdd(Complex& rC, const Complex& c, const Complex&
     rC[Y] = -c[Y] / mod + a[Y];
 }
 
-static inline void ComplexRecipDeriv(Complex& rC, const Complex& c)
+static inline void ComplexRecipDeriv(Complex rC, const Complex c)
 {
     DBL mod = Sqr(c[X]) + Sqr(c[Y]);
     if (mod == 0.0)
@@ -107,104 +107,100 @@ static inline void ComplexRecipDeriv(Complex& rC, const Complex& c)
 }
 
 void HypercomplexSqrFractalRules::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    ComplexSqrAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
-    ComplexSqrAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
+    ComplexSqrAdd(AsComplex(rC, 0), AsComplex(rC, 0), AsComplex(mDuplexJuliaParm, 0));
+    ComplexSqrAdd(AsComplex(rC, 1), AsComplex(rC, 1), AsComplex(mDuplexJuliaParm, 1));
 }
 
 void HypercomplexSqrFractalRules::
-DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    ComplexSqrDeriv(tmp[0], c[0]);
-    ComplexSqrDeriv(tmp[1], c[1]);
+    ComplexSqrDeriv(tmp0, AsComplex(c, 0));
+    ComplexSqrDeriv(tmp1, AsComplex(c, 1));
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
+    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
 }
 
 void HypercomplexCubeFractalRules::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    ComplexCubeAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
-    ComplexCubeAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
+    ComplexCubeAdd(AsComplex(rC, 0), AsComplex(rC, 0), AsComplex(mDuplexJuliaParm, 0));
+    ComplexCubeAdd(AsComplex(rC, 1), AsComplex(rC, 1), AsComplex(mDuplexJuliaParm, 1));
 }
 
 void HypercomplexCubeFractalRules::
-DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    ComplexCubeDeriv(tmp[0], c[0]);
-    ComplexCubeDeriv(tmp[1], c[1]);
+    ComplexCubeDeriv(tmp0, AsComplex(c, 0));
+    ComplexCubeDeriv(tmp1, AsComplex(c, 1));
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
+    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
 }
 
 void HypercomplexRecipFractalRules::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    ComplexRecipAdd(rC[0], rC[0], mDuplexJuliaParm[0]);
-    ComplexRecipAdd(rC[1], rC[1], mDuplexJuliaParm[1]);
+    ComplexRecipAdd(AsComplex(rC, 0), AsComplex(rC, 0), AsComplex(mDuplexJuliaParm, 0));
+    ComplexRecipAdd(AsComplex(rC, 1), AsComplex(rC, 1), AsComplex(mDuplexJuliaParm, 1));
 }
 
 void HypercomplexRecipFractalRules::
-DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    ComplexRecipDeriv(tmp[0], c[0]);
-    ComplexRecipDeriv(tmp[1], c[1]);
+    ComplexRecipDeriv(tmp0, AsComplex(c, 0));
+    ComplexRecipDeriv(tmp1, AsComplex(c, 1));
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
+    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
 }
 
 void HypercomplexFuncFractalRules::
-IterateCalc(Duplex& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    (*(mFunc.pFunc))(rC[0], rC[0], mExponent);
-    (*(mFunc.pFunc))(rC[1], rC[1], mExponent);
+    (*(mFunc.pFunc))(AsComplex(rC, 0), AsComplex(rC, 0), *mExponent);
+    (*(mFunc.pFunc))(AsComplex(rC, 1), AsComplex(rC, 1), *mExponent);
 
-    rC[0][X] += mDuplexJuliaParm[0][X];
-    rC[0][Y] += mDuplexJuliaParm[0][Y];
-
-    rC[1][X] += mDuplexJuliaParm[1][X];
-    rC[1][Y] += mDuplexJuliaParm[1][Y];
+    rC += mDuplexJuliaParm;
 }
 
 void HypercomplexFuncFractalRules::
-DerivCalc(Duplex& rD, const Duplex& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Duplex tmp;
+    Complex tmp0, tmp1;
 
-    (*(mFunc.pDeriv))(tmp[0], c[0], mExponent);
-    (*(mFunc.pDeriv))(tmp[1], c[1], mExponent);
+    (*(mFunc.pDeriv))(tmp0, AsComplex(c, 0), *mExponent);
+    (*(mFunc.pDeriv))(tmp1, AsComplex(c, 1), *mExponent);
 
-    complex_fn::Mult(rD[0], rD[0], tmp[0]);
-    complex_fn::Mult(rD[1], rD[1], tmp[1]);
+    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
+    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
 }
 
 bool HypercomplexFuncFractalRules::
-DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     Complex tmp;
     DBL dist;
-    if ((*(mFunc.pDisc))(tmp, dist, t[0], p[0], mExponent))
+    if ((*(mFunc.pDisc))(tmp, dist, AsComplex(t, 0), AsComplex(p, 0), *mExponent))
     {
-        AssignComplex(rD[0], tmp);
-        rD[1][X] = rD[1][Y] = 0.0;
+        AssignComplex(AsComplex(rD, 0), tmp);
+        rD[Z] = rD[W] = 0.0;
         rDist = dist;
         return true;
     }
-    else if ((*(mFunc.pDisc))(tmp, dist, t[1], p[1], mExponent))
+    else if ((*(mFunc.pDisc))(tmp, dist, AsComplex(t, 1), AsComplex(p, 1), *mExponent))
     {
-        rD[0][X] = rD[0][Y] = 0.0;
-        AssignComplex(rD[1], tmp);
+        rD[X] = rD[Y] = 0.0;
+        AssignComplex(AsComplex(rD, 1), tmp);
         rDist = dist;
         return true;
     }

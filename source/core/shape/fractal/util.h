@@ -124,19 +124,14 @@ static inline const FractalRulesInfo CreateRulesInfo(const FractalFuncType& func
     return f;
 }
 
-#define INIT_COMPLEX(var, v0, v1) var(v0, v1)
-
 #else
 
 /* The easy part. */
 
 #define CREATE_GENERAL(...) {__VA_ARGS__}
-#define INIT_GENERAL(var, ...) var{__VA_ARGS__}
 
 #define CreateFuncType (FractalFuncType)CREATE_GENERAL
 #define CreateRulesInfo (FractalRulesInfo)CREATE_GENERAL
-
-#define INIT_COMPLEX INIT_GENERAL
 
 #endif
 

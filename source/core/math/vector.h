@@ -121,6 +121,9 @@ inline void V4D_Dot(DBL& a, const VECTOR_4D b, const VECTOR_4D c)
 template<typename T>
 class GenericVector3d;
 
+template<typename T>
+class GenericVector4d;
+
 /// Generic template class to hold a 2D vector.
 ///
 /// @tparam T   Floating-point type to use for the individual vector components.
@@ -157,6 +160,12 @@ class GenericVector2d
         }
 
         inline explicit GenericVector2d(const GenericVector3d<T>& b)
+        {
+            vect[X] = b[X];
+            vect[Y] = b[Y];
+        }
+
+        inline explicit GenericVector2d(const GenericVector4d<T>& b)
         {
             vect[X] = b[X];
             vect[Y] = b[Y];
@@ -377,6 +386,13 @@ class GenericVector3d
             vect[X] = T(vi[X]);
             vect[Y] = T(vi[Y]);
             vect[Z] = T(vi[Z]);
+        }
+
+        inline explicit GenericVector3d(const GenericVector4d<T>& b)
+        {
+            vect[X] = b[X];
+            vect[Y] = b[Y];
+            vect[Z] = b[Z];
         }
 
         template<typename T2>

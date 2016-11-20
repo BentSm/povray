@@ -62,10 +62,9 @@ class Fractal : public ObjectBase
 public:
     Vector3d Center;
     Vector4d Julia_Parm;
-    Vector4d Slice;              /* vector perpendicular to slice plane */
-    Vector3d SliceNorm;
+    Vector4d Slice;               /* vector perpendicular to slice plane */
     DBL SliceDist;                /* distance from slice plane to origin */
-    DBL SliceDistNorm;
+    FractalTransformMethod TransformMethod;
     DBL Bailout;
     DBL Exit_Value;
     int Num_Iterations;           /* number of iterations */
@@ -80,6 +79,7 @@ public:
     Complex exponent;             /* exponent of power function */
     DBL Radius_Squared;           /* For F_Bound(), if needed */
     FractalRulesPtr Rules;
+    const FractalSpace *RulesSpace;
 
     Fractal();
     virtual ~Fractal();

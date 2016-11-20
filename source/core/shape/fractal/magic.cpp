@@ -55,32 +55,34 @@
 namespace pov
 {
 
-MagicTransform::MagicTransform(FractalTransformMethod transformMethod, FractalAlgebra algebra, const Vector4d& slice, DBL sliceDist)
+MagicFractalSpace::MagicFractalSpace(FractalTransformMethod transformMethod, FractalAlgebra algebra, const Vector4d& slice, DBL sliceDist)
 {
-    Vector4d sliceNorm;
+    mTransformMethod = transformMethod;
+    mAlgebra = algebra;
 
-    switch (transformMethod)
+    switch (mTransformMethod)
     {
-    case kTransformProjectedOld:
     case kTransformProjected:
-        sliceNorm = slice / slice.w();
-        tX = Vector4d(1.0, 0.0, 0.0, -sliceNorm.x());
-        tY = Vector4d(1.0, 0.0, 0.0, -sliceNorm.y());
-        tZ = Vector4d(1.0, 0.0, 0.0, -sliceNorm.z());
-        t0 = Vector4d(0.0, 0.0, 0.0, sliceDist / slice.w() * (transformMethod == kTransformProjected ? slice.length() : 1.0));
+        sliceNorm3d = Vector3d(slice / slice.w());
+        sliceDistNorm = sliceDist / slice.w();
+        tX = Vector4d(1.0, 0.0, 0.0, -sliceNorm3d.x());
+        tY = Vector4d(0.0, 1.0, 0.0, -sliceNorm3d.y());
+        tZ = Vector4d(0.0, 0.0, 1.0, -sliceNorm3d.z());
+        t0 = Vector4d(0.0, 0.0, 0.0, sliceDistNorm);
         break;
-    case kTransformOrthogonal:
-        sliceNorm = slice.normalized();
+    case kTransformIsometric:
+        sliceNorm = slice;
+        sliceDistNorm = sliceDist;
         tX = Vector4d(-sliceNorm.y(), sliceNorm.x(), -sliceNorm.w(), sliceNorm.z());
         tY = Vector4d(-sliceNorm.z(), sliceNorm.w(), sliceNorm.x(), -sliceNorm.y());
         tZ = Vector4d(-sliceNorm.w(), -sliceNorm.z(), sliceNorm.y(), sliceNorm.x());
-        t0 = sliceNorm * sliceDist;
+        t0 = sliceNorm * sliceDistNorm;
         break;
     default:
         throw POV_EXCEPTION_STRING("Unknown fractal projection type.");
     }
 
-    switch (algebra)
+    switch (mAlgebra)
     {
     case kQuaternion:
         break;
@@ -95,11 +97,106 @@ MagicTransform::MagicTransform(FractalTransformMethod transformMethod, FractalAl
     }
 }
 
-void MagicRulesBase::
-TransformTo4D(Vector4d& rResult, const Vector3d& point, const Fractal *pFractal) const
+const Vector4d MagicFractalSpace::
+TransformTo4D(const Vector3d& point) const
 {
-    rResult = tX * point.x() + tY * point.y() + tZ * point.z() + t0;
+    return tX * point.x() + tY * point.y() + tZ * point.z() + t0;
 }
+
+// This was adapted from the Sphere::Intersect code
+bool MagicFractalSpace::
+Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const
+{
+    DBL OCSquared, t_Closest_Approach, Half_Chord, t_Half_Chord_Squared, OCWComp, DirSquared, DirWComp;
+    Vector3d Center_To_Origin;
+
+    Center_To_Origin = ray.Origin - pFractal->Center;
+
+    OCWComp = (mTransformMethod == kTransformIsometric ? 0.0 : sliceDistNorm - dot(Center_To_Origin, sliceNorm3d));
+
+    DirWComp = (mTransformMethod == kTransformIsometric ? 0.0 : -dot(ray.Direction, sliceNorm3d));
+
+    OCSquared = Center_To_Origin.lengthSqr() + Sqr(OCWComp);
+
+    DirSquared = ray.Direction.lengthSqr() + Sqr(DirWComp);
+
+    t_Closest_Approach = -(dot(Center_To_Origin, ray.Direction) + OCWComp * DirWComp) / DirSquared;
+
+    if ((OCSquared >= pFractal->Radius_Squared) && (t_Closest_Approach < EPSILON))
+        return false;
+
+    t_Half_Chord_Squared = (pFractal->Radius_Squared - OCSquared) / DirSquared + Sqr(t_Closest_Approach);
+
+    if (t_Half_Chord_Squared > EPSILON)
+    {
+        Half_Chord = sqrt(t_Half_Chord_Squared);
+
+        *pDepthMin = t_Closest_Approach - Half_Chord;
+        *pDepthMax = t_Closest_Approach + Half_Chord;
+
+        return true;
+    }
+
+    return false;
+}
+
+bool MagicFractalSpace::
+Compute_BBox(BoundingBox &BBox, const Fractal *pFractal) const
+{
+    DBL a2, b2, c2, n2, dx, dy, dz, q, x0, y0, z0, d;
+
+    switch (mTransformMethod)
+    {
+    case kTransformProjected:
+
+        a2 = Sqr(sliceNorm[X]);
+        b2 = Sqr(sliceNorm[Y]);
+        c2 = Sqr(sliceNorm[Z]);
+        n2 = 1 + a2 + b2 + c2;
+
+        q = pFractal->Radius_Squared * n2 - Sqr(sliceDistNorm);
+
+        if (q < 0)
+        {
+            return false;
+        }
+        else
+        {
+            dx = sqrt(q * (n2 - a2)) / n2;
+            x0 = sliceNorm[X] * sliceDistNorm / n2 - dx;
+
+            dy = sqrt(q * (n2 - b2)) / n2;
+            y0 = sliceNorm[Y] * sliceDistNorm / n2 - dy;
+
+            dz = sqrt(q * (n2 - c2)) / n2;
+            z0 = sliceNorm[Z] * sliceDistNorm / n2 - dz;
+
+            Make_BBox(BBox, x0, y0, z0, 2.0 * dx, 2.0 * dy, 2.0 * dz);
+        }
+        break;
+
+    case kTransformIsometric:
+        q = pFractal->Radius_Squared - Sqr(sliceDistNorm);
+
+        if (q < 0)
+        {
+            return false;
+        }
+        else
+        {
+            d = sqrt(q);
+
+            Make_BBox(BBox, -d, -d, -d, 2.0 * d, 2.0 * d, 2.0 * d);
+        }
+        break;
+
+    default:
+        throw POV_EXCEPTION_STRING("Unknown fractal projection type.");
+    }
+
+    return true;
+}
+
 
 const DistanceEstimator& MagicRulesBase::
 GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator, EstimatorType legacyEstimator,
@@ -130,43 +227,6 @@ GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator
         else
             return estimators::BadEstimator();
     }
-}
-
-// This was adapted from the Sphere::Intersect code
-bool MagicRulesBase::
-Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const
-{
-    DBL OCSquared, t_Closest_Approach, Half_Chord, t_Half_Chord_Squared, OCWComp, DirSquared, DirWComp;
-    Vector3d Center_To_Origin;
-
-    Center_To_Origin = ray.Origin - pFractal->Center;
-
-    OCWComp = pFractal->SliceDistNorm - dot(Center_To_Origin, pFractal->SliceNorm);
-
-    DirWComp = -dot(ray.Direction, pFractal->SliceNorm);
-
-    OCSquared = Center_To_Origin.lengthSqr() + Sqr(OCWComp);
-
-    DirSquared = ray.Direction.lengthSqr() + Sqr(DirWComp);
-
-    t_Closest_Approach = -(dot(Center_To_Origin, ray.Direction) + OCWComp * DirWComp) / DirSquared;
-
-    if ((OCSquared >= pFractal->Radius_Squared) && (t_Closest_Approach < EPSILON))
-        return false;
-
-    t_Half_Chord_Squared = (pFractal->Radius_Squared - OCSquared) / DirSquared + Sqr(t_Closest_Approach);
-
-    if (t_Half_Chord_Squared > EPSILON)
-    {
-        Half_Chord = sqrt(t_Half_Chord_Squared);
-
-        *pDepthMin = t_Closest_Approach - Half_Chord;
-        *pDepthMax = t_Closest_Approach + Half_Chord;
-
-        return true;
-    }
-
-    return false;
 }
 
 int MagicQuaternionFractalRules::
@@ -243,7 +303,7 @@ CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIter
 void MagicQuaternionFractalRules::
 CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
-    Vector4d nX = mTransform.transformedX(), nY = mTransform.transformedY(), nZ = mTransform.transformedZ();
+    Vector4d nX = mSpace4D.transformedX(), nY = mSpace4D.transformedY(), nZ = mSpace4D.transformedZ();
     int i;
 
     Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data()),
@@ -342,22 +402,16 @@ DBL MagicHypercomplexFractalRules::
 CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     int i;
-    Vector4d d(1.0, 0.0, 1.0, 0.0);
+    Vector4d d = dir;
 
-    Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data());
+    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
 
     for (i = 0; i < nMax; i++)
     {
-        DerivCalc(d, pTIterStack[i], i, pFractal, pTIterData);
+        DerivCalc(d, pIterStack[i], i, pFractal, pIterData);
     }
 
-    d[Y] *= -1.0;
-    d[W] *= -1.0;
-
-    complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(pTIterStack[nMax], 0));
-    complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(pTIterStack[nMax], 1));
-
-    return dot(dir, d);
+    return 0.5 * dot(d, pIterStack[nMax]);
 }
 
 void MagicHypercomplexFractalRules::
@@ -394,9 +448,9 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
 
                 d = HypercomplexFromDuplex(d);
 
-                rResult[X] = 0.5 * dot(d, mTransform.transformedX());
-                rResult[Y] = 0.5 * dot(d, mTransform.transformedY());
-                rResult[Z] = 0.5 * dot(d, mTransform.transformedZ());
+                rResult[X] = 0.5 * dot(d, mSpace4D.transformedX());
+                rResult[Y] = 0.5 * dot(d, mSpace4D.transformedY());
+                rResult[Z] = 0.5 * dot(d, mSpace4D.transformedZ());
 
                 return;
             }
@@ -411,9 +465,9 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
     complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(pTIterStack[nMax], 0));
     complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(pTIterStack[nMax], 1));
 
-    rResult[X] = 0.5 * dot(d, mTransform.transformedX());
-    rResult[Y] = 0.5 * dot(d, mTransform.transformedY());
-    rResult[Z] = 0.5 * dot(d, mTransform.transformedZ());
+    rResult[X] = 0.5 * dot(d, mSpace4D.transformedX());
+    rResult[Y] = 0.5 * dot(d, mSpace4D.transformedY());
+    rResult[Z] = 0.5 * dot(d, mSpace4D.transformedZ());
 }
 
 bool MagicHypercomplexFractalRules::

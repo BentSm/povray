@@ -107,9 +107,8 @@ enum DiscontinuitySupportLevel
 
 enum FractalTransformMethod
 {
-    kTransformProjectedOld = -1,
     kTransformProjected = 0,
-    kTransformOrthogonal
+    kTransformIsometric
 };
 
 struct FractalFuncType

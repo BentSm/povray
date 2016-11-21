@@ -501,9 +501,10 @@ class FractalSpace
 {
     public:
         virtual ~FractalSpace() {}
-        virtual const Vector4d TransformTo4D(const Vector3d& point) const = 0;
-        virtual bool Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const = 0;
-        virtual bool Compute_BBox(BoundingBox &BBox, const Fractal *pFractal) const = 0;
+        virtual const Vector4d TransformTo4D(const Vector3d&) const = 0;
+        virtual const Vector4d TransformDirTo4D(const Vector3d&) const = 0;
+        virtual bool Bound(const BasicRay&, const Fractal *, DBL *, DBL *) const = 0;
+        virtual bool Compute_BBox(BoundingBox&, const Fractal *) const = 0;
 };
 
 class FractalRules

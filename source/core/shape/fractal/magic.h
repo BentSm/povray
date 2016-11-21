@@ -60,8 +60,9 @@ public:
     const Vector4d& transformed0() const { return t0; }
 
     const Vector4d TransformTo4D(const Vector3d& point) const;
+    const Vector4d TransformDirTo4D(const Vector3d& point) const;
     bool Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const;
-    bool Compute_BBox(BoundingBox &BBox, const Fractal *pFractal) const;
+    bool Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const;
 
 protected:
     Vector4d tX, tY, tZ, t0, sliceNorm;

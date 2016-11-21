@@ -148,7 +148,7 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
         LenInv = 1.0;
     }
 
-    Direction = RulesSpace->TransformTo4D(Direction0);
+    Direction = RulesSpace->TransformDirTo4D(Direction0);
 
     /* Bound fractal. */
 
@@ -588,6 +588,9 @@ void Fractal::Transform(const TRANSFORM *tr)
 
 void Fractal::Compute_BBox()
 {
+    if (!RulesSpace)
+        return;
+
     if (!RulesSpace->Compute_BBox(BBox, this))
     {
         ;// TODO MESSAGE        Warning("Degenerate julia_fractal.");

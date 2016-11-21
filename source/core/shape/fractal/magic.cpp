@@ -103,6 +103,12 @@ TransformTo4D(const Vector3d& point) const
     return tX * point.x() + tY * point.y() + tZ * point.z() + t0;
 }
 
+const Vector4d MagicFractalSpace::
+TransformDirTo4D(const Vector3d& point) const
+{
+    return tX * point.x() + tY * point.y() + tZ * point.z();
+}
+
 // This was adapted from the Sphere::Intersect code
 bool MagicFractalSpace::
 Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const
@@ -141,7 +147,7 @@ Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthM
 }
 
 bool MagicFractalSpace::
-Compute_BBox(BoundingBox &BBox, const Fractal *pFractal) const
+Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const
 {
     DBL a2, b2, c2, n2, dx, dy, dz, q, x0, y0, z0, d;
 

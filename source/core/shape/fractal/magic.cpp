@@ -71,12 +71,11 @@ MagicFractalSpace::MagicFractalSpace(FractalTransformMethod transformMethod, Fra
         t0 = Vector4d(0.0, 0.0, 0.0, sliceDistNorm);
         break;
     case kTransformIsometric:
-        sliceNorm = slice;
         sliceDistNorm = sliceDist;
-        tX = Vector4d(-sliceNorm.y(), sliceNorm.x(), -sliceNorm.w(), sliceNorm.z());
-        tY = Vector4d(-sliceNorm.z(), sliceNorm.w(), sliceNorm.x(), -sliceNorm.y());
-        tZ = Vector4d(-sliceNorm.w(), -sliceNorm.z(), sliceNorm.y(), sliceNorm.x());
-        t0 = sliceNorm * sliceDistNorm;
+        tX = Vector4d(-slice.y(), slice.x(), -slice.w(), slice.z());
+        tY = Vector4d(-slice.z(), slice.w(), slice.x(), -slice.y());
+        tZ = Vector4d(-slice.w(), -slice.z(), slice.y(), slice.x());
+        t0 = slice * sliceDistNorm;
         break;
     default:
         throw POV_EXCEPTION_STRING("Unknown fractal projection type.");
@@ -118,15 +117,23 @@ Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthM
 
     Center_To_Origin = ray.Origin - pFractal->Center;
 
-    OCWComp = (mTransformMethod == kTransformIsometric ? 0.0 : sliceDistNorm - dot(Center_To_Origin, sliceNorm3d));
+    if (mTransformMethod == kTransformIsometric)
+    {
+        OCSquared = Center_To_Origin.lengthSqr() + Sqr(sliceDistNorm);
+        DirSquared = ray.Direction.lengthSqr();
 
-    DirWComp = (mTransformMethod == kTransformIsometric ? 0.0 : -dot(ray.Direction, sliceNorm3d));
+        t_Closest_Approach = -dot(Center_To_Origin, ray.Direction) / DirSquared;
+    }
+    else
+    {
+        OCWComp = sliceDistNorm - dot(Center_To_Origin, sliceNorm3d);
+        DirWComp = -dot(ray.Direction, sliceNorm3d);
 
-    OCSquared = Center_To_Origin.lengthSqr() + Sqr(OCWComp);
+        OCSquared = Center_To_Origin.lengthSqr() + Sqr(OCWComp);
+        DirSquared = ray.Direction.lengthSqr() + Sqr(DirWComp);
 
-    DirSquared = ray.Direction.lengthSqr() + Sqr(DirWComp);
-
-    t_Closest_Approach = -(dot(Center_To_Origin, ray.Direction) + OCWComp * DirWComp) / DirSquared;
+        t_Closest_Approach = -(dot(Center_To_Origin, ray.Direction) + OCWComp * DirWComp) / DirSquared;
+    }
 
     if ((OCSquared >= pFractal->Radius_Squared) && (t_Closest_Approach < EPSILON))
         return false;
@@ -155,9 +162,9 @@ Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const
     {
     case kTransformProjected:
 
-        a2 = Sqr(sliceNorm[X]);
-        b2 = Sqr(sliceNorm[Y]);
-        c2 = Sqr(sliceNorm[Z]);
+        a2 = Sqr(sliceNorm3d[X]);
+        b2 = Sqr(sliceNorm3d[Y]);
+        c2 = Sqr(sliceNorm3d[Z]);
         n2 = 1 + a2 + b2 + c2;
 
         q = pFractal->Radius_Squared * n2 - Sqr(sliceDistNorm);
@@ -169,13 +176,13 @@ Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const
         else
         {
             dx = sqrt(q * (n2 - a2)) / n2;
-            x0 = sliceNorm[X] * sliceDistNorm / n2 - dx;
+            x0 = sliceNorm3d[X] * sliceDistNorm / n2 - dx;
 
             dy = sqrt(q * (n2 - b2)) / n2;
-            y0 = sliceNorm[Y] * sliceDistNorm / n2 - dy;
+            y0 = sliceNorm3d[Y] * sliceDistNorm / n2 - dy;
 
             dz = sqrt(q * (n2 - c2)) / n2;
-            z0 = sliceNorm[Z] * sliceDistNorm / n2 - dz;
+            z0 = sliceNorm3d[Z] * sliceDistNorm / n2 - dz;
 
             Make_BBox(BBox, x0, y0, z0, 2.0 * dx, 2.0 * dy, 2.0 * dz);
         }

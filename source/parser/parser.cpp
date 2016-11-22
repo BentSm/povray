@@ -3153,11 +3153,11 @@ ObjectPtr Parser::Parse_Lathe()
 
     /* Read points (x : radius; y : height; z : not used). */
 
+    Parse_Comma();
+
     AlreadyWarned = false;
     for (i = 0; i < Object->Number; i++)
     {
-        Parse_Comma();
-
         Parse_UV_Vect(Points[i]);
 
         switch (Object->Spline_Type)
@@ -3204,6 +3204,10 @@ ObjectPtr Parser::Parse_Lathe()
 
               break;
         }
+
+        // NB we allow for a trailing comma at the end of the list,
+        // to facilitate auto-generation of lists.
+        Parse_Comma();
     }
 
     /* Compute spline segments. */
@@ -5521,11 +5525,15 @@ ObjectPtr Parser::Parse_Polygon()
 
     Points = reinterpret_cast<Vector3d *>(POV_MALLOC((Number+1)*sizeof(Vector3d), "temporary polygon points"));
 
+    Parse_Comma();
+
     for (i = 0; i < Number; i++)
     {
-        Parse_Comma();
-
         Parse_Vector(Points[i]);
+
+        // NB we allow for a trailing comma at the end of the list,
+        // to facilitate auto-generation of lists.
+        Parse_Comma();
     }
 
     /* Check for closed polygons. */
@@ -5719,11 +5727,15 @@ ObjectPtr Parser::Parse_Prism()
 
     /* Read points (x, y : coordinate of 2d point; z : not used). */
 
+    Parse_Comma();
+
     for (i = 0; i < Object->Number; i++)
     {
-        Parse_Comma();
-
         Parse_UV_Vect(Points[i]);
+
+        // NB we allow for a trailing comma at the end of the list,
+        // to facilitate auto-generation of lists.
+        Parse_Comma();
     }
 
     /* Closed or not closed that's the question. */
@@ -6064,10 +6076,10 @@ ObjectPtr Parser::Parse_Sor()
 
     /* Read points (x : radius; y : height; z : not used). */
 
+    Parse_Comma();
+
     for (i = 0; i < Object->Number; i++)
     {
-        Parse_Comma();
-
         Parse_UV_Vect(Points[i]);
 
         if ((Points[i][X] < 0.0) ||
@@ -6075,6 +6087,10 @@ ObjectPtr Parser::Parse_Sor()
         {
             Error("Incorrect point in surface of revolution.");
         }
+
+        // NB we allow for a trailing comma at the end of the list,
+        // to facilitate auto-generation of lists.
+        Parse_Comma();
     }
 
     /* Closed or not closed that's the question. */
@@ -6248,12 +6264,17 @@ ObjectPtr Parser::Parse_Sphere_Sweep()
         reinterpret_cast<SPHSWEEP_SPH *>(POV_MALLOC(Object->Num_Modeling_Spheres * sizeof(SPHSWEEP_SPH),
         "sphere sweep modeling spheres"));
 
+    Parse_Comma();
+
     for (i = 0; i < Object->Num_Modeling_Spheres; i++)
     {
-        Parse_Comma();
         Parse_Vector(Object->Modeling_Sphere[i].Center);
         Parse_Comma();
         Object->Modeling_Sphere[i].Radius = Parse_Float();
+
+        // NB we allow for a trailing comma at the end of the list,
+        // to facilitate auto-generation of lists.
+        Parse_Comma();
     }
 
     EXPECT

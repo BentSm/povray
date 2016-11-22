@@ -65,7 +65,7 @@ public:
     bool Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const;
 
 protected:
-    Vector4d tX, tY, tZ, t0, sliceNorm;
+    Vector4d tX, tY, tZ, t0;
     Vector3d sliceNorm3d;
     DBL sliceDistNorm;
     FractalTransformMethod mTransformMethod;

@@ -837,7 +837,7 @@ int Fractal::SetUp_Fractal()
     Exit_Value = Sqr(Bailout);
 
     /* To make sure the outside of the fractal doesn't get cut off. */
-    R += Fractal_Tolerance;
+    R += 2 * Fractal_Tolerance;
 
     Radius_Squared = Sqr(R);
 

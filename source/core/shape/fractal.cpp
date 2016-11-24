@@ -643,7 +643,7 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
 
     Slice = Vector4d(0.0, 0.0, 0.0, 1.0);
     SliceDist = 0.0;
-    TransformMethod = kTransformProjected;
+    TransformMethod = kTransformProjection;
 
     Bailout = 0.0;
     Exit_Value = 0.0;

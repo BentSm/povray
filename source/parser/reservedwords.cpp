@@ -423,8 +423,8 @@ const RESERVED_WORD Reserved_Words[] = {
     { PRETRACE_START_TOKEN,         "pretrace_start" },
     { PRISM_TOKEN,                  "prism" },
     { PROD_TOKEN,                   "prod" },
-    { PROJECTED_TOKEN,              "projected" },
     { PROJECTED_THROUGH_TOKEN,      "projected_through" },
+    { PROJECTION_TOKEN,             "projection" },
     { PWR_TOKEN,                    "pwr" },
 
     { QUADRATIC_SPLINE_TOKEN,       "quadratic_spline" },

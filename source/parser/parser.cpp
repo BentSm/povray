@@ -2766,20 +2766,6 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         END_CASE
 
         CASE(SLICE_TOKEN)
-            EXPECT_ONE
-                CASE(PROJECTED_TOKEN)
-                    Object->TransformMethod = kTransformProjected;
-                END_CASE
-
-                CASE(ISOMETRIC_TOKEN)
-                    Object->TransformMethod = kTransformIsometric;
-                END_CASE
-
-                OTHERWISE
-                    UNGET
-                END_CASE
-            END_EXPECT
-
             Parse_Vector4D(*(Object->Slice));
             Parse_Comma();
             Object->SliceDist = Parse_Float();
@@ -2789,13 +2775,17 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
             {
                 Error("Slice vector is zero.");
             }
-            if (Object->TransformMethod == kTransformProjected &&
-                fabs(Object->Slice[T]) < EPSILON)
-            {
-                Error("Slice t component is zero for projected fractal.");
-            }
             Object->Slice.normalize();
         END_CASE
+
+        CASE(PROJECTION_TOKEN)
+            Object->TransformMethod = kTransformProjection;
+        END_CASE
+
+        CASE(ISOMETRIC_TOKEN)
+            Object->TransformMethod = kTransformIsometric;
+        END_CASE
+
 
         CASE(PRECISION_TOKEN)
             P = Parse_Float();
@@ -3010,6 +3000,11 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         /* This is not a bug; merely a behavior change. */
         /*        if (Object->Distance_Estimator == kDefaultEstimator)
                   Object->Distance_Estimator = kLegacyEstimator; */
+    }
+
+    if (Object->TransformMethod == kTransformProjection && fabs(Object->Slice[T]) < EPSILON)
+    {
+        Error("Slice t component is zero for projection-mapped fractal.");
     }
 
     Parse_Object_Mods(reinterpret_cast<ObjectPtr>(Object));

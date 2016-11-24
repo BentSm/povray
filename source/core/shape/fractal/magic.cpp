@@ -62,7 +62,7 @@ MagicFractalSpace::MagicFractalSpace(FractalTransformMethod transformMethod, Fra
 
     switch (mTransformMethod)
     {
-    case kTransformProjected:
+    case kTransformProjection:
         sliceNorm3d = Vector3d(slice / slice.w());
         sliceDistNorm = sliceDist / slice.w();
         tX = Vector4d(1.0, 0.0, 0.0, -sliceNorm3d.x());
@@ -78,7 +78,7 @@ MagicFractalSpace::MagicFractalSpace(FractalTransformMethod transformMethod, Fra
         t0 = slice * sliceDistNorm;
         break;
     default:
-        throw POV_EXCEPTION_STRING("Unknown fractal projection type.");
+        throw POV_EXCEPTION_STRING("Unknown fractal mapping type.");
     }
 
     switch (mAlgebra)
@@ -92,7 +92,7 @@ MagicFractalSpace::MagicFractalSpace(FractalTransformMethod transformMethod, Fra
         t0 = DuplexFromHypercomplex(t0);
         break;
     default:
-        throw POV_EXCEPTION_STRING("Unknown algebra for fractal projection.");
+        throw POV_EXCEPTION_STRING("Unknown algebra for fractal mapping.");
     }
 }
 
@@ -160,7 +160,7 @@ Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const
 
     switch (mTransformMethod)
     {
-    case kTransformProjected:
+    case kTransformProjection:
 
         a2 = Sqr(sliceNorm3d[X]);
         b2 = Sqr(sliceNorm3d[Y]);
@@ -204,7 +204,7 @@ Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const
         break;
 
     default:
-        throw POV_EXCEPTION_STRING("Unknown fractal projection type.");
+        throw POV_EXCEPTION_STRING("Unknown fractal mapping type.");
     }
 
     return true;

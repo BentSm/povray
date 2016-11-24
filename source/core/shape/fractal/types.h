@@ -107,7 +107,7 @@ enum DiscontinuitySupportLevel
 
 enum FractalTransformMethod
 {
-    kTransformProjected = 0,
+    kTransformProjection = 0,
     kTransformIsometric
 };
 

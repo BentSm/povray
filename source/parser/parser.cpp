@@ -2752,7 +2752,7 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         legacy = true;
     }
 
-    Parse_Vector4D(*(Object->Julia_Parm));
+    Parse_Vector4D(Object->Julia_Parm);
 
     EXPECT
 
@@ -2766,7 +2766,7 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         END_CASE
 
         CASE(SLICE_TOKEN)
-            Parse_Vector4D(*(Object->Slice));
+            Parse_Vector4D(Object->Slice);
             Parse_Comma();
             Object->SliceDist = Parse_Float();
 
@@ -9208,8 +9208,7 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
                     case 4:
                         *NumberPtr = VECTOR_4D_ID_TOKEN;
                         Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
-                        *DataPtr   = reinterpret_cast<void *>(Create_Vector_4D());
-                        Assign_Vector_4D(reinterpret_cast<DBL *>(*DataPtr), Local_Express);
+                        *DataPtr   = reinterpret_cast<void *>(new Vector4d(Local_Express));
                         break;
 
                     case 5:
@@ -9486,7 +9485,7 @@ void Parser::Destroy_Ident_Data(void *Data, int Type)
             delete reinterpret_cast<Vector2d *>(Data);
             break;
         case VECTOR_4D_ID_TOKEN:
-            Destroy_Vector_4D(reinterpret_cast<VECTOR_4D *>(Data));
+            delete reinterpret_cast<Vector4d *>(Data);
             break;
         case FLOAT_ID_TOKEN:
             Destroy_Float(reinterpret_cast<DBL *>(Data));
@@ -10545,7 +10544,7 @@ void *Parser::Copy_Identifier (void *Data, int Type)
     Vector3d *vp;
     DBL *dp;
     Vector2d *uvp;
-    VECTOR_4D *v4p;
+    Vector4d *v4p;
     int len;
     void *New=NULL;
 
@@ -10570,8 +10569,8 @@ void *Parser::Copy_Identifier (void *Data, int Type)
             New=uvp;
             break;
         case VECTOR_4D_ID_TOKEN:
-            v4p = Create_Vector_4D();
-            Assign_Vector_4D((*v4p),(*(reinterpret_cast<VECTOR_4D *>(Data))));
+            v4p = new Vector4d();
+            *v4p = *(reinterpret_cast<Vector4d *>(Data));
             New=v4p;
             break;
         case FLOAT_ID_TOKEN:

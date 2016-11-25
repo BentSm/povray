@@ -67,56 +67,9 @@ enum
     W = 3
 };
 
-typedef DBL VECTOR_4D[4]; ///< @todo       Make this obsolete.
-                          // (Working on it...)
-
 /*****************************************************************************
 * Inline functions
 ******************************************************************************/
-
-inline VECTOR_4D *Create_Vector_4D ()
-{
-    VECTOR_4D *New;
-
-    New = reinterpret_cast<VECTOR_4D *>(POV_MALLOC(sizeof (VECTOR_4D), "4d vector"));
-
-    (*New)[0]= 0.0;
-    (*New)[1]= 0.0;
-    (*New)[2]= 0.0;
-    (*New)[3]= 0.0;
-
-    return (New);
-}
-
-inline void Assign_Vector_4D(VECTOR_4D d, const VECTOR_4D s)
-{
-    d[X] = s[X];
-    d[Y] = s[Y];
-    d[Z] = s[Z];
-    d[T] = s[T];
-}
-
-inline void Destroy_Vector_4D(VECTOR_4D *x)
-{
-    if(x != NULL)
-        POV_FREE(x);
-}
-
-// Inverse Scale - Divide Vector by a Scalar
-inline void V4D_InverseScaleEq(VECTOR_4D a, DBL k)
-{
-    DBL tmp = 1.0 / k;
-    a[X] *= tmp;
-    a[Y] *= tmp;
-    a[Z] *= tmp;
-    a[T] *= tmp;
-}
-
-// Dot Product - Gives Scalar angle (a) between two vectors (b) and (c)
-inline void V4D_Dot(DBL& a, const VECTOR_4D b, const VECTOR_4D c)
-{
-    a = b[X] * c[X] + b[Y] * c[Y] + b[Z] * c[Z] + b[T] * c[T];
-}
 
 template<typename T>
 class GenericVector3d;

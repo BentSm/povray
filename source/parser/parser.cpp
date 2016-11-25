@@ -1072,7 +1072,7 @@ void Parser::Parse_Blob_Element_Mods(Blob_Element *Element)
             Link_Textures(&Element->Texture, Local_Texture);
         END_CASE
 
-        CASE3 (PIGMENT_TOKEN, TNORMAL_TOKEN, FINISH_TOKEN)
+        CASE3 (PIGMENT_TOKEN, NORMAL_TOKEN, FINISH_TOKEN)
             if (Element->Texture == NULL)
             {
                 Element->Texture = Copy_Textures(Default_Texture);
@@ -1092,7 +1092,7 @@ void Parser::Parse_Blob_Element_Mods(Blob_Element *Element)
                     Parse_End ();
                 END_CASE
 
-                CASE (TNORMAL_TOKEN)
+                CASE (NORMAL_TOKEN)
                     Parse_Begin ();
                     Parse_Tnormal(&Element->Texture->Tnormal);
                     Parse_End ();
@@ -1357,17 +1357,15 @@ void Parser::Parse_Camera (Camera& Cam)
 
     Parse_Begin ();
 
-    EXPECT
+    EXPECT_ONE
         CASE (CAMERA_ID_TOKEN)
             Cam = *reinterpret_cast<Camera *>(Token.Data);
             if (sceneData->EffectiveLanguageVersion() >= 350)
                 only_mods = true;
-            EXIT
         END_CASE
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -1908,7 +1906,7 @@ void Parser::Parse_Camera (Camera& Cam)
                 }
             END_CASE
 
-            CASE (TNORMAL_TOKEN)
+            CASE (NORMAL_TOKEN)
                 Parse_Begin ();
                 Parse_Tnormal(&(New.Tnormal));
                 Parse_End ();
@@ -2103,7 +2101,7 @@ bool Parser::Parse_Camera_Mods(Camera& New)
             Compose_Transforms(New.Trans, &Local_Trans);
         END_CASE
 
-        CASE (TNORMAL_TOKEN)
+        CASE (NORMAL_TOKEN)
             Parse_Begin();
             Parse_Tnormal(&(New.Tnormal));
             Parse_End();
@@ -2312,15 +2310,13 @@ ObjectPtr Parser::Parse_Cone ()
     Parse_Vector(Object->base);  Parse_Comma ();
     Object->base_radius = Parse_Float();
 
-    EXPECT
+    EXPECT_ONE
         CASE(OPEN_TOKEN)
             Clear_Flag(Object, CLOSED_FLAG);
-            EXIT
         END_CASE
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -2370,15 +2366,13 @@ ObjectPtr Parser::Parse_Cylinder ()
     Object->apex_radius = Parse_Float();
     Object->base_radius = Object->apex_radius;
 
-    EXPECT
+    EXPECT_ONE
         CASE(OPEN_TOKEN)
             Clear_Flag(Object, CLOSED_FLAG);
-            EXIT
         END_CASE
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -2429,7 +2423,7 @@ ObjectPtr Parser::Parse_Disc ()
     tmpf = Parse_Float(); Parse_Comma ();
     Object->oradius2 = tmpf * tmpf;
 
-    EXPECT
+    EXPECT_ONE
         CASE_FLOAT
             tmpf = Parse_Float();
             Object->iradius2 = tmpf * tmpf;
@@ -2437,7 +2431,6 @@ ObjectPtr Parser::Parse_Disc ()
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -3278,15 +3271,13 @@ ObjectPtr Parser::Parse_Lemon ()
         Error("All radii must be positive");
     }
 
-    EXPECT
+    EXPECT_ONE
         CASE(OPEN_TOKEN)
             Clear_Flag(Object, CLOSED_FLAG);
-            EXIT
         END_CASE
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -3619,7 +3610,7 @@ ObjectPtr Parser::Parse_Light_Source ()
             Set_Flag(Object, PH_PASSTHRU_FLAG);
         END_CASE
 
-        CASE (FILL_LIGHT_TOKEN)
+        CASE (SHADOWLESS_TOKEN)
             Object->Light_Type = FILL_LIGHT_SOURCE;
         END_CASE
 
@@ -4562,51 +4553,45 @@ void Parser::Parse_Mesh2 (Mesh* Object)
         Triangles[i].P3 = c;
 
         /* look for a texture index */
-        EXPECT
+        EXPECT_ONE
             CASE_FLOAT
                 Triangles[i].Texture = Parse_Float(); Parse_Comma();
                 if (Triangles[i].Texture >= number_of_textures ||
                     Triangles[i].Texture < 0)
                     Error("Texture index out of range in mesh2.");
-                EXIT
             END_CASE
 
             OTHERWISE
                 Triangles[i].Texture = -1;
                 fully_textured = false;
-                EXIT
                 UNGET
             END_CASE
         END_EXPECT
         /* look for a texture index */
-        EXPECT
+        EXPECT_ONE
             CASE_FLOAT
                 Triangles[i].Texture2 = Parse_Float(); Parse_Comma();
                 if (Triangles[i].Texture2 >= number_of_textures ||
                     Triangles[i].Texture2 < 0)
                     Error("Texture index out of range in mesh2.");
                 Triangles[i].ThreeTex = true;
-                EXIT
             END_CASE
             OTHERWISE
                 Triangles[i].Texture2 = -1;
-                EXIT
                 UNGET
             END_CASE
         END_EXPECT
         /* look for a texture index */
-        EXPECT
+        EXPECT_ONE
             CASE_FLOAT
                 Triangles[i].Texture3 = Parse_Float(); Parse_Comma();
                 if (Triangles[i].Texture3 >= number_of_textures ||
                     Triangles[i].Texture3 < 0)
                     Error("Texture index out of range in mesh2.");
                 Triangles[i].ThreeTex = true;
-                EXIT
             END_CASE
             OTHERWISE
                 Triangles[i].Texture3 = -1;
-                EXIT
                 UNGET
             END_CASE
         END_EXPECT
@@ -5148,7 +5133,7 @@ ObjectPtr Parser::Parse_Parametric(void)
             PrecompDepth= Parse_Float();
             Parse_Comma();
 
-            EXPECT
+            EXPECT_ONE
                 CASE(VECTOR_FUNCT_TOKEN)
                     if(Token.Function_Id != X_TOKEN)
                     {
@@ -5156,18 +5141,16 @@ ObjectPtr Parser::Parse_Parametric(void)
                     }
                     else
                         PrecompFlag |= 1;
-                    EXIT
                 END_CASE
 
                 OTHERWISE
                     UNGET
-                    EXIT
                 END_CASE
             END_EXPECT
 
             Parse_Comma();
 
-            EXPECT
+            EXPECT_ONE
                 CASE(VECTOR_FUNCT_TOKEN)
                     if(Token.Function_Id != Y_TOKEN)
                     {
@@ -5175,18 +5158,16 @@ ObjectPtr Parser::Parse_Parametric(void)
                     }
                     else
                         PrecompFlag |= 2;
-                    EXIT
                 END_CASE
 
                 OTHERWISE
                     UNGET
-                    EXIT
                 END_CASE
             END_EXPECT
 
             Parse_Comma();
 
-            EXPECT
+            EXPECT_ONE
                 CASE(VECTOR_FUNCT_TOKEN)
                     if(Token.Function_Id != Z_TOKEN)
                     {
@@ -5194,12 +5175,10 @@ ObjectPtr Parser::Parse_Parametric(void)
                     }
                     else
                         PrecompFlag |= 4;
-                    EXIT
                 END_CASE
 
                 OTHERWISE
                     UNGET
-                    EXIT
                 END_CASE
             END_EXPECT
         END_CASE
@@ -5735,15 +5714,13 @@ ObjectPtr Parser::Parse_Prism()
 
     /* Closed or not closed that's the question. */
 
-    EXPECT
+    EXPECT_ONE
         CASE(OPEN_TOKEN)
             Clear_Flag(Object, CLOSED_FLAG);
-            EXIT
         END_CASE
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -6090,15 +6067,13 @@ ObjectPtr Parser::Parse_Sor()
 
     /* Closed or not closed that's the question. */
 
-    EXPECT
+    EXPECT_ONE
         CASE(OPEN_TOKEN)
             Clear_Flag(Object, CLOSED_FLAG);
-            EXIT
         END_CASE
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -6223,22 +6198,18 @@ ObjectPtr Parser::Parse_Sphere_Sweep()
     Object = new SphereSweep();
 
     /* Get type of interpolation */
-    EXPECT
+    EXPECT_ONE
         CASE(LINEAR_SPLINE_TOKEN)
             Object->Interpolation = LINEAR_SPHERE_SWEEP;
-            EXIT
         END_CASE
         CASE(CUBIC_SPLINE_TOKEN)
             Object->Interpolation = CATMULL_ROM_SPLINE_SPHERE_SWEEP;
-            EXIT
         END_CASE
         CASE(B_SPLINE_TOKEN)
             Object->Interpolation = B_SPLINE_SPHERE_SWEEP;
-            EXIT
         END_CASE
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -6272,14 +6243,12 @@ ObjectPtr Parser::Parse_Sphere_Sweep()
         Parse_Comma();
     }
 
-    EXPECT
+    EXPECT_ONE
         CASE(TOLERANCE_TOKEN)
             Object->Depth_Tolerance = Parse_Float();
-            EXIT
         END_CASE
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -6557,14 +6526,12 @@ ObjectPtr Parser::Parse_TrueType ()
     if ( (Object = reinterpret_cast<ObjectPtr>(Parse_Object_Id())) != NULL)
         return (reinterpret_cast<ObjectPtr>(Object));
 
-    EXPECT
+    EXPECT_ONE
         CASE(TTF_TOKEN)
             filename = Parse_C_String(true);
-            EXIT
         END_CASE
         CASE(INTERNAL_TOKEN)
             builtin_font = (int)Parse_Float();
-            EXIT
         END_CASE
         OTHERWISE
             Expectation_Error ("ttf or internal");
@@ -6730,216 +6697,177 @@ ObjectPtr Parser::Parse_Object ()
 {
     ObjectPtr Object = NULL;
 
-    EXPECT
+    EXPECT_ONE
 
         CASE (ISOSURFACE_TOKEN)
             Object = Parse_Isosurface ();
-            EXIT
         END_CASE
 
         CASE (PARAMETRIC_TOKEN)
             Object = Parse_Parametric ();
-            EXIT
         END_CASE
 
         CASE (JULIA_FRACTAL_TOKEN)
             Object = Parse_Julia_Fractal ();
-            EXIT
         END_CASE
 
         CASE (SPHERE_TOKEN)
             Object = Parse_Sphere ();
-            EXIT
         END_CASE
 
         CASE (SPHERE_SWEEP_TOKEN)
             Object = Parse_Sphere_Sweep ();
-            EXIT
         END_CASE
 
         CASE (PLANE_TOKEN)
             Object = Parse_Plane ();
-            EXIT
         END_CASE
 
         CASE (CONE_TOKEN)
             Object = Parse_Cone ();
-            EXIT
         END_CASE
 
         CASE (CYLINDER_TOKEN)
             Object = Parse_Cylinder ();
-            EXIT
         END_CASE
 
         CASE (DISC_TOKEN)
             Object = Parse_Disc ();
-            EXIT
         END_CASE
 
         CASE (QUADRIC_TOKEN)
             Object = Parse_Quadric ();
-            EXIT
         END_CASE
 
         CASE (CUBIC_TOKEN)
             Object = Parse_Poly (3);
-            EXIT
         END_CASE
 
         CASE (QUARTIC_TOKEN)
             Object = Parse_Poly (4);
-            EXIT
         END_CASE
 
         CASE (POLY_TOKEN)
             Object = Parse_Poly (0);
-            EXIT
         END_CASE
 
-        CASE (POLYNOM_TOKEN)
+        CASE (POLYNOMIAL_TOKEN)
             Object = Parse_Polynom();
-            EXIT
         END_CASE
 
         CASE (OVUS_TOKEN)
             Object = Parse_Ovus();
-            EXIT
         END_CASE
 
         CASE (TORUS_TOKEN)
             Object = Parse_Torus ();
-            EXIT
         END_CASE
 
         /* Parse lathe primitive. [DB 8/94] */
 
         CASE (LATHE_TOKEN)
             Object = Parse_Lathe();
-            EXIT
         END_CASE
 
         CASE (LEMON_TOKEN)
             Object = Parse_Lemon();
-            EXIT
         END_CASE
 
         /* Parse polygon primitive. [DB 8/94] */
 
         CASE (POLYGON_TOKEN)
             Object = Parse_Polygon();
-            EXIT
         END_CASE
 
         /* Parse prism primitive. [DB 8/94] */
 
         CASE (PRISM_TOKEN)
             Object = Parse_Prism();
-            EXIT
         END_CASE
 
         /* Parse surface of revolution primitive. [DB 8/94] */
 
         CASE (SOR_TOKEN)
             Object = Parse_Sor();
-            EXIT
         END_CASE
 
         /* Parse superellipsoid primitive. [DB 11/94] */
 
         CASE (SUPERELLIPSOID_TOKEN)
             Object = Parse_Superellipsoid();
-            EXIT
         END_CASE
 
         /* Parse triangle mesh primitive. [DB 2/95] */
 
         CASE (MESH_TOKEN)
             Object = Parse_Mesh();
-            EXIT
         END_CASE
 
         /* NK 1998 Parse triangle mesh primitive - syntax version 2. */
         CASE (MESH2_TOKEN)
             Object = Parse_Mesh2();
-            EXIT
         END_CASE
         /* NK ---- */
 
         CASE (TEXT_TOKEN)
             Object = Parse_TrueType ();
-            EXIT
         END_CASE
 
         CASE (OBJECT_ID_TOKEN)
             Object = Copy_Object(reinterpret_cast<ObjectPtr>(Token.Data));
-            EXIT
         END_CASE
 
         CASE (UNION_TOKEN)
             Object = Parse_CSG (CSG_UNION_TYPE);
-            EXIT
         END_CASE
 
         CASE (LIGHT_GROUP_TOKEN)
             Object = Parse_Light_Group ();
-            EXIT
         END_CASE
 
         CASE (COMPOSITE_TOKEN)
             VersionWarning(150, "Use union instead of composite.");
             Object = Parse_CSG (CSG_UNION_TYPE);
-            EXIT
         END_CASE
 
         CASE (MERGE_TOKEN)
             Object = Parse_CSG (CSG_MERGE_TYPE);
-            EXIT
         END_CASE
 
         CASE (INTERSECTION_TOKEN)
             Object = Parse_CSG (CSG_INTERSECTION_TYPE);
-            EXIT
         END_CASE
 
         CASE (DIFFERENCE_TOKEN)
             Object = Parse_CSG (CSG_DIFFERENCE_TYPE+CSG_INTERSECTION_TYPE);
-            EXIT
         END_CASE
 
         CASE (BICUBIC_PATCH_TOKEN)
             Object = Parse_Bicubic_Patch ();
-            EXIT
         END_CASE
 
         CASE (TRIANGLE_TOKEN)
             Object = Parse_Triangle ();
-            EXIT
         END_CASE
 
         CASE (SMOOTH_TRIANGLE_TOKEN)
             Object = Parse_Smooth_Triangle ();
-            EXIT
         END_CASE
 
         CASE (HEIGHT_FIELD_TOKEN)
             Object = Parse_HField ();
-            EXIT
         END_CASE
 
         CASE (BOX_TOKEN)
             Object = Parse_Box ();
-            EXIT
         END_CASE
 
         CASE (BLOB_TOKEN)
             Object = Parse_Blob ();
-            EXIT
         END_CASE
 
         CASE (LIGHT_SOURCE_TOKEN)
             Object = Parse_Light_Source ();
-            EXIT
         END_CASE
 
         CASE (OBJECT_TOKEN)
@@ -6948,12 +6876,10 @@ ObjectPtr Parser::Parse_Object ()
             if (!Object)
                 Expectation_Error ("object");
             Object = Parse_Object_Mods (reinterpret_cast<ObjectPtr>(Object));
-            EXIT
         END_CASE
 
         OTHERWISE
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -7015,7 +6941,7 @@ void Parser::Parse_Default ()
             Default_Texture->Pigment = Local_Pigment;
         END_CASE
 
-        CASE (TNORMAL_TOKEN)
+        CASE (NORMAL_TOKEN)
             Local_Tnormal = Copy_Tnormal((Default_Texture->Tnormal));
             Parse_Begin ();
             Parse_Tnormal (&Local_Tnormal);
@@ -7281,18 +7207,15 @@ void Parser::Parse_Global_Settings()
             Parse_Wavelengths (sceneData->iridWavelengths);
         END_CASE
         CASE (CHARSET_TOKEN)
-            EXPECT
+            EXPECT_ONE
                 CASE (ASCII_TOKEN)
                     sceneData->stringEncoding = kStringEncoding_ASCII;
-                    EXIT
                 END_CASE
                 CASE (UTF8_TOKEN)
                     sceneData->stringEncoding = kStringEncoding_UTF8;
-                    EXIT
                 END_CASE
                 CASE (SYS_TOKEN)
                     sceneData->stringEncoding = kStringEncoding_System;
-                    EXIT
                 END_CASE
                 OTHERWISE
                     Expectation_Error ("charset type");
@@ -7683,7 +7606,7 @@ void Parser::Parse_Global_Settings()
                     }
                 END_CASE
 
-                CASE (TNORMAL_TOKEN)
+                CASE (NORMAL_TOKEN)
                     sceneData->radiositySettings.normal = ((int)Parse_Float() != 0);
                 END_CASE
 
@@ -7929,18 +7852,16 @@ ObjectPtr Parser::Parse_Object_Mods (ObjectPtr Object)
                 if(Object->Clip == Object->Bound)
                     Error ("Cannot add bounds after linking bounds and clips.");
 
-            EXPECT
+            EXPECT_ONE
                 CASE (CLIPPED_BY_TOKEN)
                     if(!Object->Bound.empty())
                         Error ("Cannot link clips with previous bounds.");
                     Object->Bound = Object->Clip;
-                    EXIT
                 END_CASE
 
                 OTHERWISE
                     UNGET
                     Parse_Bound_Clip(Object->Bound);
-                    EXIT
                 END_CASE
             END_EXPECT
 
@@ -7953,12 +7874,11 @@ ObjectPtr Parser::Parse_Object_Mods (ObjectPtr Object)
                 if(Object->Clip == Object->Bound)
                     Error ("Cannot add clips after linking bounds and clips.");
 
-            EXPECT
+            EXPECT_ONE
                 CASE (BOUNDED_BY_TOKEN)
                     if(!Object->Clip.empty())
                         Error ("Cannot link bounds with previous clips.");
                     Object->Clip = Object->Bound;
-                    EXIT
                 END_CASE
 
                 OTHERWISE
@@ -7974,7 +7894,6 @@ ObjectPtr Parser::Parse_Object_Mods (ObjectPtr Object)
 
                         (dynamic_cast<Quadric *>(Object))->Compute_BBox(Min, Max);
                     }
-                    EXIT
                 END_CASE
             END_EXPECT
 
@@ -8015,7 +7934,7 @@ ObjectPtr Parser::Parse_Object_Mods (ObjectPtr Object)
             Object->interior = Local_Material.interior;
         END_CASE
 
-        CASE3 (PIGMENT_TOKEN, TNORMAL_TOKEN, FINISH_TOKEN)
+        CASE3 (PIGMENT_TOKEN, NORMAL_TOKEN, FINISH_TOKEN)
             Object->Type |= TEXTURED_OBJECT;
             if (Object->Texture == NULL)
                 Object->Texture = Copy_Textures(Default_Texture);
@@ -8030,7 +7949,7 @@ ObjectPtr Parser::Parse_Object_Mods (ObjectPtr Object)
                     Parse_End ();
                 END_CASE
 
-                CASE (TNORMAL_TOKEN)
+                CASE (NORMAL_TOKEN)
                     Parse_Begin ();
                     Parse_Tnormal ( &(Object->Texture->Tnormal) );
                     Parse_End ();
@@ -8122,6 +8041,7 @@ ObjectPtr Parser::Parse_Object_Mods (ObjectPtr Object)
             EXPECT
                 CASE (IMPORTANCE_TOKEN)
                     Object->RadiosityImportance = Parse_Float ();
+                    Object->RadiosityImportanceSet = true;
                     if ( (Object->RadiosityImportance <= 0.0) ||
                          (Object->RadiosityImportance >  1.0) )
                         Error("Radiosity importance must be greater than 0.0 and at most 1.0.");
@@ -8261,7 +8181,7 @@ void Parser::Parse_Matrix(MATRIX Matrix)
 {
     int i, j;
 
-    EXPECT
+    EXPECT_ONE
         CASE (LEFT_ANGLE_TOKEN)
             Matrix[0][0] = Parse_Float();
             for (i = 0; i < 4; i++)
@@ -8287,7 +8207,6 @@ void Parser::Parse_Matrix(MATRIX Matrix)
                     Matrix[i][i] = 1.0;
                 }
             }
-            EXIT
         END_CASE
 
         OTHERWISE
@@ -8551,14 +8470,13 @@ int Parser::Parse_Three_UVCoords(Vector2d& UV1, Vector2d& UV2, Vector2d& UV3)
 {
     int Return_Value;
 
-    EXPECT
+    EXPECT_ONE
         CASE(UV_VECTORS_TOKEN)
             Parse_UV_Vect(UV1);  Parse_Comma();
             Parse_UV_Vect(UV2);  Parse_Comma();
             Parse_UV_Vect(UV3);
 
             Return_Value = 1;
-            EXIT
         END_CASE
 
         OTHERWISE
@@ -8567,7 +8485,6 @@ int Parser::Parse_Three_UVCoords(Vector2d& UV1, Vector2d& UV2, Vector2d& UV3)
             UV3[0] = UV3[1] = 0.0;
             Return_Value = 0;
             UNGET
-            EXIT
         END_CASE
 
     END_EXPECT
@@ -8669,7 +8586,7 @@ void Parser::Parse_Coeffs(int order, DBL *Coeffs)
 {
     int i;
 
-    EXPECT
+    EXPECT_ONE
         CASE (LEFT_ANGLE_TOKEN)
             Coeffs[0] = Parse_Float();
             for (i = 1; i < term_counts(order); i++)
@@ -8678,7 +8595,6 @@ void Parser::Parse_Coeffs(int order, DBL *Coeffs)
                 Coeffs[i] = Parse_Float();
             }
             GET (RIGHT_ANGLE_TOKEN);
-            EXIT
         END_CASE
 
         OTHERWISE
@@ -8710,18 +8626,16 @@ ObjectPtr Parser::Parse_Object_Id ()
 {
     ObjectPtr Object;
 
-    EXPECT
+    EXPECT_ONE
         CASE (OBJECT_ID_TOKEN)
             Warn_State(OBJECT_ID_TOKEN, OBJECT_TOKEN);
             Object = Copy_Object(reinterpret_cast<ObjectPtr>(Token.Data));
             Object = Parse_Object_Mods (Object);
-            EXIT
         END_CASE
 
         OTHERWISE
             Object = NULL;
             UNGET
-            EXIT
         END_CASE
     END_EXPECT
 
@@ -8864,7 +8778,7 @@ void Parser::Parse_Declare(bool is_local, bool after_hash)
 
             // These are also used in Parse_Directive UNDEF_TOKEN section, Parse_Macro, and and Parse_For_Param_Start,
             // and all these functions should accept exactly the same identifiers! [trf]
-            CASE4 (TNORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
+            CASE4 (NORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
             CASE4 (COLOUR_MAP_ID_TOKEN, TRANSFORM_ID_TOKEN, CAMERA_ID_TOKEN, PIGMENT_ID_TOKEN)
             CASE4 (SLOPE_MAP_ID_TOKEN, NORMAL_MAP_ID_TOKEN, TEXTURE_MAP_ID_TOKEN, COLOUR_ID_TOKEN)
             CASE4 (PIGMENT_MAP_ID_TOKEN, MEDIA_ID_TOKEN, STRING_ID_TOKEN, INTERIOR_ID_TOKEN)
@@ -9151,8 +9065,8 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
     bool had_callable_identifier;
     SYM_ENTRY* symbol_entry;
 
-    EXPECT
-        CASE4 (TNORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
+    EXPECT_ONE
+        CASE4 (NORMAL_ID_TOKEN, FINISH_ID_TOKEN, TEXTURE_ID_TOKEN, OBJECT_ID_TOKEN)
         CASE4 (COLOUR_MAP_ID_TOKEN, TRANSFORM_ID_TOKEN, CAMERA_ID_TOKEN, PIGMENT_ID_TOKEN)
         CASE4 (SLOPE_MAP_ID_TOKEN,NORMAL_MAP_ID_TOKEN,TEXTURE_MAP_ID_TOKEN,ARRAY_ID_TOKEN)
         CASE4 (PIGMENT_MAP_ID_TOKEN, MEDIA_ID_TOKEN,INTERIOR_ID_TOKEN,DENSITY_ID_TOKEN)
@@ -9176,7 +9090,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
                 Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
                 *DataPtr   = Temp_Data;
             }
-            EXIT
         END_CASE
 
         CASE (IDENTIFIER_TOKEN)
@@ -9189,7 +9102,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             {
                 Error("Cannot assign uninitialized identifier.");
             }
-            EXIT
         END_CASE
 
         CASE_COLOUR
@@ -9206,10 +9118,10 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
                 *NumberPtr    = COLOUR_ID_TOKEN;
                 Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
                 *DataPtr      = reinterpret_cast<void *>(Local_Colour);
-                EXIT
                 END_CASE
             }
             // intentional to allow color dot expressions as macro parameters if #version is 3.5 or higher [trf]
+            // FALLTHROUGH
 
         CASE_VECTOR
             // It seems very few people understand what is going on here, so let me try to
@@ -9338,7 +9250,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
 
             // allow #declares again
             Ok_To_Declare = true;
-            EXIT
         END_CASE
 
         CASE (PIGMENT_TOKEN)
@@ -9349,18 +9260,16 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = PIGMENT_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = reinterpret_cast<void *>(Local_Pigment);
-            EXIT
         END_CASE
 
-        CASE (TNORMAL_TOKEN)
+        CASE (NORMAL_TOKEN)
             Local_Tnormal = Copy_Tnormal(Default_Texture->Tnormal);
             Parse_Begin ();
             Parse_Tnormal (&Local_Tnormal);
             Parse_End ();
-            *NumberPtr = TNORMAL_ID_TOKEN;
+            *NumberPtr = NORMAL_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = reinterpret_cast<void *>(Local_Tnormal);
-            EXIT
         END_CASE
 
         CASE (FINISH_TOKEN)
@@ -9369,7 +9278,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = FINISH_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = reinterpret_cast<void *>(Local_Finish);
-            EXIT
         END_CASE
 
         CASE (CAMERA_TOKEN)
@@ -9378,7 +9286,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = CAMERA_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = reinterpret_cast<void *>(Local_Camera);
-            EXIT
         END_CASE
 
         CASE (TEXTURE_TOKEN)
@@ -9406,7 +9313,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr      = reinterpret_cast<void *>(Temp_Texture);
             Ok_To_Declare = true;
-            EXIT
         END_CASE
 
         CASE (COLOUR_MAP_TOKEN)
@@ -9414,7 +9320,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = COLOUR_MAP_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (PIGMENT_MAP_TOKEN)
@@ -9422,7 +9327,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = PIGMENT_MAP_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (SPLINE_TOKEN)
@@ -9433,7 +9337,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = SPLINE_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (DENSITY_MAP_TOKEN)
@@ -9441,7 +9344,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = DENSITY_MAP_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (SLOPE_MAP_TOKEN)
@@ -9449,7 +9351,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = SLOPE_MAP_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (TEXTURE_MAP_TOKEN)
@@ -9457,7 +9358,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = TEXTURE_MAP_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (NORMAL_MAP_TOKEN)
@@ -9465,7 +9365,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = NORMAL_MAP_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (RAINBOW_TOKEN)
@@ -9473,7 +9372,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = RAINBOW_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (FOG_TOKEN)
@@ -9481,7 +9379,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = FOG_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (MEDIA_TOKEN)
@@ -9490,7 +9387,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = MEDIA_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (DENSITY_TOKEN)
@@ -9501,7 +9397,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = DENSITY_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = reinterpret_cast<void *>(Local_Density);
-            EXIT
         END_CASE
 
         CASE (INTERIOR_TOKEN)
@@ -9511,7 +9406,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = INTERIOR_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (MATERIAL_TOKEN)
@@ -9521,7 +9415,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = MATERIAL_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (SKYSPHERE_TOKEN)
@@ -9529,7 +9422,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = SKYSPHERE_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (FUNCTION_TOKEN)
@@ -9548,7 +9440,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
                 Temp_Data  = reinterpret_cast<void *>(Parse_DeclareFunction(NumberPtr, NULL, is_local));
             Test_Redefine(Previous, NumberPtr, *DataPtr, false);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (TRANSFORM_TOKEN)
@@ -9556,7 +9447,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr  = TRANSFORM_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr    = reinterpret_cast<void *>(Local_Trans);
-            EXIT
         END_CASE
 
         CASE5 (STRING_LITERAL_TOKEN,CHR_TOKEN,SUBSTR_TOKEN,STR_TOKEN,VSTR_TOKEN)
@@ -9566,7 +9456,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = STRING_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         CASE (ARRAY_TOKEN)
@@ -9574,7 +9463,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
             *NumberPtr = ARRAY_ID_TOKEN;
             Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
             *DataPtr   = Temp_Data;
-            EXIT
         END_CASE
 
         OTHERWISE
@@ -9587,7 +9475,6 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
                 Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
                 *DataPtr     = reinterpret_cast<void *>(Local_Object);
             }
-            EXIT
         END_CASE
 
     END_EXPECT
@@ -9626,7 +9513,7 @@ void Parser::Destroy_Ident_Data(void *Data, int Type)
         case DENSITY_ID_TOKEN:
             delete reinterpret_cast<PIGMENT *>(Data);
             break;
-        case TNORMAL_ID_TOKEN:
+        case NORMAL_ID_TOKEN:
             delete reinterpret_cast<TNORMAL *>(Data);
             break;
         case FINISH_ID_TOKEN:
@@ -10077,8 +9964,14 @@ void Parser::Post_Process (ObjectPtr Object, ObjectPtr Parent)
         }
 
         // promote object-specific radiosity settings to child
-        if (!Object->RadiosityImportance.isSet())
-            Object->RadiosityImportance = Parent->RadiosityImportance(sceneData->radiositySettings.defaultImportance);
+        if (!Object->RadiosityImportanceSet)
+        {
+            if (Parent->RadiosityImportanceSet)
+                Object->RadiosityImportance = Parent->RadiosityImportance;
+            else
+                Object->RadiosityImportance = sceneData->radiositySettings.defaultImportance;
+            Object->RadiosityImportanceSet = true;
+        }
 
         if(Test_Flag(Parent, PH_PASSTHRU_FLAG))
         {
@@ -10703,7 +10596,7 @@ void *Parser::Copy_Identifier (void *Data, int Type)
         case DENSITY_ID_TOKEN:
             New = reinterpret_cast<void *>(Copy_Pigment(reinterpret_cast<PIGMENT *>(Data)));
             break;
-        case TNORMAL_ID_TOKEN:
+        case NORMAL_ID_TOKEN:
             New = reinterpret_cast<void *>(Copy_Tnormal(reinterpret_cast<TNORMAL *>(Data)));
             break;
         case FINISH_ID_TOKEN:

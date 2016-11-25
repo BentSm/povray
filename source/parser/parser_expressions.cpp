@@ -1287,7 +1287,7 @@ void Parser::Parse_Num_Factor (EXPRESS& Express,int *Terms)
         CASE (VECTOR_4D_ID_TOKEN)
             *Terms=4;
             for (i=0; i<4; i++)
-                Express[i]=(DBL)(  (reinterpret_cast<DBL *>(Token.Data))[i]  );
+                Express[i]=(DBL)(  (*reinterpret_cast<Vector4d *>(Token.Data))[i]  );
         END_CASE
 
         CASE (T_TOKEN)
@@ -2206,7 +2206,7 @@ void Parser::Parse_Vector (Vector3d& Vector)
 *
 ******************************************************************************/
 
-void Parser::Parse_Vector4D (VECTOR_4D Vector)
+void Parser::Parse_Vector4D (Vector4d& Vector)
 {
     EXPRESS Express;
     int Terms;

@@ -435,7 +435,7 @@ class Parser : public SceneTask
         int Allow_Vector (Vector3d& Vect);
         void Parse_UV_Vect (Vector2d& UV_Vect);
         void Parse_Vector (Vector3d& Vector);
-        void Parse_Vector4D (VECTOR_4D Vector);
+        void Parse_Vector4D (Vector4d& Vector);
         int Parse_Unknown_Vector (EXPRESS& Express, bool allow_identifier = false, bool *had_identifier = NULL);
         void Parse_Scale_Vector (Vector3d& Vector);
         DBL Parse_Float_Param (void);

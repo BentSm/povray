@@ -3558,7 +3558,7 @@ void Parser::Return_From_Macro()
     // Always destroy macro locals
     Destroy_Table(Table_Index--);
 
-    Release_Entry_Reference(1,Cond_Stack[CS_Index].PMac->Sym_Entry);
+    Release_Entry_Reference(Tables[SYM_TABLE_GLOBAL], Cond_Stack[CS_Index].PMac->Sym_Entry);
 }
 
 Parser::Macro::Macro(const char *s) :

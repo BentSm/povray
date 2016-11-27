@@ -49,16 +49,15 @@ namespace pov
 namespace estimators
 {
 
-DBL EstimatorNone(const FractalRules *, DBL, int, const Vector3d&, const Fractal *pFractal, FractalIterData *)
+DBL EstimatorNone(const FractalRules *, DBL, int, const Vector4d&, const Fractal *pFractal, FractalIterData *)
 {
     return pFractal->Precision;
 }
 
-DBL EstimatorNewton(const FractalRules *pRules, DBL norm, int iters, const Vector3d& direction,
+DBL EstimatorNewton(const FractalRules *pRules, DBL norm, int iters, const Vector4d& direction,
                     const Fractal *pFractal, FractalIterData *pIterData)
 {
     DBL step, fValue, trustAmt;
-    Vector3d normal;
 
     trustAmt = pow(pFractal->Jump_Decay, iters) * pFractal->Jump_Max * pFractal->Precision;
     if (trustAmt < pFractal->Precision * pFractal->Jump_Min)
@@ -84,11 +83,10 @@ DBL EstimatorNewton(const FractalRules *pRules, DBL norm, int iters, const Vecto
     return pFractal->Precision;
 }
 
-DBL EstimatorNewtonOrig(const FractalRules *pRules, DBL norm, int iters, const Vector3d& direction,
+DBL EstimatorNewtonOrig(const FractalRules *pRules, DBL norm, int iters, const Vector4d& direction,
                         const Fractal *pFractal, FractalIterData *pIterData)
 {
     DBL step, fValue;
-    Vector3d normal;
 
     step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
 

@@ -49,6 +49,29 @@
 namespace pov
 {
 
+class MagicFractalSpace : public FractalSpace
+{
+public:
+    MagicFractalSpace(FractalTransformMethod transformMethod, FractalAlgebra algebra,
+                      const Vector4d& slice, DBL sliceDist);
+    const Vector4d& transformedX() const { return tX; }
+    const Vector4d& transformedY() const { return tY; }
+    const Vector4d& transformedZ() const { return tZ; }
+    const Vector4d& transformed0() const { return t0; }
+
+    const Vector4d TransformTo4D(const Vector3d& point) const;
+    const Vector4d TransformDirTo4D(const Vector3d& point) const;
+    bool Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const;
+    bool Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const;
+
+protected:
+    Vector4d tX, tY, tZ, t0;
+    Vector3d sliceNorm3d;
+    DBL sliceDistNorm;
+    FractalTransformMethod mTransformMethod;
+    FractalAlgebra mAlgebra;
+};
+
 class MagicRulesBase : public FractalRules
 {
 public:
@@ -58,13 +81,14 @@ public:
 
     MagicRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
                    const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
+        mSpace4D(data.transformMethod, data.funcType.algebra, data.slice, data.sliceDist),
         mInfo(CreateRulesInfo(data.funcType, discontinuitySupport, sizes, estimator.eType)),
         mEstimator(estimator) { }
-
-    virtual bool Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const;
     virtual const FractalRulesInfo& Info() const { return mInfo; }
+    virtual const FractalSpace *GetSpace() const { return &mSpace4D; }
 
 protected:
+    const MagicFractalSpace mSpace4D;
     const FractalRulesInfo mInfo;
     const DistanceEstimator& mEstimator;
 
@@ -76,60 +100,51 @@ protected:
 class MagicQuaternionFractalRules : public MagicRulesBase
 {
 public:
-    typedef VECTOR_4D MainIterData;
+    typedef Vector4d MainIterData;
 
     MagicQuaternionFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
                                 const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
-        INIT_VECTOR_4D(mJuliaParm, data.juliaParm[X], data.juliaParm[Y], data.juliaParm[Z], data.juliaParm[W]),
-        MagicRulesBase(data, discontinuitySupport, sizes, estimator) {}
+        mJuliaParm(data.juliaParm), MagicRulesBase(data, discontinuitySupport, sizes, estimator) {}
 
-    virtual int Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction,
+    virtual int Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& direction,
                         DBL *pDist, FractalIterData *pIterData) const;
+    virtual DBL CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const;
     virtual void CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData,
                             FractalIterData *pPIterData) const;
 
-    virtual DBL CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const;
-
-    virtual void IterateCalc(VECTOR_4D& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
-    virtual void DirDerivCalc(VECTOR_4D& rD, const VECTOR_4D& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
-    virtual bool DiscontinuityCheck(VECTOR_4D& rD, DBL& rDist, const VECTOR_4D& t, const VECTOR_4D& p,
+    virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual void DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:
-    const IVECTOR_4D mJuliaParm;
+    const Vector4d mJuliaParm;
 
 };
 
 class MagicHypercomplexFractalRules : public MagicRulesBase
 {
 public:
-    typedef Duplex MainIterData;
+    typedef Vector4d MainIterData;
 
     MagicHypercomplexFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
                                   const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
-        INIT_DUPLEX(mDuplexJuliaParm, CreateComplex(data.juliaParm[X] - data.juliaParm[W], data.juliaParm[Y] + data.juliaParm[Z]),
-                    CreateComplex(data.juliaParm[X] + data.juliaParm[W], data.juliaParm[Y] - data.juliaParm[Z])),
+        mDuplexJuliaParm(DuplexFromHypercomplex(data.juliaParm)),
         MagicRulesBase(data, discontinuitySupport, sizes, estimator) {}
 
-    virtual int Iterate(const Vector3d& iPoint, const Fractal *pFractal, const Vector3d& direction,
+    virtual int Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& direction,
                         DBL *pDist, FractalIterData *pIterData) const;
+    virtual DBL CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const;
     virtual void CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData,
                             FractalIterData *pPIterData) const;
 
-    virtual DBL CalcDirDeriv(const Vector3d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
-    {
-        Vector3d normal;
-        MagicHypercomplexFractalRules::CalcNormal(normal, nMax, pFractal, pIterData, NULL);
-        return dot(dir, normal);
-    }
-
-    virtual void IterateCalc(Duplex& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
-    virtual void DerivCalc(Duplex& rD, const Duplex& v, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
-    virtual bool DiscontinuityCheck(Duplex& rD, DBL& rDist, const Duplex& t, const Duplex& p,
+    virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual void DerivCalc(Vector4d& rD, const Vector4d& v, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 
 protected:
-    const IDuplex mDuplexJuliaParm;
+    const Vector4d mDuplexJuliaParm;
 
 };
 

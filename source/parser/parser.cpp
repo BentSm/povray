@@ -2772,19 +2772,21 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
             Object->SliceDist = Parse_Float();
 
             /* normalize slice vector */
-            V4D_Dot(P,Object->Slice, Object->Slice);
-            if (fabs(P) < EPSILON)
+            if (fabs(Object->Slice.length()) < EPSILON)
             {
                 Error("Slice vector is zero.");
             }
-            if (fabs(Object->Slice[T]) < EPSILON)
-            {
-                Error("Slice t component is zero.");
-            }
-            P = sqrt(P);
-            V4D_InverseScaleEq(Object->Slice, P);
-
+            Object->Slice.normalize();
         END_CASE
+
+        CASE(PROJECTION_TOKEN)
+            Object->TransformMethod = kTransformProjection;
+        END_CASE
+
+        CASE(ISOMETRIC_TOKEN)
+            Object->TransformMethod = kTransformIsometric;
+        END_CASE
+
 
         CASE(PRECISION_TOKEN)
             P = Parse_Float();
@@ -2942,7 +2944,7 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
 
         CASE(PWR_TOKEN)
             Object->Func_Type.type = kFunc_Pwr;
-            Parse_Float_Param2(&Object->exponent.x,&Object->exponent.y);
+            Parse_Float_Param2(&Object->exponent[X],&Object->exponent[Y]);
         END_CASE
 
         CASE(CUBE_TOKEN)
@@ -2999,6 +3001,11 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
         /* This is not a bug; merely a behavior change. */
         /*        if (Object->Distance_Estimator == kDefaultEstimator)
                   Object->Distance_Estimator = kLegacyEstimator; */
+    }
+
+    if (Object->TransformMethod == kTransformProjection && fabs(Object->Slice[T]) < EPSILON)
+    {
+        Error("Slice t component is zero for projection-mapped fractal.");
     }
 
     Parse_Object_Mods(reinterpret_cast<ObjectPtr>(Object));
@@ -9181,8 +9188,7 @@ bool Parser::Parse_RValue (int Previous, int *NumberPtr, void **DataPtr, SYM_ENT
                     case 4:
                         *NumberPtr = VECTOR_4D_ID_TOKEN;
                         Test_Redefine(Previous,NumberPtr,*DataPtr, allow_redefine);
-                        *DataPtr   = reinterpret_cast<void *>(Create_Vector_4D());
-                        Assign_Vector_4D(reinterpret_cast<DBL *>(*DataPtr), Local_Express);
+                        *DataPtr   = reinterpret_cast<void *>(new Vector4d(Local_Express));
                         break;
 
                     case 5:
@@ -9459,7 +9465,7 @@ void Parser::Destroy_Ident_Data(void *Data, int Type)
             delete reinterpret_cast<Vector2d *>(Data);
             break;
         case VECTOR_4D_ID_TOKEN:
-            Destroy_Vector_4D(reinterpret_cast<VECTOR_4D *>(Data));
+            delete reinterpret_cast<Vector4d *>(Data);
             break;
         case FLOAT_ID_TOKEN:
             Destroy_Float(reinterpret_cast<DBL *>(Data));
@@ -10518,7 +10524,7 @@ void *Parser::Copy_Identifier (void *Data, int Type)
     Vector3d *vp;
     DBL *dp;
     Vector2d *uvp;
-    VECTOR_4D *v4p;
+    Vector4d *v4p;
     int len;
     void *New=NULL;
 
@@ -10543,8 +10549,8 @@ void *Parser::Copy_Identifier (void *Data, int Type)
             New=uvp;
             break;
         case VECTOR_4D_ID_TOKEN:
-            v4p = Create_Vector_4D();
-            Assign_Vector_4D((*v4p),(*(reinterpret_cast<VECTOR_4D *>(Data))));
+            v4p = new Vector4d();
+            *v4p = *(reinterpret_cast<Vector4d *>(Data));
             New=v4p;
             break;
         case FLOAT_ID_TOKEN:

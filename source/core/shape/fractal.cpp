@@ -48,6 +48,7 @@
 #include "core/scene/tracethreaddata.h"
 #include "core/shape/fractal/dispatch.h"
 #include "core/shape/fractal/types.h"
+#include "core/shape/fractal/util.h"
 
 // this must be the last file included
 #include "base/povdebug.h"
@@ -63,7 +64,7 @@ namespace pov
 * Local variables
 ******************************************************************************/
 
-static const Vector3d kDummyVector;
+static const Vector4d kDummyVector;
 
 const DBL Fractal_Tolerance = 1e-7;
 
@@ -101,9 +102,10 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
     DBL Depth, Depth_Max;
     DBL Dist, Dist_Next, LenSqr, LenInv;
 
-    Vector3d IPoint, Mid_Point, Next_Point, Real_Pt;
+    Vector4d IPoint, Mid_Point, Next_Point;
     Vector3d Real_Normal, F_Normal;
-    Vector3d Direction;
+    Vector3d Direction0, IPoint0, Real_Pt;
+    Vector4d Direction;
     BasicRay New_Ray;
     int cIter, nIter, lIter, tIter;
     FractalIterData *cStack = &(Thread->Fractal_IterData[0]), *nStack = &(Thread->Fractal_IterData[1]),
@@ -120,8 +122,8 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
 
     if (Trans != NULL)
     {
-        MInvTransDirection(Direction, ray.Direction, Trans);
-        LenSqr = Direction.lengthSqr();
+        MInvTransDirection(Direction0, ray.Direction, Trans);
+        LenSqr = Direction0.lengthSqr();
 
         if (LenSqr == 0.0)
         {
@@ -131,24 +133,26 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
         if (LenSqr != 1.0)
         {
             LenInv = 1.0 / sqrt(LenSqr);
-            Direction *= LenInv;
+            Direction0 *= LenInv;
         }
         else
             LenInv = 1.0;
 
-        New_Ray.Direction = Direction;
+        New_Ray.Direction = Direction0;
         MInvTransPoint(New_Ray.Origin, ray.Origin, Trans);
     }
     else
     {
-        Direction = ray.Direction;
+        Direction0 = ray.Direction;
         New_Ray = ray;
         LenInv = 1.0;
     }
 
+    Direction = RulesSpace->TransformDirTo4D(Direction0);
+
     /* Bound fractal. */
 
-    if (!Rules->Bound(New_Ray, this, &Depth, &Depth_Max))
+    if (!RulesSpace->Bound(New_Ray, this, &Depth, &Depth_Max))
     {
         return (false);
     }
@@ -165,7 +169,7 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
 
     /* Jump to starting point */
 
-    Next_Point = New_Ray.Origin + Direction * Depth;
+    Next_Point = RulesSpace->TransformTo4D(New_Ray.Origin) + Direction * Depth;
 
     cIter = Rules->Iterate(Next_Point, this, Direction, &Dist, cStack);
 
@@ -310,15 +314,17 @@ bool Fractal::All_Intersections(const Ray& ray, IStack& Depth_Stack, TraceThread
             }
         }
 
+        IPoint0 = New_Ray.Origin + Direction0 * Depth;
+
         if (Trans != NULL)
         {
-            MTransPoint(Real_Pt, IPoint, Trans);
+            MTransPoint(Real_Pt, IPoint0, Trans);
             Rules->CalcNormal(F_Normal, tIter, this, tStack, pStack);
             MTransNormal(Real_Normal, F_Normal, Trans);
         }
         else
         {
-            Real_Pt = IPoint;
+            Real_Pt = IPoint0;
             Rules->CalcNormal(Real_Normal, tIter, this, tStack, pStack);
         }
 
@@ -385,12 +391,12 @@ bool Fractal::Inside(const Vector3d& IPoint, TraceThreadData *Thread) const
     {
         MInvTransPoint(New_Point, IPoint, Trans);
 
-        Result = (Rules->Iterate(New_Point, this, kDummyVector, NULL,
+        Result = (Rules->Iterate(RulesSpace->TransformTo4D(New_Point), this, kDummyVector, NULL,
                                  &(Thread->Fractal_IterData[0])) == Num_Iterations + 1);
     }
     else
     {
-        Result = (Rules->Iterate(IPoint, this, kDummyVector, NULL,
+        Result = (Rules->Iterate(RulesSpace->TransformTo4D(IPoint), this, kDummyVector, NULL,
                                  &(Thread->Fractal_IterData[0])) == Num_Iterations + 1);
     }
 
@@ -582,42 +588,10 @@ void Fractal::Transform(const TRANSFORM *tr)
 
 void Fractal::Compute_BBox()
 {
-    DBL R, a2, b2, c2, n2, dx, dy, dz, q, x0, y0, z0;
+    if (!RulesSpace)
+        return;
 
-    if (Bailout > 0.0)
-    {
-        R = Bailout;
-    }
-    else if (Func_Type.algebra == kQuaternion && (Func_Type.type == kFunc_Sqr || Func_Type.type == kFunc_Cube))
-    {
-        R = 1.0 + sqrt(Sqr(Julia_Parm[X]) + Sqr(Julia_Parm[Y]) + Sqr(Julia_Parm[Z]) + Sqr(Julia_Parm[W]));
-        if (R > 2.0)
-        {
-            R = 2.0;
-        }
-
-        Bailout = R;
-    }
-    else
-    {
-        Bailout = R = 4.0;
-    }
-
-    Exit_Value = Sqr(Bailout);
-
-    /* To make sure the outside of the fractal doesn't get cut off. */
-    R += Fractal_Tolerance;
-
-    Radius_Squared = Sqr(R);
-
-    a2 = Sqr(SliceNorm[X]);
-    b2 = Sqr(SliceNorm[Y]);
-    c2 = Sqr(SliceNorm[Z]);
-    n2 = 1 + a2 + b2 + c2;
-
-    q = Radius_Squared * n2 - Sqr(SliceDistNorm);
-
-    if (q < 0)
+    if (!RulesSpace->Compute_BBox(BBox, this))
     {
         ;// TODO MESSAGE        Warning("Degenerate julia_fractal.");
 
@@ -631,18 +605,7 @@ void Fractal::Compute_BBox()
     }
     else
     {
-        dx = sqrt(q * (n2 - a2)) / n2;
-        x0 = SliceNorm[X] * SliceDistNorm / n2 - dx;
-
-        dy = sqrt(q * (n2 - b2)) / n2;
-        y0 = SliceNorm[Y] * SliceDistNorm / n2 - dy;
-
-        dz = sqrt(q * (n2 - c2)) / n2;
-        z0 = SliceNorm[Z] * SliceDistNorm / n2 - dz;
-
-        Make_BBox(BBox, x0, y0, z0, 2.0 * dx, 2.0 * dy, 2.0 * dz);
-
-        Recompute_BBox(&BBox, Trans);
+            Recompute_BBox(&BBox, Trans);
     }
 }
 
@@ -676,19 +639,11 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
 
     Center = Vector3d(0.0, 0.0, 0.0);
 
-    Julia_Parm[X] = 1.0;
-    Julia_Parm[Y] = 0.0;
-    Julia_Parm[Z] = 0.0;
-    Julia_Parm[W] = 0.0;
+    Julia_Parm = Vector4d(1.0, 0.0, 0.0, 0.0);
 
-    Slice[X] = 0.0;
-    Slice[Y] = 0.0;
-    Slice[Z] = 0.0;
-    Slice[W] = 1.0;
+    Slice = Vector4d(0.0, 0.0, 0.0, 1.0);
     SliceDist = 0.0;
-
-    SliceNorm = Vector3d(0.0, 0.0, 0.0);
-    SliceDistNorm = 0.0;
+    TransformMethod = kTransformProjection;
 
     Bailout = 0.0;
     Exit_Value = 0.0;
@@ -711,10 +666,11 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
     Func_Type.variant = kVar_Normal;
 
     Rules.reset();
+    RulesSpace = NULL;
 
     Radius_Squared = 0.0;
-    exponent.x = 0.0;
-    exponent.y = 0.0;
+    exponent[X] = 0.0;
+    exponent[Y] = 0.0;
 
     InitDispatch();
 }
@@ -750,6 +706,7 @@ ObjectPtr Fractal::Copy()
     *New = *this;
     New->Trans = Copy_Transform(Trans);
     New->Rules = Rules;
+    New->RulesSpace = RulesSpace;
 
     return (New);
 }
@@ -808,18 +765,22 @@ Fractal::~Fractal()
 int Fractal::SetUp_Fractal()
 {
     FractalConstructorData ctorData;
+    DBL R;
 
-    ctorData.juliaParm[X] = Julia_Parm[X];
-    ctorData.juliaParm[Y] = Julia_Parm[Y];
-    ctorData.juliaParm[Z] = Julia_Parm[Z];
-    ctorData.juliaParm[W] = Julia_Parm[W];
+    ctorData.juliaParm = Julia_Parm;
 
     ctorData.estimatorType = Distance_Estimator;
     ctorData.funcType = Func_Type;
-    ctorData.exponent = exponent;
+    AssignComplex(ctorData.exponent, exponent);
+
+    ctorData.slice = Slice;
+    ctorData.sliceDist = SliceDist;
+    ctorData.transformMethod = TransformMethod;
 
     /* ... And this is [one reason] why all that dispatch stuff is nice! */
     Rules = RulesDispatch::CreateNew(ctorData);
+    RulesSpace = Rules->GetSpace();
+
     if (Discontinuity_Test < 0)
     {
         Discontinuity_Test = 1;
@@ -854,11 +815,31 @@ int Fractal::SetUp_Fractal()
         }
     }
 
-    SliceDistNorm = SliceDist / Slice[W];
+    if (Bailout > 0.0)
+    {
+        R = Bailout;
+    }
+    else if (Func_Type.algebra == kQuaternion && (Func_Type.type == kFunc_Sqr || Func_Type.type == kFunc_Cube))
+    {
+        R = 1.0 + Julia_Parm.length();
+        if (R > 2.0)
+        {
+            R = 2.0;
+        }
 
-    SliceNorm[X] = Slice[X] / Slice[W];
-    SliceNorm[Y] = Slice[Y] / Slice[W];
-    SliceNorm[Z] = Slice[Z] / Slice[W];
+        Bailout = R;
+    }
+    else
+    {
+        Bailout = R = 4.0;
+    }
+
+    Exit_Value = Sqr(Bailout);
+
+    /* To make sure the outside of the fractal doesn't get cut off. */
+    R += 2 * Fractal_Tolerance;
+
+    Radius_Squared = Sqr(R);
 
     Compute_BBox();
 

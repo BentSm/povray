@@ -47,6 +47,7 @@
 #include "core/render/ray.h"
 #include "core/scene/tracethreaddata.h"
 #include "core/shape/fractal/dispatch.h"
+#include "core/shape/fractal/space.h"
 #include "core/shape/fractal/types.h"
 #include "core/shape/fractal/util.h"
 
@@ -666,7 +667,7 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
     Func_Type.variant = kVar_Normal;
 
     Rules.reset();
-    RulesSpace = NULL;
+    RulesSpace.reset();
 
     Radius_Squared = 0.0;
     exponent[X] = 0.0;
@@ -767,19 +768,16 @@ int Fractal::SetUp_Fractal()
     FractalConstructorData ctorData;
     DBL R;
 
-    ctorData.juliaParm = Julia_Parm;
+    RulesSpace = static_cast<FractalSpacePtr>(new FractalSpace(TransformMethod, Func_Type.algebra, Slice, SliceDist));
 
+    ctorData.juliaParm = Julia_Parm;
     ctorData.estimatorType = Distance_Estimator;
     ctorData.funcType = Func_Type;
     AssignComplex(ctorData.exponent, exponent);
-
-    ctorData.slice = Slice;
-    ctorData.sliceDist = SliceDist;
-    ctorData.transformMethod = TransformMethod;
+    ctorData.space = RulesSpace;
 
     /* ... And this is [one reason] why all that dispatch stuff is nice! */
     Rules = RulesDispatch::CreateNew(ctorData);
-    RulesSpace = Rules->GetSpace();
 
     if (Discontinuity_Test < 0)
     {

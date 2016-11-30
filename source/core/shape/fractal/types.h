@@ -203,9 +203,7 @@ struct FractalConstructorData
     Vector4d juliaParm;
     Complex exponent;
     EstimatorType estimatorType;
-    Vector4d slice;
-    DBL sliceDist;
-    FractalTransformMethod transformMethod;
+    FractalSpacePtr space;
 };
 
 typedef Vector2d IComplex;

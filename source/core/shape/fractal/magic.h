@@ -49,29 +49,6 @@
 namespace pov
 {
 
-class MagicFractalSpace : public FractalSpace
-{
-public:
-    MagicFractalSpace(FractalTransformMethod transformMethod, FractalAlgebra algebra,
-                      const Vector4d& slice, DBL sliceDist);
-    const Vector4d& transformedX() const { return tX; }
-    const Vector4d& transformedY() const { return tY; }
-    const Vector4d& transformedZ() const { return tZ; }
-    const Vector4d& transformed0() const { return t0; }
-
-    const Vector4d TransformTo4D(const Vector3d& point) const;
-    const Vector4d TransformDirTo4D(const Vector3d& point) const;
-    bool Bound(const BasicRay& ray, const Fractal *pFractal, DBL *pDepthMin, DBL *pDepthMax) const;
-    bool Compute_BBox(BoundingBox& BBox, const Fractal *pFractal) const;
-
-protected:
-    Vector4d tX, tY, tZ, t0;
-    Vector3d sliceNorm3d;
-    DBL sliceDistNorm;
-    FractalTransformMethod mTransformMethod;
-    FractalAlgebra mAlgebra;
-};
-
 class MagicRulesBase : public FractalRules
 {
 public:
@@ -81,14 +58,13 @@ public:
 
     MagicRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
                    const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
-        mSpace4D(data.transformMethod, data.funcType.algebra, data.slice, data.sliceDist),
-        mInfo(CreateRulesInfo(data.funcType, discontinuitySupport, sizes, estimator.eType)),
-        mEstimator(estimator) { }
+        mSpace4D(*(data.space)), mEstimator(estimator),
+        mInfo(CreateRulesInfo(data.funcType, discontinuitySupport, sizes, estimator.eType)) { }
     virtual const FractalRulesInfo& Info() const { return mInfo; }
-    virtual const FractalSpace *GetSpace() const { return &mSpace4D; }
+    virtual const FractalSpace& Space() const { return mSpace4D; }
 
 protected:
-    const MagicFractalSpace mSpace4D;
+    const FractalSpace& mSpace4D;
     const FractalRulesInfo mInfo;
     const DistanceEstimator& mEstimator;
 

@@ -541,15 +541,9 @@ struct FractalDataSizes
     int fixedSize, mainIterSize, auxIterSize;
 };
 
-class FractalSpace
-{
-    public:
-        virtual ~FractalSpace() {}
-        virtual const Vector4d TransformTo4D(const Vector3d&) const = 0;
-        virtual const Vector4d TransformDirTo4D(const Vector3d&) const = 0;
-        virtual bool Bound(const BasicRay&, const Fractal *, DBL *, DBL *) const = 0;
-        virtual bool Compute_BBox(BoundingBox&, const Fractal *) const = 0;
-};
+class FractalSpace;
+
+typedef shared_ptr<FractalSpace> FractalSpacePtr;
 
 class FractalRules
 {
@@ -559,7 +553,7 @@ class FractalRules
         virtual DBL CalcDirDeriv(const Vector4d&, int, const Fractal *, FractalIterData *) const = 0;
         virtual void CalcNormal(Vector3d&, int, const Fractal *, FractalIterData *, FractalIterData *) const = 0;
         virtual const FractalRulesInfo& Info() const = 0;
-        virtual const FractalSpace *GetSpace() const = 0;
+        virtual const FractalSpace& Space() const = 0;
 };
 
 typedef shared_ptr<FractalRules> FractalRulesPtr;

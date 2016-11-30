@@ -85,7 +85,7 @@ public:
     Complex exponent;             /* exponent of power function */
     DBL Radius_Squared;           /* For F_Bound(), if needed */
     FractalRulesPtr Rules;
-    const FractalSpace *RulesSpace;
+    FractalSpacePtr RulesSpace;
 
     Fractal();
     virtual ~Fractal();

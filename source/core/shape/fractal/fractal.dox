@@ -46,4 +46,7 @@ This implementation (introduced in 3.7.1) is significantly different from the im
 @warning
 Optimizations that violate the floating-point standards (e.g., @c -ffast-math) can affect the fractal computations.  This is, of course, an issue for reproducibility!
 
+@note
+A fractal that uses the @c isometric keyword for slicing will (generally) render slower than the 'same' fractal created with the @c projected keyword and transformed equivalently.  This is **not** a bug.  The @c precision is measured relative to the *untransformed* version of a fractal.  Since transforming the @c projected fractal to match the @c isometric fractal will make it larger, the *transformed* version of the @c projected fractal will have an *effective* precision that is lower than that of the [untransformed] @c isometric fractal.  Thus, it will render faster, but be less precise.
+
 */

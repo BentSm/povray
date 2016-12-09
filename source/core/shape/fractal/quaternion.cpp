@@ -558,7 +558,8 @@ ExtraEstimators(EstimatorType tgtType)
     }
 }
 
-void QuaternionDispatchInit() {
+void QuaternionDispatchInit()
+{
     static const RulesDispatch QuatSqrDispatch(MakeCreatorFunc<QuaternionSqrFractalRules>,
                                                CreateFuncType(kQuaternion, kFunc_Sqr, kVar_Normal));
 

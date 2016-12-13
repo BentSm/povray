@@ -69,9 +69,6 @@ namespace pov
                                                                         \
     (n1) = tmpx; (n2) = tmpy; (n3) = tmpz; (n4) = tmpw
 
-#define AltGenDerivs(n1,n2,n3,n4,tmp2)                                  \
-    (n1) *= tmp2[X]; (n2) *= tmp2[X]; (n3) *= tmp2[X]; (n4) *= tmp2[X]
-
 #define ComponentComplexMult(n1,n2,c0)            \
     tmpx = (n1) * (c0)[X] - (n2) * (c0)[Y];       \
     (n2) = (n2) * (c0)[X] + (n1) * (c0)[Y];       \
@@ -80,39 +77,28 @@ namespace pov
 void QuaternionSqrFractalRules::
 IterateCalc(Vector4d &rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    DBL tmp;
-
     QuaternionSqrFractalRules::AuxIterData *pAuxIterStack =
         static_cast<QuaternionSqrFractalRules::AuxIterData *>(pIterData->auxIter.data());
 
     pAuxIterStack[iter].sNorm = norm;
 
-    tmp = 2.0 * rV[X];
-
-    rV[X] = tmp * rV[X] + mJuliaParm[X] - norm;
-    rV[Y] = tmp * rV[Y] + mJuliaParm[Y];
-    rV[Z] = tmp * rV[Z] + mJuliaParm[Z];
-    rV[W] = tmp * rV[W] + mJuliaParm[W];
+    rV = 2.0 * rV[X] * rV + mJuliaParm;
+    rV[X] -= norm;
 }
 
 void QuaternionSqrFractalRules::
 DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    DBL tmp;
+    DBL tmp = dot(rD, v);
 
-    tmp = rD[X] * v[X] - rD[Y] * v[Y] - rD[Z] * v[Z] - rD[W] * v[W];
-
-    rD[Y] = rD[X] * v[Y] + v[X] * rD[Y];
-    rD[Z] = rD[X] * v[Z] + v[X] * rD[Z];
-    rD[W] = rD[X] * v[W] + v[X] * rD[W];
-    // Order matters here!
-    rD[X] = tmp;
+    rD = rD[X] * v + v[X] * rD;
+    rD[X] -= tmp;
 }
 
 void QuaternionCubeFractalRules::
 IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    DBL cVal;
+    DBL cVal, tmp = rV[X];
 
     QuaternionCubeFractalRules::AuxIterData *pAuxIterStack =
         static_cast<QuaternionCubeFractalRules::AuxIterData *>(pIterData->auxIter.data());
@@ -121,17 +107,15 @@ IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
 
     pAuxIterStack[iter].cVal = cVal = 4.0 * rV[X] * rV[X] - norm;
 
-    rV[X] = (cVal - 2.0 * norm) * rV[X] + mJuliaParm[X];
-    rV[Y] = cVal * rV[Y] + mJuliaParm[Y];
-    rV[Z] = cVal * rV[Z] + mJuliaParm[Z];
-    rV[W] = cVal * rV[W] + mJuliaParm[W];
+    rV = cVal * rV + mJuliaParm;
+    rV[X] -= 2.0 * norm * tmp;
 }
 
 void QuaternionCubeFractalRules::
 DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     static DBL tmp1, cVal, norm;
-    DBL tmp2;
+    DBL tmp2 = rD[X], tmp3;
 
     if (!samePoint)
     {
@@ -140,15 +124,13 @@ DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fr
 
         norm = pAuxIterStack[iter].sNorm;
         cVal = pAuxIterStack[iter].cVal;
-        tmp1 = 2.0 * norm + cVal;
+        tmp1 = 2.0 * (norm + cVal);
     }
 
-    tmp2 = 2.0 * (3.0 * rD[X] * v[X] - rD[Y] * v[Y] - rD[Z] * v[Z] - rD[W] * v[W]);
+    tmp3 = 2.0 * (3.0 * rD[X] * v[X] - rD[Y] * v[Y] - rD[Z] * v[Z] - rD[W] * v[W]);
 
-    rD[X] = 3.0 * (-rD[X] * tmp1 + v[X] * tmp2);
-    rD[Y] = rD[Y] * cVal + v[Y] * tmp2;
-    rD[Z] = rD[Z] * cVal + v[Z] * tmp2;
-    rD[W] = rD[W] * cVal + v[W] * tmp2;
+    rD = cVal * rD + tmp3 * v;
+    rD[X] = 3.0 * (rD[X] - tmp1 * tmp2);
 }
 
 void QuaternionRecipFractalRules::
@@ -159,10 +141,8 @@ IterateCalc(Vector4d &rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
 
     pAuxIterStack[iter].sNorm = norm;
 
-    rV[X] = rV[X] / norm + mJuliaParm[X];
-    rV[Y] = -rV[Y] / norm + mJuliaParm[Y];
-    rV[Z] = -rV[Z] / norm + mJuliaParm[Z];
-    rV[W] = -rV[W] / norm + mJuliaParm[W];
+    rV[X] *= -1.0;
+    rV = rV / -norm + mJuliaParm;
 }
 
 void QuaternionRecipFractalRules::
@@ -179,12 +159,10 @@ DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fr
         norm = pAuxIterStack[iter].sNorm;
     }
 
-    tmp = 2.0 * (rD[X] * v[X] + rD[Y] * v[Y] + rD[Z] * v[Z] + rD[W] * v[W]) / norm;
+    tmp = 2.0 * dot(rD, v) / norm;
 
-    rD[X] = (rD[X] - tmp * v[X]) / norm;
-    rD[Y] = (tmp * v[Y] - rD[Y]) / norm;
-    rD[Z] = (tmp * v[Z] - rD[Z]) / norm;
-    rD[W] = (tmp * v[W] - rD[W]) / norm;
+    rD = (tmp * v - rD) / norm;
+    rD[X] *= -1.0;
 }
 
 void QuaternionFuncFractalRules::
@@ -214,10 +192,8 @@ IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
         pAuxIterStack[iter].normFVal = normFVal = tmp2[Y] / nNorm;
     }
 
+    rV = rV * normFVal + mJuliaParm;
     rV[X] = tmp2[X] + mJuliaParm[X];
-    rV[Y] = rV[Y] * normFVal + mJuliaParm[Y];
-    rV[Z] = rV[Z] * normFVal + mJuliaParm[Z];
-    rV[W] = rV[W] * normFVal + mJuliaParm[W];
 }
 
 void QuaternionFuncFractalRules::
@@ -257,7 +233,7 @@ DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fr
 
     if (nNorm == 0.0)
     {
-        AltGenDerivs(rD[X], rD[Y], rD[Z], rD[W], tmp2);
+        rD *= tmp2[X];
     }
     else
     {
@@ -416,7 +392,7 @@ DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fr
 
     if (nNorm1 == 0.0)
     {
-        AltGenDerivs(rD[X], rD[Y], rD[Z], rD[W], tmp21);
+        rD *= tmp21[X];
     }
     else
     {
@@ -435,7 +411,7 @@ DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, bool samePoint, const Fr
 
     if (nNorm2 == 0.0)
     {
-        AltGenDerivs(rD[X], rD[Y], rD[Z], rD[W], tmp22);
+        rD *= tmp22[X];
     }
     else
     {

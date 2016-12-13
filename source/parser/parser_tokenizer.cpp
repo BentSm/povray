@@ -171,7 +171,6 @@ void Parser::pre_init_tokenizer ()
 
     // make sure these are NULL otherwise cleanup() will crash if we terminate early
     Default_Texture = NULL;
-    Brace_Stack = NULL;
 
     CS_Index            = 0;
     Skipping            = false;
@@ -359,7 +358,6 @@ void Parser::Get_Token ()
                 Token.is_mixed_array_elem = false;
                 Token.is_dictionary_elem = false;
                 Token.End_Of_File = true;
-
                 return;
             }
 
@@ -1400,7 +1398,7 @@ void Parser::Read_Symbol()
 
                             for (i=0; i <= a->Dims; i++)
                             {
-                                GET(LEFT_SQUARE_TOKEN)
+                                Parse_Square_Begin();
                                 val=Parse_Float();
                                 k=(int)(val + EPSILON);
 
@@ -1421,7 +1419,7 @@ void Parser::Read_Symbol()
                                         Error("Array subscript out of range");
                                 }
                                 j += k * a->Mags[i];
-                                GET(RIGHT_SQUARE_TOKEN)
+                                Parse_Square_End();
                             }
 
                             if (!LValue_Ok && !Inside_Ifdef)
@@ -1491,9 +1489,9 @@ void Parser::Read_Symbol()
                                     Error ("Attempt to access uninitialized array element.");
                                 }
 
-                                GET(LEFT_SQUARE_TOKEN)
+                                Parse_Square_Begin();
                                 dictIndex = Parse_C_String();
-                                GET (RIGHT_SQUARE_TOKEN);
+                                Parse_Square_End();
 
                                 Temp_Entry = Find_Symbol (table, dictIndex);
                             }
@@ -3309,7 +3307,8 @@ Parser::Macro *Parser::Parse_Macro()
     New->Macro_Filename = NULL;
 
     EXPECT_ONE
-        CASE (LEFT_PAREN_TOKEN )
+        CASE (LEFT_PAREN_TOKEN)
+            UNGET
         END_CASE
         CASE (TEMPORARY_MACRO_ID_TOKEN)
             Error( "Can't invoke a macro while declaring its parameters");
@@ -3318,6 +3317,8 @@ Parser::Macro *Parser::Parse_Macro()
             Expectation_Error ("identifier");
         END_CASE
     END_EXPECT
+
+    Parse_Paren_Begin();
 
     newParameter.optional = false;
     EXPECT
@@ -3383,6 +3384,8 @@ Parser::Macro *Parser::Parse_Macro()
     New->Macro_File_Col = Echo_Indx;
     New->Sym_Entry = Table_Entry;
 
+    Parse_Paren_End();
+
     Check_Macro_Vers();
 
     return (New);
@@ -3409,7 +3412,7 @@ void Parser::Invoke_Macro()
 
     Acquire_Entry_Reference(PMac->Sym_Entry); // Make sure the macro's data doesn't get deleted while it's being run.
 
-    GET(LEFT_PAREN_TOKEN);
+    Parse_Paren_Begin();
 
     if (PMac->parameters.size() > 0)
     {
@@ -3466,7 +3469,7 @@ void Parser::Invoke_Macro()
         }
     }
 
-    GET(RIGHT_PAREN_TOKEN);
+    Parse_Paren_End();
 
     Cond_Stack[CS_Index].Cond_Type = INVOKING_MACRO_COND;
 
@@ -3605,26 +3608,20 @@ Parser::POV_ARRAY *Parser::Parse_Array_Declare (void)
 
     Ok_To_Declare = false;
 
-    EXPECT
-        CASE (LEFT_SQUARE_TOKEN)
-            if (i>4)
-            {
-                Error("Too many array dimensions");
-            }
-            New->Sizes[i]=(int)(Parse_Float() + EPSILON);
-            j *= New->Sizes[i];
-            if ( j <= 0) {
-                Error("Invalid dimension size for an array");
-            }
-            i++;
-            GET(RIGHT_SQUARE_TOKEN)
-        END_CASE
-
-        OTHERWISE
-            UNGET
-            EXIT
-        END_CASE
-    END_EXPECT
+    while (Parse_Square_Begin(false))
+    {
+        if (i>4)
+        {
+            Error("Too many array dimensions");
+        }
+        New->Sizes[i]=(int)(Parse_Float() + EPSILON);
+        j *= New->Sizes[i];
+        if ( j <= 0) {
+            Error("Invalid dimension size for an array");
+        }
+        i++;
+        Parse_Square_End();
+    }
 
     if (i == 0) {
         // new syntax: Dynamically sized one-dimensional array
@@ -3701,12 +3698,14 @@ Parser::SYM_TABLE *Parser::Parse_Dictionary_Declare()
         END_CASE
 
         CASE (LEFT_SQUARE_TOKEN)
+            UNGET
+            Parse_Square_Begin();
             dictIndex = Parse_C_String();
             newEntry = Add_Symbol (newDictionary, dictIndex, IDENTIFIER_TOKEN);
             POV_PARSER_ASSERT (newDictionary->namesAreCopies);
             POV_FREE (dictIndex);
+            Parse_Square_End();
 
-            GET (RIGHT_SQUARE_TOKEN);
             GET (COLON_TOKEN);
 
             if (!Parse_RValue (IDENTIFIER_TOKEN, &(newEntry->Token_Number), &(newEntry->Data), newEntry, false, false, true, true, false, MAX_NUMBER_OF_TABLES))
@@ -3920,7 +3919,7 @@ void Parser::Parse_Read()
     int End_File=false;
     char *File_Id;
 
-    GET(LEFT_PAREN_TOKEN)
+    Parse_Paren_Begin();
 
     GET(FILE_ID_TOKEN)
     User_File=reinterpret_cast<DATA_FILE *>(Token.Data);
@@ -3990,6 +3989,7 @@ void Parser::Parse_Read()
         END_CASE
 
         CASE(RIGHT_PAREN_TOKEN)
+            UNGET
             EXIT
         END_CASE
 
@@ -3997,6 +3997,8 @@ void Parser::Parse_Read()
             Parse_Error(IDENTIFIER_TOKEN);
         END_CASE
     END_EXPECT
+
+    Parse_Paren_End();
 
     LValue_Ok = false;
 
@@ -4043,6 +4045,9 @@ int Parser::Parse_Read_Value(DATA_FILE *User_File,int Previous,int *NumberPtr,vo
             END_CASE
 
             CASE (LEFT_ANGLE_TOKEN)
+                UNGET
+                Parse_Angle_Begin();
+
                 i=1;
                 Express[X]=Parse_Signed_Float();  Parse_Comma();
                 Express[Y]=Parse_Signed_Float();  Parse_Comma();
@@ -4058,6 +4063,7 @@ int Parser::Parse_Read_Value(DATA_FILE *User_File,int Previous,int *NumberPtr,vo
                     END_CASE
 
                     CASE (RIGHT_ANGLE_TOKEN)
+                        UNGET
                         EXIT
                     END_CASE
 
@@ -4065,6 +4071,8 @@ int Parser::Parse_Read_Value(DATA_FILE *User_File,int Previous,int *NumberPtr,vo
                         Expectation_Error("vector");
                     END_CASE
                 END_EXPECT
+
+                Parse_Angle_End();
 
                 switch(i)
                 {
@@ -4141,7 +4149,8 @@ void Parser::Parse_Write(void)
     EXPRESS Express;
     int Terms;
 
-    GET(LEFT_PAREN_TOKEN)
+    Parse_Paren_Begin();
+
     GET(FILE_ID_TOKEN)
 
     User_File=reinterpret_cast<DATA_FILE *>(Token.Data);
@@ -4262,6 +4271,7 @@ void Parser::Parse_Write(void)
         END_CASE
 
         CASE (RIGHT_PAREN_TOKEN)
+            UNGET
             EXIT
         END_CASE
 
@@ -4272,6 +4282,8 @@ void Parser::Parse_Write(void)
             Expectation_Error("string");
         END_CASE
     END_EXPECT
+
+    Parse_Paren_End();
 
     User_File->inUse = false;
 }
@@ -4325,7 +4337,8 @@ bool Parser::Parse_Ifdef_Param ()
 {
     bool retval = false;
 
-    GET(LEFT_PAREN_TOKEN)
+    Parse_Paren_Begin();
+
     Inside_Ifdef=true;
     Get_Token();
     String2 = POV_STRDUP(String);
@@ -4336,7 +4349,7 @@ bool Parser::Parse_Ifdef_Param ()
     else
         retval = (Token.Token_Id != IDENTIFIER_TOKEN);
 
-    GET(RIGHT_PAREN_TOKEN)
+    Parse_Paren_End();
 
     POV_FREE(String2);
     String2 = NULL;
@@ -4349,7 +4362,7 @@ int Parser::Parse_For_Param (char** IdentifierPtr, DBL* EndPtr, DBL* StepPtr)
     int Previous=-1;
     SYM_ENTRY *Temp_Entry = NULL;
 
-    GET(LEFT_PAREN_TOKEN)
+    Parse_Paren_Begin();
 
     LValue_Ok = true;
 
@@ -4453,7 +4466,7 @@ int Parser::Parse_For_Param (char** IdentifierPtr, DBL* EndPtr, DBL* StepPtr)
     if (fabs(*StepPtr) < EPSILON)
         Error ("#for loop increment must be non-zero.");
 
-    GET(RIGHT_PAREN_TOKEN)
+    Parse_Paren_End();
 
     return ((*StepPtr > 0) && (*CurrentPtr < *EndPtr + EPSILON)) ||
            ((*StepPtr < 0) && (*CurrentPtr > *EndPtr - EPSILON));

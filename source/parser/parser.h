@@ -301,7 +301,7 @@ class Parser : public SceneTask
         {
             pov_base::ITextStream *In_File;
             pov_base::OTextStream *Out_File;
-            bool fopenCompleted : 1; ///< `false` if still busy parsing `#fopen', `true` otherwise.
+            bool busyParsing    : 1; ///< `true` if parsing a statement related to the file, `false` otherwise.
             bool R_Flag         : 1;
         };
 
@@ -669,7 +669,9 @@ class Parser : public SceneTask
         ObjectPtr Parse_Mesh();
         ObjectPtr Parse_Mesh2();
 
+#if POV_PARSER_EXPERIMENTAL_OBJ_IMPORT
         void Parse_Obj (Mesh*);
+#endif
         void Parse_Mesh1 (Mesh*);
         void Parse_Mesh2 (Mesh*);
 

@@ -55,7 +55,7 @@ public:
                                       GetEstimatorFromType(data.estimatorType)) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
 class HypercomplexCubeFractalRules : public MagicHypercomplexFractalRules
@@ -67,7 +67,7 @@ public:
                                       GetEstimatorFromType(data.estimatorType)) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
 class HypercomplexRecipFractalRules : public MagicHypercomplexFractalRules
@@ -79,7 +79,7 @@ public:
                                       GetEstimatorFromType(data.estimatorType)) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
 class HypercomplexFuncFractalRules : public MagicHypercomplexFractalRules
@@ -92,7 +92,7 @@ public:
         mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 
     virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;

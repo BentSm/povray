@@ -50,7 +50,6 @@ namespace pov
 {
 
 static inline void ComplexSqrAdd(Complex rC, const Complex c, const Complex a);
-static inline void ComplexSqrDeriv(Complex rC, const Complex c);
 static inline void ComplexCubeAdd(Complex rC, const Complex c, const Complex a);
 static inline void ComplexCubeDeriv(Complex rC, const Complex c);
 static inline void ComplexRecipAdd(Complex rC, const Complex c, const Complex a);
@@ -61,12 +60,6 @@ static inline void ComplexSqrAdd(Complex rC, const Complex c, const Complex a) {
     tmp = Sqr(c[X]) - Sqr(c[Y]) + a[X];
     rC[Y] = 2 * c[X] * c[Y] + a[Y];
     rC[X] = tmp;
-}
-
-static inline void ComplexSqrDeriv(Complex rC, const Complex c)
-{
-    rC[X] = 2.0 * c[X];
-    rC[Y] = 2.0 * c[Y];
 }
 
 static inline void ComplexCubeAdd(Complex rC, const Complex c, const Complex a)
@@ -82,8 +75,8 @@ static inline void ComplexCubeDeriv(Complex rC, const Complex c)
 {
     DBL tmp;
     tmp = Sqr(c[X]) - Sqr(c[Y]);
-    rC[Y] = 6 * c[X] * c[Y];
-    rC[X] = 3 * tmp;
+    rC[Y] = 2.0 * c[X] * c[Y];
+    rC[X] = tmp;
 }
 
 static inline void ComplexRecipAdd(Complex rC, const Complex c, const Complex a)
@@ -114,15 +107,12 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexSqrFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Complex tmp0, tmp1;
+    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), AsComplex(c, 0));
+    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), AsComplex(c, 1));
 
-    ComplexSqrDeriv(tmp0, AsComplex(c, 0));
-    ComplexSqrDeriv(tmp1, AsComplex(c, 1));
-
-    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
-    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
+    rMult *= 2.0;
 }
 
 void HypercomplexCubeFractalRules::
@@ -133,7 +123,7 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexCubeFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Complex tmp0, tmp1;
 
@@ -142,6 +132,8 @@ DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, Fr
 
     complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
     complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
+
+    rMult *= 3.0;
 }
 
 void HypercomplexRecipFractalRules::
@@ -152,7 +144,7 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexRecipFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Complex tmp0, tmp1;
 
@@ -173,7 +165,7 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexFuncFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
+DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Complex tmp0, tmp1;
 

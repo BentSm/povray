@@ -302,7 +302,6 @@ class Parser : public SceneTask
             pov_base::ITextStream *In_File;
             pov_base::OTextStream *Out_File;
             bool fopenCompleted : 1; ///< `false` if still busy parsing `#fopen', `true` otherwise.
-            bool inUse          : 1;
             bool R_Flag         : 1;
         };
 

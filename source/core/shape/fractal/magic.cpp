@@ -304,8 +304,6 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
                 complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(dc, 0));
                 complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(dc, 1));
 
-                d = HypercomplexFromDuplex(d);
-
                 rResult[X] = 0.5 * dot(d, mSpace4D.transformedX());
                 rResult[Y] = 0.5 * dot(d, mSpace4D.transformedY());
                 rResult[Z] = 0.5 * dot(d, mSpace4D.transformedZ());

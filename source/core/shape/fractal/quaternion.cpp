@@ -91,8 +91,8 @@ DirDerivCalc(Vector4d &rD, const Vector4d& v, int iter, bool samePoint, const Fr
 {
     DBL tmp = dot(rD, v);
 
-    rD = rD[X] * v + v[X] * rD;
-    rD[X] -= tmp;
+    rD = (2.0 * rD[X]) * v + (2.0 * v[X]) * rD;
+    rD[X] -= 2.0 * tmp;
 }
 
 void QuaternionCubeFractalRules::

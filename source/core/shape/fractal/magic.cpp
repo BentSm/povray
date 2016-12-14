@@ -146,16 +146,17 @@ DBL MagicQuaternionFractalRules::
 CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Vector4d d = dir;
+    DBL mult = 1.0;
     int i;
 
     Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
 
     for (i = 0; i < nMax; i++)
     {
-        DirDerivCalc(d, pIterStack[i], i, false, pFractal, pIterData);
+        DirDerivCalc(d, pIterStack[i], i, mult, false, pFractal, pIterData);
     }
 
-    return dot(d, pIterStack[nMax]);
+    return mult * dot(d, pIterStack[nMax]);
 }
 
 void MagicQuaternionFractalRules::
@@ -163,6 +164,7 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
 {
     Vector4d nX = mSpace4D.transformedX(), nY = mSpace4D.transformedY(), nZ = mSpace4D.transformedZ();
     int i;
+    DBL mult = 1.0;
 
     Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data()),
         *pPIterStack = (pPIterData != NULL ? static_cast<Vector4d *>(pPIterData->mainIter.data()) : NULL);
@@ -176,21 +178,21 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
             if (DiscontinuityCheck(d, dist, pTIterStack[i], pPIterStack[i],
                                    i, pFractal, pTIterData, pPIterData))
             {
-                rResult[X] = dot(nX, d);
-                rResult[Y] = dot(nY, d);
-                rResult[Z] = dot(nZ, d);
+                rResult[X] = mult * dot(nX, d);
+                rResult[Y] = mult * dot(nY, d);
+                rResult[Z] = mult * dot(nZ, d);
                 return;
             }
         }
 
-        DirDerivCalc(nX, pTIterStack[i], i, false, pFractal, pTIterData);
-        DirDerivCalc(nY, pTIterStack[i], i, true, pFractal, pTIterData);
-        DirDerivCalc(nZ, pTIterStack[i], i, true, pFractal, pTIterData);
+        DirDerivCalc(nX, pTIterStack[i], i, mult, false, pFractal, pTIterData);
+        DirDerivCalc(nY, pTIterStack[i], i, mult, true, pFractal, pTIterData);
+        DirDerivCalc(nZ, pTIterStack[i], i, mult, true, pFractal, pTIterData);
     }
 
-    rResult[X] = dot(nX, pTIterStack[nMax]);
-    rResult[Y] = dot(nY, pTIterStack[nMax]);
-    rResult[Z] = dot(nZ, pTIterStack[nMax]);
+    rResult[X] = mult * dot(nX, pTIterStack[nMax]);
+    rResult[Y] = mult * dot(nY, pTIterStack[nMax]);
+    rResult[Z] = mult * dot(nZ, pTIterStack[nMax]);
 }
 
 bool MagicQuaternionFractalRules::
@@ -259,24 +261,26 @@ Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& directi
 DBL MagicHypercomplexFractalRules::
 CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    int i;
     Vector4d d = dir;
+    int i;
+    DBL mult = 0.5;
 
     Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
 
     for (i = 0; i < nMax; i++)
     {
-        DerivCalc(d, pIterStack[i], i, pFractal, pIterData);
+        DerivCalc(d, pIterStack[i], i, mult, pFractal, pIterData);
     }
 
-    return 0.5 * dot(d, pIterStack[nMax]);
+    return mult * dot(d, pIterStack[nMax]);
 }
 
 void MagicHypercomplexFractalRules::
 CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
-    int i;
     Vector4d d(1.0, 0.0, 1.0, 0.0);
+    int i;
+    DBL mult = 0.5;
 
     /*
      * The fact that the functions used for iterating are well-behaved in the hypercomplexes
@@ -304,15 +308,15 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
                 complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(dc, 0));
                 complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(dc, 1));
 
-                rResult[X] = 0.5 * dot(d, mSpace4D.transformedX());
-                rResult[Y] = 0.5 * dot(d, mSpace4D.transformedY());
-                rResult[Z] = 0.5 * dot(d, mSpace4D.transformedZ());
+                rResult[X] = mult * dot(d, mSpace4D.transformedX());
+                rResult[Y] = mult * dot(d, mSpace4D.transformedY());
+                rResult[Z] = mult * dot(d, mSpace4D.transformedZ());
 
                 return;
             }
         }
 
-        DerivCalc(d, pTIterStack[i], i, pFractal, pTIterData);
+        DerivCalc(d, pTIterStack[i], i, mult, pFractal, pTIterData);
     }
 
     d[Y] *= -1.0;
@@ -321,9 +325,9 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
     complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(pTIterStack[nMax], 0));
     complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(pTIterStack[nMax], 1));
 
-    rResult[X] = 0.5 * dot(d, mSpace4D.transformedX());
-    rResult[Y] = 0.5 * dot(d, mSpace4D.transformedY());
-    rResult[Z] = 0.5 * dot(d, mSpace4D.transformedZ());
+    rResult[X] = mult * dot(d, mSpace4D.transformedX());
+    rResult[Y] = mult * dot(d, mSpace4D.transformedY());
+    rResult[Z] = mult * dot(d, mSpace4D.transformedZ());
 }
 
 bool MagicHypercomplexFractalRules::

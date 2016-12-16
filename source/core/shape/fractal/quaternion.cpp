@@ -235,7 +235,7 @@ DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, bool samePoi
         ny = v[Y] / nNorm;
         nz = v[Z] / nNorm;
         nw = v[W] / nNorm;
-        CalcGenDerivs(rD[X], rD[Y], rD[Z], rD[W], normFVal, ny, nz, nw, pAuxIterStack[iter].cDeriv);
+        CalcGenDerivs(rD[X], rD[Y], rD[Z], rD[W], normFVal, ny, nz, nw, cDeriv);
     }
 }
 

@@ -108,6 +108,7 @@ public:
     typedef struct {
         Vector4d point;
         DBL nNorm, normFVal;
+        Complex cDeriv;
     } AuxIterData;
 
     QuaternionFuncFractalRules(const FractalConstructorData& data) :
@@ -132,7 +133,7 @@ class QuaternionPwrFractalRules : public MagicQuaternionFractalRules
 public:
     typedef struct {
         DBL nNorm[2], normFVal[2];
-        Complex expVal, lg[2];
+        Complex expVal, lg[2], cRecip;
     } AuxIterData;
 
     QuaternionPwrFractalRules(const FractalConstructorData& data) :

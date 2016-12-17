@@ -54,6 +54,7 @@ static inline void ComplexCubeAdd(Complex rC, const Complex c, const Complex a);
 static inline void ComplexCubeDeriv(Complex rC, const Complex c);
 static inline void ComplexRecipAdd(Complex rC, const Complex c, const Complex a);
 static inline void ComplexRecipDeriv(Complex rC, const Complex c);
+static inline void MultByConjugate(Vector4d& rD, const Vector4d& d, const Vector4d& c);
 
 static inline void ComplexSqrAdd(Complex rC, const Complex c, const Complex a) {
     DBL tmp;
@@ -99,6 +100,19 @@ static inline void ComplexRecipDeriv(Complex rC, const Complex c)
     rC[X] = (1 - 2 * c[X] / mod) / mod;
 }
 
+static inline void MultByConjugate(Vector4d& rD, const Vector4d& d, const Vector4d& c)
+{
+    DBL tmpx, tmpz;
+
+    tmpx = c[X] * d[X] + c[Y] * d[Y],
+    rD[Y] = -c[Y] * d[X] + c[X] * d[Y];
+    rD[X] = tmpx;
+
+    tmpz  = c[Z] * d[Z] + c[W] * d[W];
+    rD[W] = -c[W] * d[Z] + c[Z] * d[W];
+    rD[Z] = tmpz;
+}
+
 void HypercomplexSqrFractalRules::
 IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
@@ -107,7 +121,7 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexSqrFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), AsComplex(c, 0));
     complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), AsComplex(c, 1));
@@ -123,15 +137,14 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexCubeFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Complex tmp0, tmp1;
+    Vector4d tmp;
 
-    ComplexCubeDeriv(tmp0, AsComplex(c, 0));
-    ComplexCubeDeriv(tmp1, AsComplex(c, 1));
+    ComplexCubeDeriv(AsComplex(tmp, 0), AsComplex(c, 0));
+    ComplexCubeDeriv(AsComplex(tmp, 1), AsComplex(c, 1));
 
-    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
-    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
+    MultByConjugate(rD, rD, tmp);
 
     rMult *= 3.0;
 }
@@ -144,15 +157,14 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexRecipFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Complex tmp0, tmp1;
+    Vector4d tmp;
 
-    ComplexRecipDeriv(tmp0, AsComplex(c, 0));
-    ComplexRecipDeriv(tmp1, AsComplex(c, 1));
+    ComplexRecipDeriv(AsComplex(tmp, 0), AsComplex(c, 0));
+    ComplexRecipDeriv(AsComplex(tmp, 1), AsComplex(c, 1));
 
-    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
-    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
+    MultByConjugate(rD, rD, tmp);
 }
 
 void HypercomplexFuncFractalRules::
@@ -165,15 +177,14 @@ IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void HypercomplexFuncFractalRules::
-DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Complex tmp0, tmp1;
+    Vector4d tmp;
 
-    (*(mFunc.pDeriv))(tmp0, AsComplex(c, 0), *mExponent);
-    (*(mFunc.pDeriv))(tmp1, AsComplex(c, 1), *mExponent);
+    (*(mFunc.pDeriv))(AsComplex(tmp, 0), AsComplex(c, 0), *mExponent);
+    (*(mFunc.pDeriv))(AsComplex(tmp, 1), AsComplex(c, 1), *mExponent);
 
-    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), tmp0);
-    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), tmp1);
+    MultByConjugate(rD, rD, tmp);
 }
 
 bool HypercomplexFuncFractalRules::

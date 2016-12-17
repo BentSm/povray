@@ -144,54 +144,56 @@ Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& directi
 DBL MagicQuaternionFractalRules::
 CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    Vector4d d = dir;
+    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
+    Vector4d d = pIterStack[nMax];
     DBL mult = 1.0;
     int i;
 
-    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
-
-    for (i = 0; i < nMax; i++)
+    for (i = nMax - 1; i >= 0; i--)
     {
-        DirDerivCalc(d, pIterStack[i], i, mult, false, pFractal, pIterData);
+        GradCalc(d, pIterStack[i], i, mult, pFractal, pIterData);
     }
 
-    return mult * dot(d, pIterStack[nMax]);
+    return mult * dot(d, dir);
 }
 
 void MagicQuaternionFractalRules::
 CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
-    Vector4d nX = mSpace4D.transformedX(), nY = mSpace4D.transformedY(), nZ = mSpace4D.transformedZ();
-    DBL mult = 0.0;
-    int i;
-
     Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data()),
         *pPIterStack = (pPIterData != NULL ? static_cast<Vector4d *>(pPIterData->mainIter.data()) : NULL);
+    Vector4d d;
+    bool foundDisc = false;
+    DBL mult = 0.0, dist;
+    int i, nNMax = nMax;
 
-    for (i = 0; i < nMax; i++)
+    if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
     {
-        if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
+        for (i = 0; i < nMax; i++)
         {
-            Vector4d d;
-            DBL dist;
             if (DiscontinuityCheck(d, dist, pTIterStack[i], pPIterStack[i],
                                    i, pFractal, pTIterData, pPIterData))
             {
-                rResult[X] = dot(nX, d);
-                rResult[Y] = dot(nY, d);
-                rResult[Z] = dot(nZ, d);
-                return;
+                foundDisc = true;
+                nNMax = i;
+                break;
             }
         }
-
-        DirDerivCalc(nX, pTIterStack[i], i, mult, false, pFractal, pTIterData);
-        DirDerivCalc(nY, pTIterStack[i], i, mult, true, pFractal, pTIterData);
-        DirDerivCalc(nZ, pTIterStack[i], i, mult, true, pFractal, pTIterData);
     }
 
-    rResult[X] = dot(nX, pTIterStack[nMax]);
-    rResult[Y] = dot(nY, pTIterStack[nMax]);
-    rResult[Z] = dot(nZ, pTIterStack[nMax]);
+    if (!foundDisc)
+    {
+        d = pTIterStack[nMax];
+    }
+
+    for (i = nNMax - 1; i >= 0; i--)
+    {
+        GradCalc(d, pTIterStack[i], i, mult, pFractal, pTIterData);
+    }
+
+    rResult[X] = dot(d, mSpace4D.transformedX());
+    rResult[Y] = dot(d, mSpace4D.transformedY());
+    rResult[Z] = dot(d, mSpace4D.transformedZ());
 }
 
 bool MagicQuaternionFractalRules::

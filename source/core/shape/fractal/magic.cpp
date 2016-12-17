@@ -87,15 +87,14 @@ GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator
     }
 }
 
-int MagicQuaternionFractalRules::
+int MagicFractalRules::
 Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& direction, DBL *pDist,
         FractalIterData *pIterData) const
 {
+    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
     Vector4d v = iPoint;
     DBL norm, exitValue;
     int i;
-
-    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
 
     pIterStack[0] = v;
 
@@ -138,10 +137,9 @@ Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& directi
     }
 
     return pFractal->Num_Iterations + 1;
-
 }
 
-DBL MagicQuaternionFractalRules::
+DBL MagicFractalRules::
 CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
@@ -151,21 +149,21 @@ CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIter
 
     for (i = nMax - 1; i >= 0; i--)
     {
-        GradCalc(d, pIterStack[i], i, mult, pFractal, pIterData);
+        GradientCalc(d, pIterStack[i], i, mult, pFractal, pIterData);
     }
 
     return mult * dot(d, dir);
 }
 
-void MagicQuaternionFractalRules::
+void MagicFractalRules::
 CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {
     Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data()),
         *pPIterStack = (pPIterData != NULL ? static_cast<Vector4d *>(pPIterData->mainIter.data()) : NULL);
     Vector4d d;
+    DBL mult, dist;
+    int newNMax = nMax, i;
     bool foundDisc = false;
-    DBL mult = 0.0, dist;
-    int i, nNMax = nMax;
 
     if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
     {
@@ -175,7 +173,7 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
                                    i, pFractal, pTIterData, pPIterData))
             {
                 foundDisc = true;
-                nNMax = i;
+                newNMax = i;
                 break;
             }
         }
@@ -186,9 +184,9 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
         d = pTIterStack[nMax];
     }
 
-    for (i = nNMax - 1; i >= 0; i--)
+    for (i = newNMax - 1; i >= 0; i--)
     {
-        GradCalc(d, pTIterStack[i], i, mult, pFractal, pTIterData);
+        GradientCalc(d, pTIterStack[i], i, mult, pFractal, pTIterData);
     }
 
     rResult[X] = dot(d, mSpace4D.transformedX());
@@ -196,141 +194,7 @@ CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData
     rResult[Z] = dot(d, mSpace4D.transformedZ());
 }
 
-bool MagicQuaternionFractalRules::
-DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
-                   int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
-{
-    throw POV_EXCEPTION_STRING("Discontinuity detection not supported for this fractal type.");
-}
-
-
-int MagicHypercomplexFractalRules::
-Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& direction, DBL *pDist,
-        FractalIterData *pIterData) const
-{
-    Vector4d d = iPoint;
-    DBL norm, exitValue;
-    int i;
-
-    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
-
-    pIterStack[0] = d;
-
-    exitValue = pFractal->Exit_Value;
-
-    for (i = 0; i < pFractal->Num_Iterations; i++)
-    {
-        norm = 0.5 * d.lengthSqr();
-
-        if (norm > exitValue)
-        {
-            if (pDist != NULL)
-            {
-                *pDist = (*(mEstimator.pEstim))(this, norm, i, direction, pFractal, pIterData);
-            }
-
-            return i;
-        }
-
-        IterateCalc(d, norm, i, pFractal, pIterData);
-
-        pIterStack[i+1] = d;
-    }
-
-    norm = 0.5 * d.lengthSqr();
-
-    if (norm > exitValue)
-    {
-        if (pDist != NULL)
-        {
-            *pDist = (*(mEstimator.pEstim))(this, norm, pFractal->Num_Iterations, direction, pFractal, pIterData);
-        }
-
-        return pFractal->Num_Iterations;
-    }
-
-    if (pDist != NULL)
-    {
-        *pDist = pFractal->Precision;
-    }
-
-    return pFractal->Num_Iterations + 1;
-
-}
-
-DBL MagicHypercomplexFractalRules::
-CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIterData *pIterData) const
-{
-    Vector4d d = dir;
-    DBL mult = 0.5;
-    int i;
-
-    Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
-
-    for (i = 0; i < nMax; i++)
-    {
-        DerivCalc(d, pIterStack[i], i, mult, pFractal, pIterData);
-    }
-
-    return mult * dot(d, pIterStack[nMax]);
-}
-
-void MagicHypercomplexFractalRules::
-CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
-{
-    Vector4d d(1.0, 0.0, 1.0, 0.0);
-    DBL mult = 0.0;
-    int i;
-
-    /*
-     * The fact that the functions used for iterating are well-behaved in the hypercomplexes
-     * allows for great simplification of computations here.  In particular, the existence of a
-     * (sort of) derivative that behaves more-or-less uniformly (e.g., d(i*f)/dz=i*(df/dz)) is of
-     * much use.  This is not necessarily the case for a general 4-D function, though, and is a
-     * problem for many of even the most basic quaternionic functions (e.g., z^2).
-     */
-
-    Vector4d *pTIterStack = static_cast<Vector4d *>(pTIterData->mainIter.data()),
-        *pPIterStack = (pPIterData != NULL ? static_cast<Vector4d *>(pPIterData->mainIter.data()) : NULL);
-
-    for (i = 0; i < nMax; i++)
-    {
-        if (pPIterData != NULL && pFractal->Discontinuity_Test > 0)
-        {
-            Vector4d dc;
-            DBL dist;
-            if (DiscontinuityCheck(dc, dist, pTIterStack[i], pPIterStack[i],
-                                   i, pFractal, pTIterData, pPIterData))
-            {
-                d[Y] *= -1.0;
-                d[W] *= -1.0;
-
-                complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(dc, 0));
-                complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(dc, 1));
-
-                rResult[X] = dot(d, mSpace4D.transformedX());
-                rResult[Y] = dot(d, mSpace4D.transformedY());
-                rResult[Z] = dot(d, mSpace4D.transformedZ());
-
-                return;
-            }
-        }
-
-        DerivCalc(d, pTIterStack[i], i, mult, pFractal, pTIterData);
-    }
-
-    d[Y] *= -1.0;
-    d[W] *= -1.0;
-
-    complex_fn::Mult(AsComplex(d, 0), AsComplex(d, 0), AsComplex(pTIterStack[nMax], 0));
-    complex_fn::Mult(AsComplex(d, 1), AsComplex(d, 1), AsComplex(pTIterStack[nMax], 1));
-
-    rResult[X] = dot(d, mSpace4D.transformedX());
-    rResult[Y] = dot(d, mSpace4D.transformedY());
-    rResult[Z] = dot(d, mSpace4D.transformedZ());
-}
-
-bool MagicHypercomplexFractalRules::
+bool MagicFractalRules::
 DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                    int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const
 {

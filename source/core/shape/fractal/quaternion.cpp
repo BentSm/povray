@@ -82,7 +82,7 @@ IterateCalc(Vector4d &rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void QuaternionSqrFractalRules::
-GradCalc(Vector4d &rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d &rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL tmp = dot(rD, v);
 
@@ -109,7 +109,7 @@ IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void QuaternionCubeFractalRules::
-GradCalc(Vector4d &rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d &rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL tmp1, cVal, norm, tmp2, tmp3;
 
@@ -139,7 +139,7 @@ IterateCalc(Vector4d &rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void QuaternionRecipFractalRules::
-GradCalc(Vector4d &rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d &rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL norm;
 
@@ -187,7 +187,7 @@ IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void QuaternionFuncFractalRules::
-GradCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL ny, nz, nw, nNorm, normFVal;
     DBL tmpx, tmpy, tmpz, tmpw;
@@ -321,7 +321,7 @@ IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIt
 }
 
 void QuaternionPwrFractalRules::
-GradCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
+GradientCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
     DBL ny1, ny2, nz1, nz2, nw1, nw2, nNorm1, nNorm2, normFVal1, normFVal2;
     DBL tmpx, tmpy, tmpz, tmpw;

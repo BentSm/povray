@@ -89,7 +89,7 @@ public:
                             FractalIterData *pPIterData) const;
 
     virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
-    virtual void DirDerivCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, bool samePoint, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    virtual void GradCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
     virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 

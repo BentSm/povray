@@ -67,7 +67,7 @@ DBL EstimatorNewton(const FractalRules *pRules, DBL norm, int iters, const Vecto
 
     step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
 
-    step *= (step < 0 ? -2 : 2);
+    step *= (step < 0 ? -1 : 1);
 
     fValue = norm - pFractal->Exit_Value;
 
@@ -92,7 +92,7 @@ DBL EstimatorNewtonOrig(const FractalRules *pRules, DBL norm, int iters, const V
 
     if (step < -kDistanceEstimatorTolerance)
     {
-        step *= -2;
+        step *= -1;
 
         fValue = norm - pFractal->Exit_Value;
 

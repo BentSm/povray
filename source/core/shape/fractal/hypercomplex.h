@@ -46,53 +46,67 @@
 namespace pov
 {
 
-class HypercomplexSqrFractalRules : public MagicHypercomplexFractalRules
+
+class HypercomplexFractalRulesBase : public MagicFractalRules
+{
+public:
+    HypercomplexFractalRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
+                                 const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
+        mDuplexJuliaParm(DuplexFromHypercomplex(data.juliaParm)),
+        MagicFractalRules(data, discontinuitySupport, sizes, estimator) { }
+
+protected:
+    const Vector4d mDuplexJuliaParm;
+
+};
+
+class HypercomplexSqrFractalRules : public HypercomplexFractalRulesBase
 {
 public:
     HypercomplexSqrFractalRules(const FractalConstructorData& data) :
-        MagicHypercomplexFractalRules(data, kDiscontinuityUnneeded,
-                                      GetDataSizes<HypercomplexSqrFractalRules>(),
-                                      GetEstimatorFromType(data.estimatorType)) { }
+        HypercomplexFractalRulesBase(data, kDiscontinuityUnneeded,
+                                     GetDataSizes<HypercomplexSqrFractalRules>(),
+                                     GetEstimatorFromType(data.estimatorType)) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
-class HypercomplexCubeFractalRules : public MagicHypercomplexFractalRules
+class HypercomplexCubeFractalRules : public HypercomplexFractalRulesBase
 {
 public:
     HypercomplexCubeFractalRules(const FractalConstructorData& data) :
-        MagicHypercomplexFractalRules(data, kDiscontinuityUnneeded,
-                                      GetDataSizes<HypercomplexCubeFractalRules>(),
-                                      GetEstimatorFromType(data.estimatorType)) { }
+        HypercomplexFractalRulesBase(data, kDiscontinuityUnneeded,
+                                     GetDataSizes<HypercomplexCubeFractalRules>(),
+                                     GetEstimatorFromType(data.estimatorType)) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
-class HypercomplexRecipFractalRules : public MagicHypercomplexFractalRules
+class HypercomplexRecipFractalRules : public HypercomplexFractalRulesBase
 {
 public:
     HypercomplexRecipFractalRules(const FractalConstructorData& data) :
-        MagicHypercomplexFractalRules(data, kDiscontinuityUnneeded,
-                                      GetDataSizes<HypercomplexRecipFractalRules>(),
-                                      GetEstimatorFromType(data.estimatorType)) { }
+        HypercomplexFractalRulesBase(data, kDiscontinuityUnneeded,
+                                     GetDataSizes<HypercomplexRecipFractalRules>(),
+                                     GetEstimatorFromType(data.estimatorType)) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 };
 
-class HypercomplexFuncFractalRules : public MagicHypercomplexFractalRules
+class HypercomplexFuncFractalRules : public HypercomplexFractalRulesBase
 {
 public:
     HypercomplexFuncFractalRules(const FractalConstructorData& data) :
-        MagicHypercomplexFractalRules(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType)),
-                                      GetDataSizes<HypercomplexFuncFractalRules>(),
-                                      GetEstimatorFromType(data.estimatorType)),
+        HypercomplexFractalRulesBase(data, DiscontinuitySupport_Func(FractalFuncForType(data.funcType)),
+                                     GetDataSizes<HypercomplexFuncFractalRules>(),
+                                     GetEstimatorFromType(data.estimatorType)),
         mFunc(FractalFuncForType(data.funcType)), mExponent(data.exponent) { }
 
     virtual void IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const;
-    virtual void DerivCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
+    virtual void GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const;
 
     virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;

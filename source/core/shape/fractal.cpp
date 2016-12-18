@@ -832,7 +832,7 @@ int Fractal::SetUp_Fractal()
         Bailout = R = 4.0;
     }
 
-    Exit_Value = Sqr(Bailout);
+    Exit_Value = Sqr(Bailout) * (Func_Type.algebra == kHypercomplex ? 2.0 : 1.0);
 
     /* To make sure the outside of the fractal doesn't get cut off. */
     R += 2 * Fractal_Tolerance;

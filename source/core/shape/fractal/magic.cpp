@@ -144,7 +144,7 @@ CalcDirDeriv(const Vector4d& dir, int nMax, const Fractal *pFractal, FractalIter
 {
     Vector4d *pIterStack = static_cast<Vector4d *>(pIterData->mainIter.data());
     Vector4d d = pIterStack[nMax];
-    DBL mult = 1.0;
+    DBL mult = 2.0;
     int i;
 
     for (i = nMax - 1; i >= 0; i--)

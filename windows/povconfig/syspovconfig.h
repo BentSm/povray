@@ -226,8 +226,8 @@ namespace pov_base
 #define IFF_SWITCH_CAST                     (long)
 #define USE_OFFICIAL_BOOST                  1
 
-#define POV_MEMMOVE(dst,src,len)            memmove((dst),(src),(len))
-#define POV_MEMCPY(dst,src,len)             memcpy((dst),(src),(len))
+#define POV_MEMMOVE(dst,src,len)            std::memmove((dst),(src),(len))
+#define POV_MEMCPY(dst,src,len)             std::memcpy((dst),(src),(len))
 
 #ifdef _CONSOLE
 
@@ -258,10 +258,8 @@ namespace pov_base
 #endif
 
 #define POV_GLOBAL_MEM_STATS(a,f,c,p,s,l)   povwin::WinMemReport(true, a, f, c, p, s, l)
-#define POV_THREAD_MEM_STATS(a,f,c,p,s,l)   povwin::WinMemReport(false, a, f, c, p, s, l)
 #define POV_MEM_STATS_RENDER_BEGIN()        povwin::WinMemStage(true)
 #define POV_MEM_STATS_RENDER_END()          povwin::WinMemStage(false)
-#define POV_MEM_STATS_COOKIE                void *
 
 #define POV_IMPLEMENT_RTR                   1
 

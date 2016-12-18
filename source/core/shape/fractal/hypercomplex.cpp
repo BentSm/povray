@@ -46,6 +46,19 @@
 // this must be the last file included
 #include "base/povdebug.h"
 
+#define APPLY_DUPLEX_2(func, a, b)              \
+    func(AsComplex(a, 0), AsComplex(b, 0));     \
+    func(AsComplex(a, 1), AsComplex(b, 1))
+
+#define APPLY_DUPLEX_2_PLUS_1(func, a, b, c)    \
+    func(AsComplex(a, 0), AsComplex(b, 0), c);  \
+    func(AsComplex(a, 1), AsComplex(b, 1), c)
+
+#define APPLY_DUPLEX_3(func, a, b, c)                           \
+    func(AsComplex(a, 0), AsComplex(b, 0), AsComplex(c, 0));    \
+    func(AsComplex(a, 1), AsComplex(b, 1), AsComplex(c, 1))
+
+
 namespace pov
 {
 
@@ -54,7 +67,7 @@ static inline void ComplexCubeAdd(Complex rC, const Complex c, const Complex a);
 static inline void ComplexCubeDeriv(Complex rC, const Complex c);
 static inline void ComplexRecipAdd(Complex rC, const Complex c, const Complex a);
 static inline void ComplexRecipDeriv(Complex rC, const Complex c);
-static inline void MultByConjugate(Vector4d& rD, const Vector4d& d, const Vector4d& c);
+static inline void ComplexMultConj(Complex rC, const Complex c, const Complex a);
 
 static inline void ComplexSqrAdd(Complex rC, const Complex c, const Complex a) {
     DBL tmp;
@@ -100,31 +113,23 @@ static inline void ComplexRecipDeriv(Complex rC, const Complex c)
     rC[X] = (1 - 2 * c[X] / mod) / mod;
 }
 
-static inline void MultByConjugate(Vector4d& rD, const Vector4d& d, const Vector4d& c)
+static inline void ComplexMultConj(Complex rC, const Complex c, const Complex a)
 {
-    DBL tmpx, tmpz;
-
-    tmpx = c[X] * d[X] + c[Y] * d[Y],
-    rD[Y] = -c[Y] * d[X] + c[X] * d[Y];
-    rD[X] = tmpx;
-
-    tmpz  = c[Z] * d[Z] + c[W] * d[W];
-    rD[W] = -c[W] * d[Z] + c[Z] * d[W];
-    rD[Z] = tmpz;
+    DBL tmp = c[X] * a[X] + c[Y] * a[Y];
+    rC[Y] = c[Y] * a[X] - c[X] * a[Y];
+    rC[X] = tmp;
 }
 
 void HypercomplexSqrFractalRules::
 IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    ComplexSqrAdd(AsComplex(rC, 0), AsComplex(rC, 0), AsComplex(mDuplexJuliaParm, 0));
-    ComplexSqrAdd(AsComplex(rC, 1), AsComplex(rC, 1), AsComplex(mDuplexJuliaParm, 1));
+    APPLY_DUPLEX_3(ComplexSqrAdd, rC, rC, mDuplexJuliaParm);
 }
 
 void HypercomplexSqrFractalRules::
 GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    complex_fn::Mult(AsComplex(rD, 0), AsComplex(rD, 0), AsComplex(c, 0));
-    complex_fn::Mult(AsComplex(rD, 1), AsComplex(rD, 1), AsComplex(c, 1));
+    APPLY_DUPLEX_3(ComplexMultConj, rD, rD, c);
 
     rMult *= 2.0;
 }
@@ -132,8 +137,7 @@ GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fracta
 void HypercomplexCubeFractalRules::
 IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    ComplexCubeAdd(AsComplex(rC, 0), AsComplex(rC, 0), AsComplex(mDuplexJuliaParm, 0));
-    ComplexCubeAdd(AsComplex(rC, 1), AsComplex(rC, 1), AsComplex(mDuplexJuliaParm, 1));
+    APPLY_DUPLEX_3(ComplexCubeAdd, rC, rC, mDuplexJuliaParm);
 }
 
 void HypercomplexCubeFractalRules::
@@ -141,10 +145,8 @@ GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fracta
 {
     Vector4d tmp;
 
-    ComplexCubeDeriv(AsComplex(tmp, 0), AsComplex(c, 0));
-    ComplexCubeDeriv(AsComplex(tmp, 1), AsComplex(c, 1));
-
-    MultByConjugate(rD, rD, tmp);
+    APPLY_DUPLEX_2(ComplexCubeDeriv, tmp, c);
+    APPLY_DUPLEX_3(ComplexMultConj, rD, rD, tmp);
 
     rMult *= 3.0;
 }
@@ -152,8 +154,7 @@ GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fracta
 void HypercomplexRecipFractalRules::
 IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    ComplexRecipAdd(AsComplex(rC, 0), AsComplex(rC, 0), AsComplex(mDuplexJuliaParm, 0));
-    ComplexRecipAdd(AsComplex(rC, 1), AsComplex(rC, 1), AsComplex(mDuplexJuliaParm, 1));
+    APPLY_DUPLEX_3(ComplexRecipAdd, rC, rC, mDuplexJuliaParm);
 }
 
 void HypercomplexRecipFractalRules::
@@ -161,17 +162,15 @@ GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fracta
 {
     Vector4d tmp;
 
-    ComplexRecipDeriv(AsComplex(tmp, 0), AsComplex(c, 0));
-    ComplexRecipDeriv(AsComplex(tmp, 1), AsComplex(c, 1));
-
-    MultByConjugate(rD, rD, tmp);
+    APPLY_DUPLEX_2(ComplexRecipDeriv, tmp, c);
+    APPLY_DUPLEX_3(ComplexMultConj, rD, rD, tmp);
 }
 
 void HypercomplexFuncFractalRules::
 IterateCalc(Vector4d& rC, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const
 {
-    (*(mFunc.pFunc))(AsComplex(rC, 0), AsComplex(rC, 0), *mExponent);
-    (*(mFunc.pFunc))(AsComplex(rC, 1), AsComplex(rC, 1), *mExponent);
+
+    APPLY_DUPLEX_2_PLUS_1((*mFunc.pFunc), rC, rC, *mExponent);
 
     rC += mDuplexJuliaParm;
 }
@@ -181,10 +180,8 @@ GradientCalc(Vector4d& rD, const Vector4d& c, int iter, DBL& rMult, const Fracta
 {
     Vector4d tmp;
 
-    (*(mFunc.pDeriv))(AsComplex(tmp, 0), AsComplex(c, 0), *mExponent);
-    (*(mFunc.pDeriv))(AsComplex(tmp, 1), AsComplex(c, 1), *mExponent);
-
-    MultByConjugate(rD, rD, tmp);
+    APPLY_DUPLEX_2_PLUS_1((*mFunc.pDeriv), tmp, c, *mExponent);
+    APPLY_DUPLEX_3(ComplexMultConj, rD, rD, tmp);
 }
 
 bool HypercomplexFuncFractalRules::

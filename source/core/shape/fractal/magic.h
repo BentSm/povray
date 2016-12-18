@@ -49,15 +49,15 @@
 namespace pov
 {
 
-class MagicRulesBase : public FractalRules
+class MagicFractalRulesBase : public FractalRules
 {
 public:
     typedef NilFractalData FixedData;
     typedef NilFractalData MainIterData;
     typedef NilFractalData AuxIterData;
 
-    MagicRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
-                   const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
+    MagicFractalRulesBase(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
+                          const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
         mSpace4D(*(data.space)), mEstimator(estimator),
         mInfo(CreateRulesInfo(data.funcType, discontinuitySupport, sizes, estimator.eType)) { }
     virtual const FractalRulesInfo& Info() const { return mInfo; }
@@ -73,14 +73,14 @@ protected:
                                                          const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType) = NULL);
 };
 
-class MagicFractalRules : public MagicRulesBase
+class MagicFractalRules : public MagicFractalRulesBase
 {
 public:
     typedef Vector4d MainIterData;
 
     MagicFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
                       const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
-        MagicRulesBase(data, discontinuitySupport, sizes, estimator) { }
+        MagicFractalRulesBase(data, discontinuitySupport, sizes, estimator) { }
 
     virtual int Iterate(const Vector4d& iPoint, const Fractal *pFractal, const Vector4d& direction,
                         DBL *pDist, FractalIterData *pIterData) const;
@@ -92,31 +92,6 @@ public:
     virtual void GradientCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
     virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
-};
-
-class MagicQuaternionFractalRules : public MagicFractalRules
-{
-public:
-    MagicQuaternionFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
-                                const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
-        mJuliaParm(data.juliaParm), MagicFractalRules(data, discontinuitySupport, sizes, estimator) { }
-
-protected:
-    const Vector4d mJuliaParm;
-
-};
-
-class MagicHypercomplexFractalRules : public MagicFractalRules
-{
-public:
-    MagicHypercomplexFractalRules(const FractalConstructorData& data, DiscontinuitySupportLevel discontinuitySupport,
-                                  const FractalDataSizes& sizes, const DistanceEstimator& estimator) :
-        mDuplexJuliaParm(DuplexFromHypercomplex(data.juliaParm)),
-        MagicFractalRules(data, discontinuitySupport, sizes, estimator) { }
-
-protected:
-    const Vector4d mDuplexJuliaParm;
-
 };
 
 }

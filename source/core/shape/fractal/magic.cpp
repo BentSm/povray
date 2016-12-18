@@ -56,7 +56,7 @@
 namespace pov
 {
 
-const DistanceEstimator& MagicRulesBase::
+const DistanceEstimator& MagicFractalRulesBase::
 GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator, EstimatorType legacyEstimator,
                      const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType))
 {

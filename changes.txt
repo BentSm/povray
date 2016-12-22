@@ -70,8 +70,8 @@ Materials:
   - Colour and pigment maps now support non-linear interpolation to achieve more
     pleasing gradients.
 
-  - Fresnel angle-dependent attenuation can now also be applied to highlights
-    and the diffuse component for more physical realism.
+  - Fresnel angle-dependent attenuation can now also be applied to highlights as
+    well as diffuse and emission components for more physical realism.
 
 Geometric Primitives:
 
@@ -265,6 +265,7 @@ Reported via GitHub:
   - #153 ("vector list trailing comma error sor lathe sphere_sweep")
   - #160 ("Port of FS259 - Stack Overflow with the write-directive with missing closing bracket.")
   - #161 ("Missing parenthesis on write directive causes crash.")
+  - #175 ("Coredump due recent 3.7.1 parser updates. ")
 
 Reported via FlySpray:
 

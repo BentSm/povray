@@ -73,6 +73,14 @@ protected:
                                                          const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType) = NULL);
 };
 
+/// Abstract class providing the standard implementation of the fractal iteration mechanisms.
+///
+/// Currently, for this class to be correct mathematically, the following must hold:
+///   - The underlying vector space must be @f$\mathbb{R}^4@f$ (or a subspace thereof),
+///   - The bailout condition must be @f$\|f^n(v)\|_2^2<\mathtt{Exit_Value}@f$, and
+///   - The functions IterateCalc(), GradientCalc(), and DiscontinuityCheck() must perform the functions
+///     specified in their documentation.
+///   .
 class MagicFractalRules : public MagicFractalRulesBase
 {
 public:
@@ -88,8 +96,21 @@ public:
     virtual void CalcNormal(Vector3d& rResult, int nMax, const Fractal *pFractal, FractalIterData *pTIterData,
                             FractalIterData *pPIterData) const;
 
+    /// Performs one iteration of the function to be iterated, i.e., @f$\mathtt{rV}\gets f(\mathtt{rV})@f$.
     virtual void IterateCalc(Vector4d& rV, DBL norm, int iter, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    /// Performs one iteration of the gradient calculation, left-multiplying @c rD by [a positive multiple of] the transpose of
+    /// the function's Jacobian at @c v.
+    ///
+    /// Specifically, @f$\mathtt{rD}\gets cJ_f(\mathtt{v})^T\mathtt{rD}@f$ and @f$\mathtt{rMult}\gets\frac{1}{c}\mathtt{rMult}@f$
+    /// (with @f$c>0@f$).
     virtual void GradientCalc(Vector4d& rD, const Vector4d& v, int iter, DBL& rMult, const Fractal *pFractal, FractalIterData *pIterData) const = 0;
+    /// Returns a bool indicating whether a path from @c p to @c t crosses a discontinuity of the function being iterated.
+    ///
+    /// If it does, it stores the normal of the discontinuity's surface at the intersection (oriented towards @c t)
+    /// in @c rD.
+    ///
+    /// Also, it stores the distance from @c p, relative to the distance to @c t, to the intersection in @c rDist.
+    /// **Note, however, that this latter property is unused by the current implementation, and may change or be removed.**
     virtual bool DiscontinuityCheck(Vector4d& rD, DBL& rDist, const Vector4d& t, const Vector4d& p,
                                     int iter, const Fractal *pFractal, FractalIterData *pTIterData, FractalIterData *pPIterData) const;
 };

@@ -51,7 +51,7 @@
 umask 022
 
 pov_version_base=`cat ./VERSION | sed 's,\([0-9]*.[0-9]*\).*,\1,g'`
-pov_config_bugreport="POV-Ray Bugtracker http://bugs.povray.org/"
+pov_config_bugreport="POV-Ray issue tracker at https://github.com/POV-Ray/povray/issues"
 
 # documentation
 timestamp=`date +%Y-%m-%d`
@@ -418,7 +418,7 @@ case "$1" in
   cat << pbEOF >> $makefile.am
 
 # Makefile.am for the source distribution of POV-Ray $pov_version_base for UNIX
-# Written by $pov_config_bugreport
+# Please report bugs to $pov_config_bugreport
 
 # Programs to build.
 bin_PROGRAMS = povray
@@ -566,7 +566,7 @@ case "$1" in
   cat << pbEOF >> $makefile.am
 
 # Makefile.am for the source distribution of POV-Ray $pov_version_base for UNIX
-# Written by $pov_config_bugreport
+# Please report bugs to $pov_config_bugreport
 
 # Directories.
 povlibdir = @datadir@/@PACKAGE@-@VERSION_BASE@
@@ -719,7 +719,7 @@ case "$1" in
 #!/bin/sh -x
 
 # bootstrap for the source distribution of POV-Ray $pov_version_base for UNIX
-# Written by $pov_config_bugreport
+# Please report bugs to $pov_config_bugreport
 # Run this script if configure.ac or any Makefile.am has changed
 
 rm -f config.log config.status
@@ -786,7 +786,7 @@ case "$1" in
   cat << pbEOF >> $makefile.am
 
 # Makefile.am for the source distribution of POV-Ray $pov_version_base for UNIX
-# Written by $pov_config_bugreport
+# Please report bugs to $pov_config_bugreport
 
 # Libraries to build.
 noinst_LIBRARIES = libpovray.a
@@ -1318,7 +1318,7 @@ case "$1" in
   cat << pbEOF >> $makefile.am
 
 # Makefile.am for the source distribution of POV-Ray $pov_version_base for UNIX
-# Written by $pov_config_bugreport
+# Please report bugs to $pov_config_bugreport
 
 # Libraries to build.
 noinst_LIBRARIES = libvfe.a
@@ -1376,7 +1376,7 @@ case "$1" in
   cat << pbEOF >> $makefile.am
 
 # Makefile.am for the source distribution of POV-Ray $pov_version_base for UNIX
-# Written by $pov_config_bugreport
+# Please report bugs to $pov_config_bugreport
 
 # Libraries to build.
 noinst_LIBRARIES = libplatform.a

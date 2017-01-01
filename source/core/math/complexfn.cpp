@@ -8,6 +8,9 @@
 /// @todo   It might be a good thing to replace much of this with C++03 and
 /// TR1 ~= C99 ~= boost/math/complex functions.
 ///
+/// @todo   Potential errors are handled by simply returning mid-function.  This
+/// may produce buggy and unpredictable behavior.
+///
 /// @copyright
 /// @parblock
 ///

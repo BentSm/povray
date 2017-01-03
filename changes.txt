@@ -24,10 +24,22 @@ should be located in the same directory as this file is.
 ------------------------------------------------------------------------------
 
 
-Changes between 3.7.0 and 3.7.1-TBD
+Changes between 3.7.1 and 3.7.2-TBD
 ===================================
 
 This version is still under active development, and not finalized yet.
+
+TBD
+
+
+Changes between 3.7.1-TBD and 3.7.1
+===================================
+
+TBD
+
+
+Changes between 3.7.0 and 3.7.1-beta.1
+======================================
 
 The primary focus of this version has been on code refactoring in order to
 modularize the underlying architecture, but various new features as well as
@@ -36,13 +48,6 @@ bugfixes have also been included.
 Work on our own Macintosh graphical user interface has been put on hold, and
 it may eventually end up on the scrapyard; our current hope for our Mac users
 rests on a 3rd party OS X front-end that we strive to adopt.
-
-To Do
------
-
-Prior to the release of 3.7.1, the following items still need some attention:
-
-  - Some of the new features still need to be properly documented.
 
 New Features
 ------------
@@ -293,6 +298,10 @@ Reported via the Newsgroups:
   - <53ea2dae@news.povray.org>
     (2014-08-12, povray.binaries.images, "unexplained")
     Precision issue led to `<1,1,1>.grey` not evaluating to 1 on sone systems.
+
+  - <web.52e768e03066f6369a9ee9f50@news.povray.org>
+    (2014-01-28, povray.bugreports, "Help file")
+    Lots of broken indices in the POV-Ray for Windows inbuilt documentation.
 
   - <web.551e92b74514bfb213709ea20@news.povray.org>
     (2015-04-03, povray.binaries.images, "An artifact when rendering torus(negative major_r)")

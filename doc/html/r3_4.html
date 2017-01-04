@@ -4919,7 +4919,7 @@ With a <code>max_trace</code> it only checks until that number is reached.</p></
 <h5>3.4.5.1.7 Julia Fractal</h5>
 
 
-<p>A <em>julia fractal</em> object is a 3-D <em>slice</em> of a 4-D object
+<p>A <em>Julia fractal</em> object is a 3-D <em>slice</em> of a 4-D object
 created by generalizing the process used to create the classic Julia sets.
 You can make a wide variety of strange objects using the <code>
 julia_fractal</code> statement including some that look like bizarre blobs of
@@ -4927,9 +4927,9 @@ twisted taffy.</p>
 
 <p class="Warning">
 <strong>Note:</strong>
-Numerous corrections to the julia fractal code were made in version 3.71.
-These corrections can change the appearance of scenes written for earlier
-versions, in some cases quite drastically.  Some of the changes are
+Numerous corrections to the <code>julia_fractal</code> code were made in
+version 3.71.  These corrections can change the appearance of scenes written
+for earlier versions, in some cases quite drastically.  Some of the changes are
 automatically compensated for when the <code>#version</code> is set to 3.7
 or lower.  See <a href="r3_4.html#r3_4_5_1_7_1">Compatibility Notes</a> for
 more details.</p>
@@ -4959,7 +4959,7 @@ DISTANCE_ESTIMATOR_ITEM:
   jump_max Amt[, Amt] | jump_decay Amt | jump_min Amt
 </pre>
 
-<p>Julia Fractal default values:</p>
+<p><code>julia_fractal</code> default values:</p>
 <pre>
 ALGEBRA_TYPE       : quaternion
 FUNCTION_TYPE      : sqr
@@ -4978,21 +4978,21 @@ variant            : 0
 
 <p>The required 4-D vector <em><code>&lt;4D_Julia_Parameter&gt;</code></em>
 is the classic Julia parameter <em><code>p</code></em> in the iterated
-formula <em><code>f(h) + p</code></em>. The julia fractal object is
+formula <em><code>f(h) + p</code></em>. The Julia fractal object is
 calculated by using an algorithm that determines whether an arbitrary point
 <em><code>h(0)</code></em> in 4-D space is inside or outside the object. The
 algorithm requires generating the sequence of vectors <em><code>h(0), h(1),
 ...</code></em> by iterating the formula <em><code>h(n+1) = f(h(n)) + p (n =
 0, 1, ..., max_iteration-1)</code></em> where <em><code>p</code></em> is the
-fixed 4-D vector parameter of the julia fractal and <em><code>f()</code></em>
+fixed 4-D vector parameter of the Julia fractal and <em><code>f()</code></em>
 is one of the functions <code>sqr</code>, <code>cube</code>, ... specified
 by the presence of the corresponding keyword. The point <em><code>
-h(0)</code></em> that begins the sequence is considered inside the julia
+h(0)</code></em> that begins the sequence is considered inside the Julia
 fractal object if none of the vectors in the sequence escapes a hypersphere
 of radius <code>bailout</code> about the origin before the iteration number reaches the integer
 <code>max_iteration</code> value. As you increase <code>max_iteration</code>,
-some points escape that did not previously escape, forming the julia fractal.
-Depending on the <em><code>&lt;4D_Julia_Parameter&gt;</code></em>, the julia
+some points escape that did not previously escape, forming the Julia fractal.
+Depending on the <em><code>&lt;4D_Julia_Parameter&gt;</code></em>, the Julia
 fractal object is not necessarily connected; it may be scattered fractal
 dust. Using a low <code>max_iteration</code> can fuse together the dust to
 make a solid object. A high <code>max_iteration</code> is more accurate but
@@ -5023,9 +5023,9 @@ relative to its 4-D actuality when a non-default slice is used.)</li>
 while preserving distances.</li>
 </ul>
 
-<p>You can get a good feel for the four dimensional nature of a julia fractal by
+<p>You can get a good feel for the four dimensional nature of a Julia fractal by
 using POV-Ray's animation feature to vary a slice's <em><code>
-Distance</code></em> parameter. You can make the julia fractal appear from
+Distance</code></em> parameter. You can make the Julia fractal appear from
 nothing, grow, then shrink to nothing as <em><code>
 Distance</code></em> changes, much as the cross section of a 3-D object
 changes as it passes through a plane.</p>
@@ -5239,7 +5239,7 @@ variants (only distinct if <code>y</code> is not 0), as follows:</p>
 only for debugging, or for producing incorrect normals.  It may gain more practical use
 in the future; conversely, it may be removed.</p>
 
-<p>A simple example of a julia fractal object is:</p>
+<p>A simple example of a Julia fractal object is:</p>
 <pre>
 julia_fractal {
   &lt;-0.083,0.0,-0.83,-0.025&gt;
@@ -5250,7 +5250,7 @@ julia_fractal {
   }
 </pre>
 
-<p>The first renderings of julia fractals using quaternions were done by Alan
+<p>The first renderings of Julia fractals using quaternions were done by Alan
 Norton and later by John Hart in the '80's. This POV-Ray
 implementation follows <em>Fractint</em> in pushing beyond what is known
 in the literature by using hypercomplex numbers and by generalizing the
@@ -5360,7 +5360,7 @@ change in the future, as well.)</p>
 <div class="content-level-h6" contains="Compatibility Notes" id="r3_4_5_1_7_2">
 <h6>3.4.5.1.7.2 Compatibility Notes</h6>
 
-<p>The julia fractal code was substantially revised between versions 3.7 and 3.71.
+<p>The <code>julia_fractal</code> code was substantially revised between versions 3.7 and 3.71.
 The following adjustments are automatically made when rendering with <code>#version</code>
 less than 3.71:</p>
 

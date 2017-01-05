@@ -4091,8 +4091,7 @@ int Parser::Parse_Read_Value(DATA_FILE *User_File,int Previous,int *NumberPtr,vo
                     case 3:
                         *NumberPtr = VECTOR_4D_ID_TOKEN;
                         Test_Redefine(Previous,NumberPtr,*DataPtr);
-                        *DataPtr   = reinterpret_cast<void *>(Create_Vector_4D());
-                        Assign_Vector_4D(reinterpret_cast<DBL *>(*DataPtr), Express);
+                        *DataPtr   = reinterpret_cast<void *>(new Vector4d(Express));
                         break;
 
                     case 4:

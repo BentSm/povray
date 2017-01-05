@@ -363,6 +363,12 @@
   <td><div class="divh4"><a title="3.4.5.1.7" href="#r3_4_5_1_7">Julia Fractal</a></div></td>
 </tr>
 <tr>
+  <td><div class="divh5"><a title="3.4.5.1.7.1" href="#r3_4_5_1_7_1">Distance Estimation</a></div></td>
+</tr>
+<tr>
+  <td><div class="divh5"><a title="3.4.5.1.7.2" href="#r3_4_5_1_7_2">Compatibility Notes</a></div></td>
+</tr>
+<tr>
   <td><div class="divh4"><a title="3.4.5.1.8" href="#r3_4_5_1_8">Lathe</a></div></td>
 </tr>
 <tr>
@@ -4913,11 +4919,22 @@ With a <code>max_trace</code> it only checks until that number is reached.</p></
 <h5>3.4.5.1.7 Julia Fractal</h5>
 
 
-<p>A <em>julia fractal</em> object is a 3-D <em>slice</em> of a 4-D object
+<p>A <em>Julia fractal</em> object is a 3-D <em>slice</em> of a 4-D object
 created by generalizing the process used to create the classic Julia sets.
 You can make a wide variety of strange objects using the <code>
 julia_fractal</code> statement including some that look like bizarre blobs of
-twisted taffy. The <code>julia_fractal</code> syntax is:</p>
+twisted taffy.</p>
+
+<p class="Warning">
+<strong>Note:</strong>
+Numerous corrections to the <code>julia_fractal</code> code were made in
+version 3.71.  These corrections can change the appearance of scenes written
+for earlier versions, in some cases quite drastically.  Some of the changes are
+automatically compensated for when the <code>#version</code> is set to 3.7
+or lower.  See <a href="r3_4.html#r3_4_5_1_7_1">Compatibility Notes</a> for
+more details.</p>
+
+<p>The <code>julia_fractal</code> syntax is:</p>
 <pre>
 JULIA_FRACTAL:
   julia_fractal {
@@ -4926,46 +4943,58 @@ JULIA_FRACTAL:
     }
 JF_ITEM:
   ALGEBRA_TYPE | FUNCTION_TYPE | max_iteration Count |
-  precision Amt | slice &lt;4D_Normal&gt;, Distance
+  precision Amt | bailout Amt | variant [Number] |
+  slice &lt;4D_Normal&gt;, Distance | SLICE_MAPPING_TYPE |
+  distance_estimator { [Number] [DISTANCE_ESTIMATOR_ITEM...] } |
+  distance_estimator [Number] | discontinuity_test [Boolean]
 ALGEBRA_TYPE:
   quaternion | hypercomplex
 FUNCTION_TYPE:
-  QUATERNATION: 
-    sqr | cube
-  HYPERCOMPLEX:
-    sqr | cube | exp | reciprocal | sin | asin | sinh |
-    asinh | cos | acos | cosh | acosh | tan | atan |tanh |
-    atanh | ln | pwr( X_Val, Y_Val )
+  sqr | cube | exp | reciprocal | sin | asin | sinh |
+  asinh | cos | acos | cosh | acosh | tan | atan |
+  tanh | atanh | ln | pwr( X_Val, Y_Val )
+SLICE_MAPPING_TYPE:
+  projection | isometric
+DISTANCE_ESTIMATOR_ITEM:
+  jump_max Amt[, Amt] | jump_decay Amt | jump_min Amt
 </pre>
 
-<p>Julia Fractal default values:</p>
+<p><code>julia_fractal</code> default values:</p>
 <pre>
-ALGEBRA_TYPE    : quaternion
-FUNCTION_TYPE   : sqr
-max_iteration   : 20
-precision       : 20
-slice, DISTANCE : &lt;0,0,0,1&gt;, 0.0
+ALGEBRA_TYPE       : quaternion
+FUNCTION_TYPE      : sqr
+max_iteration      : 20
+bailout            : 4 (*)
+precision          : 20
+slice, DISTANCE    : &lt;0,0,0,1&gt;, 0
+SLICE_MAPPING_TYPE : projection
+discontinuity_test : on
+distance_estimator : 1
+jump_max           : 30
+jump_decay         : 0.75 (*)
+jump_min           : 2
+variant            : 0
 </pre>
 
 <p>The required 4-D vector <em><code>&lt;4D_Julia_Parameter&gt;</code></em>
 is the classic Julia parameter <em><code>p</code></em> in the iterated
-formula <em><code>f(h) + p</code></em>. The julia fractal object is
+formula <em><code>f(h) + p</code></em>. The Julia fractal object is
 calculated by using an algorithm that determines whether an arbitrary point
 <em><code>h(0)</code></em> in 4-D space is inside or outside the object. The
 algorithm requires generating the sequence of vectors <em><code>h(0), h(1),
 ...</code></em> by iterating the formula <em><code>h(n+1) = f(h(n)) + p (n =
-0, 1, ..., max_iteration-1)</code></em> where <em><code> p</code></em> is the
-fixed 4-D vector parameter of the julia fractal and <em><code>f()</code></em>
-is one of the functions <code>sqr</code>, <code> cube</code>, ... specified
+0, 1, ..., max_iteration-1)</code></em> where <em><code>p</code></em> is the
+fixed 4-D vector parameter of the Julia fractal and <em><code>f()</code></em>
+is one of the functions <code>sqr</code>, <code>cube</code>, ... specified
 by the presence of the corresponding keyword. The point <em><code>
-h(0)</code></em> that begins the sequence is considered inside the julia
+h(0)</code></em> that begins the sequence is considered inside the Julia
 fractal object if none of the vectors in the sequence escapes a hypersphere
-of radius 4 about the origin before the iteration number reaches the integer
+of radius <code>bailout</code> about the origin before the iteration number reaches the integer
 <code>max_iteration</code> value. As you increase <code>max_iteration</code>,
-some points escape that did not previously escape, forming the julia fractal.
-Depending on the <em><code> &lt;4D_Julia_Parameter&gt;</code></em>, the julia
+some points escape that did not previously escape, forming the Julia fractal.
+Depending on the <em><code>&lt;4D_Julia_Parameter&gt;</code></em>, the Julia
 fractal object is not necessarily connected; it may be scattered fractal
-dust. Using a low <code> max_iteration</code> can fuse together the dust to
+dust. Using a low <code>max_iteration</code> can fuse together the dust to
 make a solid object. A high <code>max_iteration</code> is more accurate but
 slows rendering. Even though it is not accurate, the solid shapes you get
 with a low <code>max_iteration</code> value can be quite interesting. If
@@ -4974,31 +5003,41 @@ none is specified, the default is <code>max_iteration 20</code>.</p>
 <p>Since the mathematical object described by this algorithm is four-dimensional
 and POV-Ray renders three dimensional objects, there must be a way to reduce
 the number of dimensions of the object from four dimensions to three. This is
-accomplished by intersecting the 4-D fractal with a 3-D plane defined by the <code>slice</code> modifier and then projecting the
-intersection to 3-D space. The keyword is followed by 4-D vector and a float
-separated by a comma. The slice plane is the 3-D space that is perpendicular
-to <em><code> &lt;4D_Normal&gt;</code></em> and is <em><code>
-Distance</code></em> units from the origin. Zero length <em><code>
-&lt;4D_Normal&gt;</code></em> vectors or a <em><code>
-&lt;4D_Normal&gt;</code></em> vector with a zero fourth component are
-illegal. If none is specified, the default is <code> slice
-&lt;0,0,0,1&gt;,0</code>.</p>
-<p>
-You can get a good feel for the four dimensional nature of a julia fractal by
+accomplished by intersecting the 4-D fractal with a 3-D plane defined by the
+<code>slice</code> modifier and then mapping, in some manner, the intersection
+to 3-D space. The keyword is followed by 4-D vector and a float, separated by a
+comma. The slice plane is the 3-D space that is perpendicular
+to <em><code>&lt;4D_Normal&gt;</code></em> and is <em><code>Distance</code></em>
+units from the origin. Zero-length <em><code>&lt;4D_Normal&gt;</code></em>
+vectors are illegal; if the mapping type is <code>projection</code>, a <em><code>
+&lt;4D_Normal&gt;</code></em> vector with a zero fourth component is also illegal.
+If none is specified, the default is <code>slice &lt;0,0,0,1&gt;,0</code>.</p>
+
+<p>There are currently two methods of mapping the slice plane to 3-D space:</p>
+
+<ul>
+<li><code>projection</code> (the default) simply projects the slice onto 3-D space,
+discarding the last coordinate. (This can produce an object that is distorted
+relative to its 4-D actuality when a non-default slice is used.)</li>
+<li><code>isometric</code> uses the quaternions to map the slice to 3-D space
+while preserving distances.</li>
+</ul>
+
+<p>You can get a good feel for the four dimensional nature of a Julia fractal by
 using POV-Ray's animation feature to vary a slice's <em><code>
-Distance</code></em> parameter. You can make the julia fractal appear from
+Distance</code></em> parameter. You can make the Julia fractal appear from
 nothing, grow, then shrink to nothing as <em><code>
 Distance</code></em> changes, much as the cross section of a 3-D object
 changes as it passes through a plane.</p>
 
-<p>The <code> precision</code> parameter is a tolerance used in the
+<p>The <code>precision</code> parameter is a tolerance used in the
 determination of whether points are inside or outside the fractal object.
 Larger values give more accurate results but slower rendering. Use as low a
 value as you can without visibly degrading the fractal object's
 appearance but note values less than 1.0 are clipped at 1.0. The default if
 none is specified is <code>precision 20</code>.</p>
 
-<p>The presence of the keywords <code> quaternion</code> or <code>
+<p>The presence of the keywords <code>quaternion</code> or <code>
 hypercomplex</code> determine which 4-D algebra is used to calculate the
 fractal. The default is <code>quaternion</code>. Both are 4-D generalizations
 of the complex numbers but neither satisfies all the field properties (all
@@ -5009,18 +5048,25 @@ non-zero elements (it has been proved that you cannot successfully generalize
 complex numbers to four dimensions with all the field properties intact, so
 something has to break). Both of these algebras were discovered in the 19th
 century. Of the two, the quaternions are much better known, but one can argue
-that hypercomplex numbers are more useful for our purposes, since complex
-valued functions such as sin, cos, etc. can be generalized to work for
-hypercomplex numbers in a uniform way.</p>
-<p>
-For the mathematically curious, the algebraic properties of these two
+that hypercomplex numbers are nicer for our purposes, since many basic
+quaternionic functions fail to have a standard derivative.</p>
+
+<p>For the mathematically curious, the algebraic properties of these two
 algebras can be derived from the multiplication properties of the unit basis
-vectors 1 = &lt;1,0,0,0&gt;, i=&lt; 0,1,0,0&gt;, j=&lt;0,0,1,0&gt; and k=&lt;
-0,0,0,1&gt;. In both algebras 1 x = x 1 = x for any x (1 is the
+vectors 1=&lt;1,0,0,0&gt;, i=&lt;0,1,0,0&gt;, j=&lt;0,0,1,0&gt; and
+k=&lt;0,0,0,1&gt;. In both algebras 1 x = x 1 = x for any x (1 is the
 multiplicative identity). The basis vectors 1 and i behave exactly like the
 familiar complex numbers 1 and i in both algebras.</p>
 
-<table SUMMARY="Quaternion basis vector multiplication rules" width="75%">
+<table SUMMARY="Quaternion and hypercomplex multiplication rules" width="80%">
+<tr>
+<td width="50%">
+
+<table SUMMARY="Quaternion basis vector multiplication rules" width="90%">
+<tr>
+<th colspan="3">Quaternion multiplication rules</th>
+</tr>
+
 <tr>
 <td width="33%"><code>ij = k</code></td>
 <td width="33%"><code>jk = i</code></td>
@@ -5034,13 +5080,19 @@ familiar complex numbers 1 and i in both algebras.</p>
 </tr>
 
 <tr>
-<td><code>ii = jj = kk = -1</code></td>
+<td colspan="2"><code>ii = jj = kk = -1</code></td>
 <td><code>ijk = -1</code></td>
-<td>&nbsp;&nbsp;&nbsp;</td>
 </tr>
 </table>
 
-<table SUMMARY="Hypercomplex basis vector multiplication rules" width="75%">
+</td>
+<td width="50%">
+
+<table SUMMARY="Hypercomplex basis vector multiplication rules" width="90%">
+<tr>
+<th colspan="3">Hypercomplex multiplication rules</th>
+</tr>
+
 <tr>
 <td width="33%"><code>ij = k</code></td>
 <td width="33%"><code>jk = -i</code></td>
@@ -5054,30 +5106,33 @@ familiar complex numbers 1 and i in both algebras.</p>
 </tr>
 
 <tr>
-<td><code>ii = jj = kk = -1</code></td>
+<td colspan="2"><table width="100%"><tr>
+<td width="64%"><code>ii = jj = -1</code></td>
+<td width="36%"><code>kk = 1</code></td>
+</tr></table></td>
 <td><code>ijk = 1</code></td>
-<td>&nbsp;&nbsp;&nbsp;</td>
 </tr>
 </table>
 
-<p>A distance estimation calculation is used with the quaternion calculations
-to speed them up. The proof that this distance estimation formula works does
-not generalize from two to four dimensions but the formula seems to work well
-anyway, the absence of proof notwithstanding!</p>
+</td>
+</tr>
+</table>
 
 <p>The presence of one of the function keywords <code>sqr</code>, <code>
 cube</code>, etc. determines which function is used for <em><code>
 f(h)</code></em> in the iteration formula <em> <code>h(n+1) = f(h(n)) +
-p</code></em>. The default is <code>sqr.</code> Most of the function keywords
-work only if the <code>hypercomplex</code> keyword is present. Only <code>
-sqr</code> and <code>cube</code> work with <code> quaternion</code>. The
-functions are all familiar complex functions generalized to four dimensions.
-Function Keyword Maps 4-D value h to:</p>
+p</code></em>. The default is <code>sqr</code>. The
+functions are all familiar complex functions generalized to four dimensions.</p>
 
-<table SUMMARY="Function Keyword Maps 4-D value of h" width="75%">
+<table SUMMARY="Fractal function keywords" width="75%">
 <tr>
-<td width="30%"><code>sqr</code></td>
-<td width="70%">h*h</td>
+<th width="30%">Function keyword</th>
+<th width="70%">Function in terms of <code>h</code></th>
+</tr>
+
+<tr>
+<td><code>sqr</code></td>
+<td>h*h</td>
 </tr>
 
 <tr>
@@ -5121,7 +5176,7 @@ Function Keyword Maps 4-D value h to:</p>
 </tr>
 
 <tr>
-<td><code>acos</code></td>
+<td><code>acos</code> (note 1)</td>
 <td>arccosine of h</td>
 </tr>
 
@@ -5131,7 +5186,7 @@ Function Keyword Maps 4-D value h to:</p>
 </tr>
 
 <tr>
-<td><code>acosh</code></td>
+<td><code>acosh</code> (note 1)</td>
 <td>inverse hyperbolic cosine of h</td>
 </tr>
 
@@ -5161,12 +5216,30 @@ Function Keyword Maps 4-D value h to:</p>
 </tr>
 
 <tr>
-<td><code>pwr(x,y)</code></td>
+<td><code>pwr(x,y)</code> (note 2)</td>
 <td>h raised to the complex power x+iy</td>
 </tr>
 </table>
 
-<p>A simple example of a julia fractal object is:</p>
+<p class="Note">
+<strong>Note 1:</strong> <code>acos</code> and <code>acosh</code> have a
+<code>variant</code> that computes the [non-standard] version of the function
+implemented in versions prior to 3.71.
+</p>
+
+<p class="Note">
+<strong>Note 2:</strong> For the quaternions, <code>pwr(x,y)</code> has two
+variants (only distinct if <code>y</code> is not 0), as follows:</p>
+<ul>
+<li><code>variant 0</code> computes a 'left power': <code>exp((x+iy)*ln(h))</code></li>
+<li><code>variant 1</code> computes a 'right power': <code>exp(ln(h)*(x+iy))</code></li>
+</ul>
+
+<p>At this point, the <code>discontinuity_test</code> parameter is primarily useful
+only for debugging, or for producing incorrect normals.  It may gain more practical use
+in the future; conversely, it may be removed.</p>
+
+<p>A simple example of a Julia fractal object is:</p>
 <pre>
 julia_fractal {
   &lt;-0.083,0.0,-0.83,-0.025&gt;
@@ -5177,15 +5250,141 @@ julia_fractal {
   }
 </pre>
 
-<p>The first renderings of julia fractals using quaternions were done by Alan
+<p>The first renderings of Julia fractals using quaternions were done by Alan
 Norton and later by John Hart in the '80's. This POV-Ray
 implementation follows <em>Fractint</em> in pushing beyond what is known
 in the literature by using hypercomplex numbers and by generalizing the
 iterating formula to use a variety of transcendental functions instead of
-just the classic Mandelbrot <em>z2 + c</em> formula. With an extra two
+just the classic Mandelbrot <em>z<sup>2</sup> + c</em> formula. With an extra two
 dimensions and eighteen functions to work with, intrepid explorers should be
-able to locate some new fractal beasts in hyperspace, so have at it!</p></div>
+able to locate some new fractal beasts in hyperspace, so have at it!</p>
 
+</div>
+<a name="r3_4_5_1_7_1"></a>
+<div class="content-level-h6" contains="Distance Estimation" id="r3_4_5_1_7_1">
+<h6>3.4.5.1.7.1 Distance Estimation</h6>
+
+<p>A <code>distance_estimator</code> is used to (hopefully) speed up calculations.
+Basically, instead of simply taking steps of <code>1/precision</code> all the time
+when searching for intersections, the distance to the fractal's boundary is estimated,
+and used to take larger jumps, (hopefully) saving unnecessary computation. However,
+poor estimation can degrade the appearance of the fractal and/or actually slow down
+the rendering.</p>
+
+<p class="Note"><strong>Note:</strong> The legacy Newton-Raphson distance estimator
+(<code>distance_estimator 3</code>) is an unfortunate example of this, in that it
+is quite often <em>slower</em> than not using an estimator at all, and can also
+visibly degrade the appearance of the fractal.  It is retained primarily for
+backwards compatibility.</p>
+
+<table SUMMARY="Distance estimator types" width="95%">
+<tr>
+<td width="5%"><strong>0</strong></td>
+<td width="95%">No distance estimation</td>
+</tr>
+
+<tr>
+<td><strong>1</strong></td>
+<td>Default distance estimator (currently: = 7 for quaternion sqr and quaternion
+cube; = 2 otherwise)</td>
+</tr>
+
+<tr>
+<td><strong>2</strong></td>
+<td>Newton-Raphson distance estimator, with adaptive bounding (see below for details)</td>
+</tr>
+
+<tr>
+<td><strong>3</strong></td>
+<td>Legacy Newton-Raphson distance estimator</td>
+</tr>
+
+<tr>
+<td><strong>7</strong></td>
+<td>Special distance estimators (type-specific, currently only usable with
+quaternion sqr and quaternion cube)</td>
+</tr>
+
+<tr>
+<td><strong>15</strong></td>
+<td>Legacy default distance estimators (= 7 for quaternion sqr and quaternion
+cube; = 3 otherwise)</td>
+</tr>
+</table>
+
+<p>There are (at least) two ways in which a distance estimator can fail: if the
+estimate is too large (relative to the actual distance), part of the fractal may be
+missed; if the estimate is too small (relative to the normal step size), the extra
+time spent estimating may exceed the time saved by using the estimator.  The
+Newton-Raphson distance estimators limit how far (relative to <code>1/precision</code>)
+POV-Ray is permitted to jump, so as to limit the impact of bad estimates on the
+quality of the rendering.</p>
+
+<p>The 'adaptive' Newton-Raphson distance estimator adjusts this limit based on
+the current number of iterations, on the idea that the iterated function is likely
+to become more volatile as the number of iterations increases.</p>
+
+<p>The <code>jump_max</code> parameter defines how far (as a multiple of
+<code>1/precision</code>) the estimator is allowed to jump initially (that is, when
+estimating the distance to the boundary for 0 iterations), and the <code>jump_decay</code>
+parameter defines the ratio of the maximum permitted jump between sucessive iterations
+(so that <code>jump_decay 0.5</code> means that the maximum jump for 3 iterations would
+be one-half the maximum jump for 2 iterations and one-quarter that for 1 iteration).
+As an alternative to specifying <code>jump_decay</code> directly, one can instead provide
+a second paramater to <code>jump_max</code> that represents the maximum jump allowed at
+<code>max_iterations</code> iterations.  To avoid unproductive calculations, if the
+maximum permitted jump would be less than <code>jump_min</code>, distance estimation is
+skipped.</p>
+
+<p>The default settings are currently rather ad-hoc: if <code>max_iterations < 12</code>,
+then the default is (effectively) <code>jump_max 30,1 jump_min 2</code>; otherwise, the
+default is (effectively) <code>jump_max 30 jump_decay 0.75 jump_min 2</code>.  Any feedback
+or suggestions would be welcome!</p>
+
+<p>A special distance estimation calculation is used with some of the quaternion
+calculations to speed them up. The proof that this distance estimation formula
+works does not generalize from two to four dimensions but the formula seems to
+work well anyway, the absence of proof notwithstanding!</p>
+
+<p class="Note"><strong>Note:</strong> The special distance estimators do <em>not</em>
+account in any way for the <code>bailout</code>.  Changing the <code>bailout</code> from
+its default value may cause these estimators to misbehave.  (This may change in the future.)</p>
+
+<p class="Note"><strong>Note:</strong> The special distance estimators are <em>not</em>
+limited in any manner by the <code>precision</code>.  This means that issues caused by these
+estimators will <em>not</em> improve with an increase in <code>precision</code>.  (This may
+change in the future, as well.)</p>
+
+</div>
+<a name="r3_4_5_1_7_2"></a>
+<div class="content-level-h6" contains="Compatibility Notes" id="r3_4_5_1_7_2">
+<h6>3.4.5.1.7.2 Compatibility Notes</h6>
+
+<p>The <code>julia_fractal</code> code was substantially revised between versions 3.7 and 3.71.
+The following adjustments are automatically made when rendering with <code>#version</code>
+less than 3.71:</p>
+
+<ul>
+<li>The value of <code>max_iteration</code> is reduced by 1</li>
+<li>Hypercomplex <code>cube</code> is changed to hypercomplex <code>sqr</code></li>
+<li><code>acos</code> and <code>acosh</code> are changed to the <code>variant</code>
+versions of their respective functions</li>
+</ul>
+
+<p>The following adjustment is <em>not</em> automatically made, as it is generally
+detrimental to the rendering, and does not affect the correctness of the object
+being rendered:</p>
+
+<ul>
+<li>Default distance estimators <em>are not</em> changed to match the legacy estimators
+(equivalent to setting <code>distance_estimator 15</code>; see the note on the
+legacy Newton-Raphson estimator)</li>
+</ul>
+
+<p>Even with these adjustments, some scenes written for version 3.7 or earlier
+may display noticeable differences.</p>
+
+</div>
 <a name="r3_4_5_1_8"></a>
 <div class="content-level-h5" contains="Lathe" id="r3_4_5_1_8">
 <h5>3.4.5.1.8 Lathe</h5>

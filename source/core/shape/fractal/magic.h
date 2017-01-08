@@ -77,7 +77,7 @@ protected:
 ///
 /// Currently, for this class to be correct mathematically, the following must hold:
 ///   - The underlying vector space must be @f$\mathbb{R}^4@f$ (or a subspace thereof),
-///   - The bailout condition must be @f$\|f^n(v)\|_2^2<\mathtt{Exit_Value}@f$, and
+///   - The bailout condition must be @f$\|f^n(v)\|_2^2<\mathtt{Exit\_Value}@f$, and
 ///   - The functions IterateCalc(), GradientCalc(), and DiscontinuityCheck() must perform the functions
 ///     specified in their documentation.
 ///   .

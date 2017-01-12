@@ -128,7 +128,7 @@ static inline bool GetrusageMillisec(POV_ULONG& result, int source)
     bool success = (getrusage(source, &ru) == 0);
     if (success)
         result = (static_cast<POV_ULONG>(ru.ru_utime.tv_sec)  + static_cast<POV_ULONG>(ru.ru_stime.tv_sec))  *1000
-            + (static_cast<POV_ULONG>(ru.ru_utime.tv_usec) + static_cast<POV_ULONG>(ru.ru_stime.tv_usec)) /1000;
+               + (static_cast<POV_ULONG>(ru.ru_utime.tv_usec) + static_cast<POV_ULONG>(ru.ru_stime.tv_usec)) /1000;
     return success;
 #else
     return false;

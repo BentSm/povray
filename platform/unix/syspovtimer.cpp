@@ -50,6 +50,12 @@
 #include <sys/time.h>
 #endif
 
+#ifdef HAVE_BOOST_CHRONO
+#include <boost/chrono.hpp>
+#include <boost/chrono/process_cpu_clocks.hpp>
+#include <boost/chrono/thread_clock.hpp>
+#endif
+
 #include "base/types.h"
 
 // this must be the last file included
@@ -62,6 +68,14 @@ typedef int clockid_t;
 #if !defined(HAVE_USECONDS_T)
 typedef long useconds_t;
 #endif
+
+enum boostClockType
+{
+    boostSystemClock,
+    boostSteadyClock,
+    boostProcessRealCPUClock,
+    boostThreadClock
+};
 
 namespace pov_base
 {
@@ -136,16 +150,59 @@ static inline bool GettimeofdayMillisec(POV_ULONG& result)
 #endif
 }
 
+/// Attempt to get milliseconds time using `boost::chrono` clocks.
+static inline bool BoostChronoMillisec(POV_ULONG& result, const boostClockType &type)
+{
+#if defined(HAVE_BOOST_CHRONO)
+    switch (type)
+    {
+    case boostSystemClock:
+        result = static_cast<POV_ULONG>
+            (boost::chrono::duration_cast<boost::chrono::milliseconds>
+             (boost::chrono::system_clock::now().time_since_epoch()).count());
+        return true;
+#if defined(BOOST_CHRONO_HAS_CLOCK_STEADY)
+    case boostSteadyClock:
+        result = static_cast<POV_ULONG>
+            (boost::chrono::duration_cast<boost::chrono::milliseconds>
+             (boost::chrono::steady_clock::now().time_since_epoch()).count());
+        return true;
+#endif
+#if defined(BOOST_CHRONO_HAS_PROCESS_CLOCKS)
+    case boostProcessRealCPUClock:
+        result = static_cast<POV_ULONG>
+            (boost::chrono::duration_cast<boost::chrono::milliseconds>
+             (boost::chrono::process_real_cpu_clock::now().time_since_epoch()).count());
+        return true;
+#endif
+#if defined(BOOST_CHRONO_HAS_THREAD_CLOCK)
+    case boostThreadClock:
+        result = static_cast<POV_ULONG>
+            (boost::chrono::duration_cast<boost::chrono::milliseconds>
+             (boost::chrono::thread_clock::now().time_since_epoch()).count());
+        return true;
+#endif
+    default:
+        return false;
+    }
+#endif
+    return false;
+}
+
 Timer::Timer () :
     mWallTimeUseClockGettimeMonotonic (false),
+    mWallTimeUseBoostChronoSteady (false),
     mWallTimeUseClockGettimeRealtime (false),
+    mWallTimeUseBoostChronoSystem (false),
     mWallTimeUseGettimeofday (false),
     mProcessTimeUseGetrusageSelf (false),
     mProcessTimeUseClockGettimeProcess (false),
+    mProcessTimeUseBoostChronoRealCPU (false),
     mProcessTimeUseFallback (false),
     mThreadTimeUseGetrusageThread (false),
     mThreadTimeUseGetrusageLwp (false),
     mThreadTimeUseClockGettimeThread (false),
+    mThreadTimeUseBoostChronoThread (false),
     mThreadTimeUseFallback (false)
 {
     // Figure out which timer source to use for wall clock time.
@@ -154,11 +211,19 @@ Timer::Timer () :
     if (!haveWallTime)
         haveWallTime = mWallTimeUseClockGettimeMonotonic = ClockGettimeMillisec(mWallTimeStart, CLOCK_MONOTONIC);
 #endif
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_CLOCK_STEADY)
+    if (!haveWallTime)
+        haveWallTime = mWallTimeUseBoostChronoSteady = BoostChronoMillisec(mWallTimeStart, boostSteadyClock);
+#endif
     // we prefer CLOCK_MONOTONIC over CLOCK_REALTIME because the former will not be affected if someone adjusts the
     // system's real-time clock.
 #if defined(HAVE_DECL_CLOCK_REALTIME) && HAVE_DECL_CLOCK_REALTIME
     if (!haveWallTime)
         haveWallTime = mWallTimeUseClockGettimeRealtime = ClockGettimeMillisec(mWallTimeStart, CLOCK_REALTIME);
+#endif
+#if defined(HAVE_BOOST_CHRONO)
+    if (!haveWallTime)
+        haveWallTime = mWallTimeUseBoostChronoSystem = BoostChronoMillisec(mWallTimeStart, boostSystemClock);
 #endif
     // TODO - Find out if there is some rationale behind the preference of clock_gettime() over
     //        gettimeofday(), and document it here.
@@ -183,6 +248,10 @@ Timer::Timer () :
     if (!haveProcessTime)
         haveProcessTime = mProcessTimeUseClockGettimeProcess = ClockGettimeMillisec(mProcessTimeStart, CLOCK_PROCESS_CPUTIME_ID);
 #endif
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_PROCESS_CLOCKS)
+    if (!haveProcessTime)
+        haveProcessTime = mProcessTimeUseBoostChronoRealCPU = BoostChronoMillisec(mProcessTimeStart, boostProcessRealCPUClock);
+#endif
     if (!haveProcessTime)
     {
         haveProcessTime = mProcessTimeUseFallback = haveWallTime;
@@ -204,6 +273,10 @@ Timer::Timer () :
     if (!haveThreadTime)
         haveThreadTime = mThreadTimeUseClockGettimeThread = ClockGettimeMillisec(mThreadTimeStart, CLOCK_THREAD_CPUTIME_ID);
 #endif
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_THREAD_CLOCK)
+    if (!haveThreadTime)
+        haveThreadTime = mThreadTimeUseBoostChronoThread = BoostChronoMillisec(mProcessTimeStart, boostThreadClock);
+#endif
     if (!haveThreadTime)
     {
         haveThreadTime = mThreadTimeUseFallback = haveProcessTime;
@@ -223,9 +296,17 @@ POV_ULONG Timer::GetWallTime () const
     if (mWallTimeUseClockGettimeMonotonic)
         return (ClockGettimeMillisec(result, CLOCK_MONOTONIC) ? result : 0);
 #endif
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_CLOCK_STEADY)
+    if (mWallTimeUseBoostChronoSteady)
+        return (BoostChronoMillisec(result, boostSteadyClock) ? result : 0);
+#endif
 #if defined(HAVE_DECL_CLOCK_REALTIME) && HAVE_DECL_CLOCK_REALTIME
     if (mWallTimeUseClockGettimeRealtime)
         return (ClockGettimeMillisec(result, CLOCK_REALTIME) ? result : 0);
+#endif
+#if defined(HAVE_BOOST_CHRONO)
+    if (mWallTimeUseBoostChronoSystem)
+        return (BoostChronoMillisec(result, boostSystemClock) ? result : 0);
 #endif
     if (mWallTimeUseGettimeofday)
         return (GettimeofdayMillisec(result) ? result : 0);
@@ -242,6 +323,10 @@ POV_ULONG Timer::GetProcessTime () const
 #if defined(HAVE_DECL_CLOCK_PROCESS_CPUTIME_ID) && HAVE_DECL_CLOCK_PROCESS_CPUTIME_ID
     if (mProcessTimeUseClockGettimeProcess)
         return (ClockGettimeMillisec(result, CLOCK_PROCESS_CPUTIME_ID) ? result : 0);
+#endif
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_PROCESS_CLOCKS)
+    if (mProcessTimeUseBoostChronoRealCPU)
+        return (BoostChronoMillisec(result, boostProcessRealCPUClock) ? result : 0);
 #endif
     if (mProcessTimeUseFallback)
         return GetWallTime ();
@@ -262,6 +347,10 @@ POV_ULONG Timer::GetThreadTime () const
 #if defined(HAVE_DECL_CLOCK_THREAD_CPUTIME_ID) && HAVE_DECL_CLOCK_THREAD_CPUTIME_ID
     if (mThreadTimeUseClockGettimeThread)
         return (ClockGettimeMillisec(result, CLOCK_THREAD_CPUTIME_ID) ? result : 0);
+#endif
+#if defined(HAVE_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_THREAD_CLOCK)
+    if (mThreadTimeUseBoostChronoThread)
+        return (BoostChronoMillisec(result, boostThreadClock) ? result : 0);
 #endif
     if (mThreadTimeUseFallback)
         return GetProcessTime ();

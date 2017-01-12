@@ -54,12 +54,12 @@
 #endif
 
 // Our Unix-specific implementation of the Timer class currently relies on the presence of the
-// clock_gettime() or gettimeofday() functions, in order to measure at least wall-clock time. If we
-// have neither of those, we're falling back to POV-Ray's platform-independent default
-// implementation.
+// clock_gettime() or gettimeofday() or Boost.Chrono functions, in order to measure at least
+// wall-clock time. If we have none of those, we're falling back to POV-Ray's platform-independent
+// default implementation.
 // (Note that when it comes to measuring CPU time, we're still as good as the default if we fall
 // back to reporting wall clock time.)
-#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY)
+#if defined(HAVE_CLOCK_GETTIME) || defined(HAVE_GETTIMEOFDAY) || defined(HAVE_BOOST_CHRONO)
     #define POV_USE_DEFAULT_TIMER 0
 #else
     #define POV_USE_DEFAULT_TIMER 1

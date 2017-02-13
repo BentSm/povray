@@ -52,10 +52,6 @@
 // this must be the last file included
 #include "base/povdebug.h"
 
-#ifndef TASK_THREAD_STACK_SIZE
-#define TASK_THREAD_STACK_SIZE 1024 * 1024 * 2
-#endif
-
 namespace pov
 {
 
@@ -107,7 +103,7 @@ POV_LONG Task::ConsumedCPUTime() const
 void Task::Start(const boost::function0<void>& completion)
 {
     if((done == false) && (taskThread == NULL))
-        taskThread = NewBoostThread(boost::bind(&Task::TaskThread, this, completion), TASK_THREAD_STACK_SIZE); // TODO - make stack size definable
+        taskThread = NewBoostThread(boost::bind(&Task::TaskThread, this, completion), 1024 * 1024 * 2); // TODO - make stack size definable
 }
 
 void Task::RequestStop()

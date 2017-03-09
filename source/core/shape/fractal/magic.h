@@ -63,14 +63,15 @@ public:
     virtual const FractalRulesInfo& Info() const { return mInfo; }
     virtual const FractalSpace& Space() const { return mSpace4D; }
 
+    static const DistanceEstimator& GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator = kNewtonEstimator,
+                                                         EstimatorType legacyEstimator = kOrigNewtonEstimator,
+                                                         const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType) = NULL);
+
 protected:
     const FractalSpace& mSpace4D;
     const FractalRulesInfo mInfo;
     const DistanceEstimator& mEstimator;
 
-    static const DistanceEstimator& GetEstimatorFromType(EstimatorType estimatorType, EstimatorType defaultEstimator = kNewtonEstimator,
-                                                         EstimatorType legacyEstimator = kOrigNewtonEstimator,
-                                                         const DistanceEstimator& (*ExtraEstimators)(EstimatorType eType) = NULL);
 };
 
 /// Abstract class providing the standard implementation of the fractal iteration mechanisms.

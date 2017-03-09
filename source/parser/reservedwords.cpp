@@ -291,8 +291,8 @@ const RESERVED_WORD Reserved_Words[] = {
     { JPEG_TOKEN,                   "jpeg" },
     { JULIA_TOKEN,                  "julia" },
     { JULIA_FRACTAL_TOKEN,          "julia_fractal" },
-    { JUMP_DECAY_TOKEN,             "jump_decay" },
     { JUMP_MAX_TOKEN,               "jump_max" },
+    { JUMP_MAX_FINAL_TOKEN,         "jump_max_final" },
     { JUMP_MIN_TOKEN,               "jump_min" },
 
     { LAMBDA_TOKEN,                 "lambda" },
@@ -414,6 +414,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { POW_TOKEN,                    "pow" },
     { PPM_TOKEN,                    "ppm" },
     { PRECISION_TOKEN,              "precision" },
+    { PRECISION_FINAL_TOKEN,        "precision_final" },
     { PRECOMPUTE_TOKEN,             "precompute" },
 #if POV_PARSER_EXPERIMENTAL_OBJ_IMPORT
     { PREFIX_TOKEN,                 "prefix" },

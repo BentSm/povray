@@ -652,14 +652,16 @@ Fractal::Fractal() : ObjectBase(BASIC_OBJECT)
     Num_Iterations = 20;
 
     Precision = 1.0 / 20.0;
+    Precision_Scale = -1.0;
+    Precision_Final = -1.0;
 
     Discontinuity_Test = -1;
 
     Distance_Estimator = kDefaultEstimator;
 
     Jump_Max = 30.0;
-    Jump_Max_Lower = 1.0;
-    Jump_Decay = -1.0;
+    Jump_Max_Scale = -1.0;
+    Jump_Max_Final = -1.0;
     Jump_Min = 2.0;
 
     Func_Type.algebra = kQuaternion;
@@ -800,17 +802,27 @@ int Fractal::SetUp_Fractal()
         }
     }
 
-    // The automatic settings for the Newton estimator are rather ad hoc...
-    if (Rules->Info().estimatorType == kNewtonEstimator && Jump_Decay < 0.0)
+    // The automatic settings are rather ad hoc...
+    if (Precision_Scale < 0.0 && Precision_Final < 0.0 && Jump_Max_Scale < 0.0 && Jump_Max_Final < 0.0)
     {
-        if (pow(0.75, Num_Iterations) * Jump_Max > Jump_Max_Lower)
+        if (pow(0.75, Num_Iterations) * Jump_Max > 1.0)
         {
-            Jump_Decay = pow(Jump_Max / Jump_Max_Lower, -1.0 / Num_Iterations);
+            Jump_Max_Final = 1.0;
         }
         else
         {
-            Jump_Decay = 0.75;
+            Jump_Max_Scale = 0.75;
         }
+    }
+
+    if (Precision_Scale < 0.0)
+    {
+        Precision_Scale = (Precision_Final > 0.0 ? pow(Precision_Final / Precision, 1.0 / Num_Iterations) : 1.0);
+    }
+
+    if (Jump_Max_Scale < 0.0)
+    {
+        Jump_Max_Scale = (Jump_Max_Final > 0.0 ? pow(Jump_Max_Final / Jump_Max, 1.0 / Num_Iterations) : 1.0);
     }
 
     if (Bailout > 0.0)
@@ -840,8 +852,39 @@ int Fractal::SetUp_Fractal()
     Radius_Squared = Sqr(R);
 
     Compute_BBox();
+    Compute_Param_Vectors();
 
     return Num_Iterations;
+}
+
+void Fractal::Compute_Param_Vectors()
+{
+    int i;
+    DBL cPrec = Precision, cJumpMax = Jump_Max;
+
+    Precision_Vector.clear();
+    Trust_Vector.clear();
+    Precision_Vector.reserve(Num_Iterations + 1);
+    Trust_Vector.reserve(Num_Iterations + 1);
+
+    for (i = 0; i <= Num_Iterations; i++)
+    {
+        if (Precision_Final >= 0.0 && cPrec < Precision_Final)
+        {
+            cPrec = Precision_Final;
+        }
+
+        if (Jump_Max_Final >= 0.0 && ((cJumpMax < Jump_Max_Final) ^ (Jump_Max_Scale > 1.0)))
+        {
+            cJumpMax = Jump_Max_Final;
+        }
+
+        Precision_Vector.push_back(cPrec);
+        Trust_Vector.push_back(cJumpMax * cPrec);
+
+        cPrec *= Precision_Scale;
+        cJumpMax *= Jump_Max_Scale;
+    }
 }
 
 const FractalDataSizes& Fractal::IterationDataSizes() const

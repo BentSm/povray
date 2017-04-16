@@ -2801,9 +2801,9 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
                     P = Parse_Float();
                     if (P < 1.0)
                     {
-                        Error("Precision scale is less than 1.");
+                        Error("Final precision is less than 1.");
                     }
-                    Object->Precision_Scale = 1.0 / P;
+                    Object->Precision_Final = 1.0 / P;
                 END_CASE
 
                 OTHERWISE
@@ -2812,13 +2812,13 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
             END_EXPECT
        END_CASE
 
-       CASE(PRECISION_FINAL_TOKEN)
+       CASE(PRECISION_SCALE_TOKEN)
            P = Parse_Float();
            if (P < 1.0)
            {
-               Error("Final precision is less than 1.");
+               Error("Precision scale is less than 1.");
            }
-           Object->Precision_Final = 1.0 / P;
+           Object->Precision_Scale = 1.0 / P;
        END_CASE
 
        CASE(BAILOUT_TOKEN)
@@ -2857,9 +2857,9 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
                                     P = Parse_Float();
                                     if (P <= 0.0)
                                     {
-                                        Error("Jump factor scale is zero or negative.");
+                                        Error("Final jump factor is zero or negative.");
                                     }
-                                    Object->Jump_Max_Scale = P;
+                                    Object->Jump_Max_Final = P;
                                 END_CASE
 
                                 OTHERWISE
@@ -2868,13 +2868,13 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
                             END_EXPECT
                         END_CASE
 
-                        CASE(JUMP_MAX_FINAL_TOKEN)
+                        CASE(JUMP_MAX_SCALE_TOKEN)
                             P = Parse_Float();
                             if (P <= 0.0)
                             {
-                                Error("Final jump factor is zero or negative.");
+                                Error("Jump factor scale is zero or negative.");
                             }
-                            Object->Jump_Max_Final = P;
+                            Object->Jump_Max_Scale = P;
                         END_CASE
 
                         CASE(JUMP_MIN_TOKEN)

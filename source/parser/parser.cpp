@@ -2803,7 +2803,7 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
                     {
                         Error("Precision scale is less than 1.");
                     }
-                    Object->Precision_Scale = P;
+                    Object->Precision_Scale = 1.0 / P;
                 END_CASE
 
                 OTHERWISE

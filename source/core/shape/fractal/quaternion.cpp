@@ -457,8 +457,8 @@ DBL EstimatorSpecialOrig_QuatCube(const FractalRules *rules, DBL norm, int iters
     return pow / sqrt(nProd) * log(norm);
 }
 
-const DistanceEstimator kSpecialOrig_QuatSqr = { EstimatorSpecialOrig_QuatSqr, kOrigSpecialEstimators };
-const DistanceEstimator kSpecialOrig_QuatCube = { EstimatorSpecialOrig_QuatCube, kOrigSpecialEstimators };
+const DistanceEstimator kSpecialOrig_QuatSqr = { AddLimiting<EstimatorSpecialOrig_QuatSqr>, kOrigSpecialEstimators };
+const DistanceEstimator kSpecialOrig_QuatCube = { AddLimiting<EstimatorSpecialOrig_QuatCube>, kOrigSpecialEstimators };
 
 }
 

@@ -39,6 +39,8 @@
 // Module config header file must be the first file included within POV-Ray unit header files
 #include "core/configcore.h"
 
+#include <vector>
+
 #include "core/math/matrix.h"
 #include "core/math/vector.h"
 #include "core/scene/object.h"
@@ -75,12 +77,16 @@ public:
     DBL Exit_Value;
     int Num_Iterations;           /* number of iterations */
     DBL Precision;                /* Precision value */
+    DBL Precision_Scale;
+    DBL Precision_Final;
     int Discontinuity_Test;
     EstimatorType Distance_Estimator;
     DBL Jump_Max;
-    DBL Jump_Max_Lower;
-    DBL Jump_Decay;
+    DBL Jump_Max_Scale;
+    DBL Jump_Max_Final;
     DBL Jump_Min;
+    vector<DBL> Precision_Vector;
+    vector<DBL> Trust_Vector;
     FractalFuncType Func_Type;
     Complex exponent;             /* exponent of power function */
     DBL Radius_Squared;           /* For F_Bound(), if needed */
@@ -105,6 +111,9 @@ public:
 
     int SetUp_Fractal();
     const FractalDataSizes& IterationDataSizes() const;
+
+protected:
+    void Compute_Param_Vectors();
 
 };
 

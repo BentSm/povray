@@ -51,7 +51,7 @@ namespace pov
    hcmplx.cpp (1e-8), which was different from the value of Fractal_Tolerance in
    fractal.cpp (1e-7).  I have assumed that the two are truly meant to be separate
    constants. */
-const DBL kDistanceEstimatorTolerance = 1e-8;
+const DBL kDerivativeTolerance = 1e-8;
 
 typedef DBL EstimatorFunc(const FractalRules *pRules, DBL norm, int iters, const Vector4d& direction,
                           const Fractal *pFractal, FractalIterData *pIterData);
@@ -68,6 +68,37 @@ namespace estimators
 extern const DistanceEstimator kNone;
 extern const DistanceEstimator kNewton;
 extern const DistanceEstimator kNewtonOrig;
+
+template <EstimatorFunc BaseEstimatorFunc>
+DBL AddLimiting(const FractalRules *pRules, DBL norm, int iters, const Vector4d& direction,
+                const Fractal *pFractal, FractalIterData *pIterData)
+{
+    DBL estimValue, trustAmt, precision;
+
+    trustAmt = pFractal->Trust_Vector[iters];
+
+    precision = pFractal->Precision_Vector[iters];
+
+    if (trustAmt < precision * pFractal->Jump_Min)
+    {
+        return precision;
+    }
+
+    estimValue = BaseEstimatorFunc(pRules, norm, iters, direction, pFractal, pIterData);
+
+    if (estimValue > trustAmt)
+    {
+        return trustAmt;
+    }
+    else if (estimValue < precision)
+    {
+        return precision;
+    }
+    else
+    {
+        return estimValue;
+    }
+}
 
 static inline const DistanceEstimator& BadEstimator()
 {

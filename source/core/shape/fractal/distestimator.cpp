@@ -57,30 +57,18 @@ DBL EstimatorNone(const FractalRules *, DBL, int, const Vector4d&, const Fractal
 DBL EstimatorNewton(const FractalRules *pRules, DBL norm, int iters, const Vector4d& direction,
                     const Fractal *pFractal, FractalIterData *pIterData)
 {
-    DBL step, fValue, trustAmt;
-
-    trustAmt = pow(pFractal->Jump_Decay, iters) * pFractal->Jump_Max * pFractal->Precision;
-    if (trustAmt < pFractal->Precision * pFractal->Jump_Min)
-    {
-        return pFractal->Precision;
-    }
+    DBL step, fValue;
 
     step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
 
     step *= (step < 0 ? -1 : 1);
 
-    fValue = norm - pFractal->Exit_Value;
-
-    if (fValue > trustAmt * step)
+    if (step < kDerivativeTolerance)
     {
-        return trustAmt;
-    }
-    else if (fValue > pFractal->Precision * step)
-    {
-        return fValue / step;
+        step = kDerivativeTolerance;
     }
 
-    return pFractal->Precision;
+    return (norm - pFractal->Exit_Value) / step;
 }
 
 DBL EstimatorNewtonOrig(const FractalRules *pRules, DBL norm, int iters, const Vector4d& direction,
@@ -90,17 +78,17 @@ DBL EstimatorNewtonOrig(const FractalRules *pRules, DBL norm, int iters, const V
 
     step = pRules->CalcDirDeriv(direction, iters, pFractal, pIterData);
 
-    if (step < -kDistanceEstimatorTolerance)
+    if (step < -kDerivativeTolerance)
     {
         step *= -1;
 
         fValue = norm - pFractal->Exit_Value;
 
-        if (fValue > pFractal->Precision * pFractal->Jump_Max * step)
+        if (fValue > pFractal->Trust_Vector[iters] * step)
         {
-            return pFractal->Precision;
+            return pFractal->Precision_Vector[iters];
         }
-        else if (fValue > pFractal->Precision * step)
+        else if (fValue > pFractal->Precision_Vector[iters] * step)
         {
             return fValue / step;
         }
@@ -110,7 +98,7 @@ DBL EstimatorNewtonOrig(const FractalRules *pRules, DBL norm, int iters, const V
 }
 
 const DistanceEstimator kNone = { EstimatorNone, kNoEstimator };
-const DistanceEstimator kNewton = { EstimatorNewton, kNewtonEstimator };
+const DistanceEstimator kNewton = { AddLimiting<EstimatorNewton>, kNewtonEstimator };
 const DistanceEstimator kNewtonOrig = { EstimatorNewtonOrig, kOrigNewtonEstimator };
 
 }

@@ -853,8 +853,8 @@ JULIA_FRACTAL:
     }
 JF_ITEM:
   ALGEBRA_TYPE | FUNCTION_TYPE | max_iteration Count |
-  precision Amt | bailout Amt | variant [Number] |
-  slice &lt;4D_Normal&gt;, Distance | SLICE_MAPPING_TYPE |
+  precision Amt[, Amt] | precision_scale Amt | bailout Amt |
+  variant [Number] | slice &lt;4D_Normal&gt;, Distance | SLICE_MAPPING_TYPE |
   distance_estimator { [Number] [DISTANCE_ESTIMATOR_ITEM...] } |
   distance_estimator [Number] | discontinuity_test [Boolean]
 ALGEBRA_TYPE:
@@ -866,7 +866,7 @@ FUNCTION_TYPE:
 SLICE_MAPPING_TYPE:
   projection | isometric
 DISTANCE_ESTIMATOR_ITEM:
-  jump_max Amt[, Amt] | jump_decay Amt | jump_min Amt
+  jump_max Amt[, Amt] | jump_scale Amt | jump_min Amt
 </pre>
 
 <p><code>julia_fractal</code> default values:</p>
@@ -881,7 +881,7 @@ SLICE_MAPPING_TYPE : projection
 discontinuity_test : on
 distance_estimator : 1
 jump_max           : 30
-jump_decay         : 0.75 (*)
+jump_scale         : 0.75 (*)
 jump_min           : 2
 variant            : 0
 </pre>
@@ -946,6 +946,10 @@ Larger values give more accurate results but slower rendering. Use as low a
 value as you can without visibly degrading the fractal object's
 appearance but note values less than 1.0 are clipped at 1.0. The default if
 none is specified is <code>precision 20</code>.</p>
+
+<p>(The optional second <code>precision</code> parameter and the
+<code>precision_scale</code> parameter are discussed in
+<a href="r3_5.html#r3_5_1_1_7_2">Distance Estimation</a>.)</p>
 
 <p>The presence of the keywords <code>quaternion</code> or <code>
 hypercomplex</code> determine which 4-D algebra is used to calculate the
@@ -1201,7 +1205,7 @@ cube; = 2 otherwise)</td>
 
 <tr>
 <td><strong>2</strong></td>
-<td>Newton-Raphson distance estimator, with adaptive bounding (see below for details)</td>
+<td>Newton-Raphson distance estimator</td>
 </tr>
 
 <tr>
@@ -1226,44 +1230,55 @@ cube; = 3 otherwise)</td>
 estimate is too large (relative to the actual distance), part of the fractal may be
 missed; if the estimate is too small (relative to the normal step size), the extra
 time spent estimating may exceed the time saved by using the estimator.  The
-Newton-Raphson distance estimators limit how far (relative to <code>1/precision</code>)
+distance estimators limit how far (relative to <code>1/precision</code>)
 POV-Ray is permitted to jump, so as to limit the impact of bad estimates on the
 quality of the rendering.</p>
 
-<p>The 'adaptive' Newton-Raphson distance estimator adjusts this limit based on
-the current number of iterations, on the idea that the iterated function is likely
-to become more volatile as the number of iterations increases.</p>
+<p>This limit is based on the current number of iterations, on the idea that the
+iterated function is likely to become more volatile as the number of iterations
+increases.</p>
 
 <p>The <code>jump_max</code> parameter defines how far (as a multiple of
 <code>1/precision</code>) the estimator is allowed to jump initially (that is, when
-estimating the distance to the boundary for 0 iterations), and the <code>jump_decay</code>
+estimating the distance to the boundary for 0 iterations), and the <code>jump_scale</code>
 parameter defines the ratio of the maximum permitted jump between sucessive iterations
-(so that <code>jump_decay 0.5</code> means that the maximum jump for 3 iterations would
+(so that <code>jump_scale 0.5</code> means that the maximum jump for 3 iterations would
 be one-half the maximum jump for 2 iterations and one-quarter that for 1 iteration).
-As an alternative to specifying <code>jump_decay</code> directly, one can instead provide
-a second paramater to <code>jump_max</code> that represents the maximum jump allowed at
+As an alternative to specifying <code>jump_scale</code> directly, one can instead provide
+a second parameter to <code>jump_max</code> that represents the maximum jump allowed at
 <code>max_iterations</code> iterations.  To avoid unproductive calculations, if the
 maximum permitted jump would be less than <code>jump_min</code>, distance estimation is
 skipped.</p>
 
 <p>The default settings are currently rather ad-hoc: if <code>max_iterations < 12</code>,
 then the default is (effectively) <code>jump_max 30,1 jump_min 2</code>; otherwise, the
-default is (effectively) <code>jump_max 30 jump_decay 0.75 jump_min 2</code>.  Any feedback
+default is (effectively) <code>jump_max 30 jump_scale 0.75 jump_min 2</code>.  Any feedback
 or suggestions would be welcome!</p>
+
+<p>The <code>precision</code> can be dynamically varied based on the current number of
+iterations, as well.  The optional second <code>precision</code> parameter and
+<code>precision_scale</code> parameter work analogously to the optional second
+<code>jump_max</code> parameter and <code>jump_max_scale</code> parameter.  Note that
+dynamic <code>precision</code> affects distance estimation, as <code>jump_max</code> computations
+are relative to the reciprocal of the <em>current</em> <code>precision</code>.</p>
+
+<p class="Note"><strong>Note:</strong> Dynamic <code>precision</code> is currently experimental,
+and may be removed in the future.</p>
 
 <p>A special distance estimation calculation is used with some of the quaternion
 calculations to speed them up. The proof that this distance estimation formula
 works does not generalize from two to four dimensions but the formula seems to
-work well anyway, the absence of proof notwithstanding!</p>
+work well anyway (usually), the absence of proof notwithstanding!</p>
 
 <p class="Note"><strong>Note:</strong> The special distance estimators do <em>not</em>
 account in any way for the <code>bailout</code>.  Changing the <code>bailout</code> from
 its default value may cause these estimators to misbehave.  (This may change in the future.)</p>
 
-<p class="Note"><strong>Note:</strong> The special distance estimators are <em>not</em>
-limited in any manner by the <code>precision</code>.  This means that issues caused by these
-estimators will <em>not</em> improve with an increase in <code>precision</code>.  (This may
-change in the future, as well.)</p>
+<p class="Note"><strong>Note:</strong>To get the most speed-up from the special distance
+estimators, one can effectively disable the jump limiting by using, e.g.,
+<code>jump_max 1e9,1e9</code>.  This often seems to work well, and is what versions prior to 3.71
+effectively did; however, it is known to cause bad artefacts in some cases.  (See
+<a href="https://github.com/POV-Ray/povray/issues/150">this bug</a> for an example.)</p>
 
 </div>
 <a name="r3_5_1_1_7_2"></a>
@@ -1281,14 +1296,16 @@ less than 3.71:</p>
 versions of their respective functions</li>
 </ul>
 
-<p>The following adjustment is <em>not</em> automatically made, as it is generally
-detrimental to the rendering, and does not affect the correctness of the object
+<p>The following adjustments are <em>not</em> automatically made, as they are generally
+detrimental to the rendering, and do not affect the correctness of the object
 being rendered:</p>
 
 <ul>
 <li>Default distance estimators <em>are not</em> changed to match the legacy estimators
 (equivalent to setting <code>distance_estimator 15</code>; see the note on the
 legacy Newton-Raphson estimator)</li>
+<li>Jump limiting <em>is not</em> disabled for the special estimators (see the note at the
+end of the previous section)</li>
 </ul>
 
 <p>Even with these adjustments, some scenes written for version 3.7 or earlier

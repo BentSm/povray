@@ -2795,7 +2795,31 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
                 P = 1.0;
             }
             Object->Precision = 1.0 / P;
-        END_CASE
+            Parse_Comma();
+            EXPECT_ONE
+                CASE_FLOAT
+                    P = Parse_Float();
+                    if (P < 1.0)
+                    {
+                        Error("Final precision is less than 1.");
+                    }
+                    Object->Precision_Final = 1.0 / P;
+                END_CASE
+
+                OTHERWISE
+                    UNGET
+                END_CASE
+            END_EXPECT
+       END_CASE
+
+       CASE(PRECISION_SCALE_TOKEN)
+           P = Parse_Float();
+           if (P < 1.0)
+           {
+               Error("Precision scale is less than 1.");
+           }
+           Object->Precision_Scale = 1.0 / P;
+       END_CASE
 
        CASE(BAILOUT_TOKEN)
             P = Parse_Float();
@@ -2828,21 +2852,29 @@ ObjectPtr Parser::Parse_Julia_Fractal ()
                             }
                             Object->Jump_Max = P;
                             Parse_Comma();
-                            P = Allow_Float(1.0);
-                            if (P <= 0.0)
-                            {
-                                Error("Lower maximum jump factor is zero or negative.");
-                            }
-                            Object->Jump_Max_Lower = P;
+                            EXPECT_ONE
+                                CASE_FLOAT
+                                    P = Parse_Float();
+                                    if (P <= 0.0)
+                                    {
+                                        Error("Final jump factor is zero or negative.");
+                                    }
+                                    Object->Jump_Max_Final = P;
+                                END_CASE
+
+                                OTHERWISE
+                                    UNGET
+                                END_CASE
+                            END_EXPECT
                         END_CASE
 
-                        CASE(JUMP_DECAY_TOKEN)
+                        CASE(JUMP_MAX_SCALE_TOKEN)
                             P = Parse_Float();
-                            if (P > 1.0 || P < 0.0)
+                            if (P <= 0.0)
                             {
-                                Error("Jump decay factor is greater than 1 or negative.");
+                                Error("Jump factor scale is zero or negative.");
                             }
-                            Object->Jump_Decay = P;
+                            Object->Jump_Max_Scale = P;
                         END_CASE
 
                         CASE(JUMP_MIN_TOKEN)

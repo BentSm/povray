@@ -866,7 +866,7 @@ FUNCTION_TYPE:
 SLICE_MAPPING_TYPE:
   projection | isometric
 DISTANCE_ESTIMATOR_ITEM:
-  jump_max Amt[, Amt] | jump_scale Amt | jump_min Amt
+  jump_max Amt[, Amt] | jump_max_scale Amt | jump_min Amt
 </pre>
 
 <p><code>julia_fractal</code> default values:</p>
@@ -881,7 +881,7 @@ SLICE_MAPPING_TYPE : projection
 discontinuity_test : on
 distance_estimator : 1
 jump_max           : 30
-jump_scale         : 0.75 (*)
+jump_max_scale     : 0.75 (*)
 jump_min           : 2
 variant            : 0
 </pre>
@@ -1240,11 +1240,11 @@ increases.</p>
 
 <p>The <code>jump_max</code> parameter defines how far (as a multiple of
 <code>1/precision</code>) the estimator is allowed to jump initially (that is, when
-estimating the distance to the boundary for 0 iterations), and the <code>jump_scale</code>
+estimating the distance to the boundary for 0 iterations), and the <code>jump_max_scale</code>
 parameter defines the ratio of the maximum permitted jump between sucessive iterations
-(so that <code>jump_scale 0.5</code> means that the maximum jump for 3 iterations would
+(so that <code>jump_max_scale 0.5</code> means that the maximum jump for 3 iterations would
 be one-half the maximum jump for 2 iterations and one-quarter that for 1 iteration).
-As an alternative to specifying <code>jump_scale</code> directly, one can instead provide
+As an alternative to specifying <code>jump_max_scale</code> directly, one can instead provide
 a second parameter to <code>jump_max</code> that represents the maximum jump allowed at
 <code>max_iterations</code> iterations.  To avoid unproductive calculations, if the
 maximum permitted jump would be less than <code>jump_min</code>, distance estimation is
@@ -1252,7 +1252,7 @@ skipped.</p>
 
 <p>The default settings are currently rather ad-hoc: if <code>max_iterations < 12</code>,
 then the default is (effectively) <code>jump_max 30,1 jump_min 2</code>; otherwise, the
-default is (effectively) <code>jump_max 30 jump_scale 0.75 jump_min 2</code>.  Any feedback
+default is (effectively) <code>jump_max 30 jump_max_scale 0.75 jump_min 2</code>.  Any feedback
 or suggestions would be welcome!</p>
 
 <p>The <code>precision</code> can be dynamically varied based on the current number of

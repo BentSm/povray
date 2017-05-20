@@ -1,0 +1,52 @@
+/**
+
+@page fractal_docs General julia_fractal Documentation
+
+@note
+Some of this information may also be found in the appropriate source files.
+
+@todo
+Finish, improve, distribute, revise, elaborate, expand, organize, etc.
+
+@todo
+Figure out how to get this off of the main index page...  It **really** should not be the first item in the documentation!  One might be able to use @c @@dir (except that such documentation does not appear to make it into the final product) or the grouping commands... ???
+
+@note
+One page worth checking out is [this page][4D Fractals], written by the original author of the @c julia_fractal code, Pascal Massimino.  The code is outdated, but much of the theory still applies.
+
+[4D Fractals]: https://web.archive.org/web/20060428104627/http://skal.planet-d.net/quat/f_gal.ang.html
+
+@section assumptions Assumptions
+
+Certain parts of the code make assumptions that simplify operations.  If these assumptions are not met, the code is liable to produce incorrect results (not surprisingly!).
+
+Some of the more major ones include:
+
+@li @c MagicHypercomplexFractalRules assumes that the function being iterated is hypercomplex-differentiable.  It also assumes that all computations are done in 'duplex' form (effectively, a slightly-tweaked @f$\mathbb{C}^2@f$; see [here][4D Fractals] (under "Quaternion and hypercomplex group laws") for an explanation of duplex form).
+@li @c HypercomplexFuncFractalRules assumes that the complex function is complex-differentiable.
+@li @c QuaternionFuncFractalRules assumes that the complex function is not only complex-differentiable, but commutes with [complex] conjugation as well (i.e., @f$f(\overline{z})=\overline{f(z)}@f$).
+
+@section quaternion_func Quaternionic Function Implementation
+
+The quaternionic function implementation (@c QuaternionFuncFractalRules) is primarily based on looking at quaternions as 2 x 2 complex matrices (see [Quaternion] on Wikipedia), and applying Sylvester's formula (see [Sylvester's formula] on Wikipedia).  In order for the resulting matrix to represent a valid quaternion in this system, the complex function must commute with [complex] conjugation, which permits further simplification.  Interestingly, the only complex functions currently implemented for which this condition does not hold are @c pwr with a complex exponent (note, though, that the generic function implementation of @c pwr is overridden for the quaternions) and @c acos @c variant.  If a function does not satisfy these assumptions, the code will still operate; however, the resulting quaternionic function will not necessarily agree with the complex function on the lower half of the complex plane.
+
+[Quaternion]: https://en.wikipedia.org/wiki/Quaternion#Matrix_representations
+[Sylvester's formula]: https://en.wikipedia.org/wiki/Sylvester's_formula
+
+@section complex_fn Complex Function Implementation
+
+The complex functions are currently implemented fairly naively: they do not take much care to deal with potential numerical issues.  It might be worthwhile to switch them over to implementations from C / C++ / boost, provided that speed isn't too badly impacted.  Also, the @c acos and @c acosh implementations are noteworthy in that they have do some sign-tweaking to get the proper values.  They are not necessarily canonically correct for some complex numbers with -0 (@em negative 0) components.
+
+@section compatibility Compatibility
+
+This implementation (introduced in 3.7.1) is significantly different from the implementation that preceded it.  See the user documentation for details.
+
+@section opt_warning Optimization Warning
+
+@warning
+Optimizations that violate the floating-point standards (e.g., @c -ffast-math) can affect the fractal computations.  This is, of course, an issue for reproducibility!
+
+@note
+A fractal that uses the @c isometric keyword for slicing will (generally) render slower than the 'same' fractal created with the @c projected keyword and transformed equivalently.  This is **not** a bug.  The @c precision is measured relative to the *untransformed* version of a fractal.  Since transforming the @c projected fractal to match the @c isometric fractal will make it larger, the *transformed* version of the @c projected fractal will have an *effective* precision that is lower than that of the [untransformed] @c isometric fractal.  Thus, it will render faster, but be less precise.
+
+*/

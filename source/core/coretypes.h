@@ -530,14 +530,30 @@ struct FrameSettings
 
 class Fractal;
 
+struct FractalRulesInfo;
+
+struct FractalIterData;
+
+struct BoundingBox;
+
+struct FractalDataSizes
+{
+    int fixedSize, mainIterSize, auxIterSize;
+};
+
+class FractalSpace;
+
+typedef shared_ptr<FractalSpace> FractalSpacePtr;
+
 class FractalRules
 {
     public:
         virtual ~FractalRules() {}
-        virtual void CalcNormal (Vector3d&, int, const Fractal *, DBL **) const = 0;
-        virtual bool Iterate (const Vector3d&, const Fractal *, DBL **) const = 0;
-        virtual bool Iterate (const Vector3d&, const Fractal *, const Vector3d&, DBL *, DBL **) const = 0;
-        virtual bool Bound (const BasicRay&, const Fractal *, DBL *, DBL *) const = 0;
+        virtual int Iterate(const Vector4d&, const Fractal *, const Vector4d&, DBL *, FractalIterData *) const = 0;
+        virtual DBL CalcDirDeriv(const Vector4d&, int, const Fractal *, FractalIterData *) const = 0;
+        virtual void CalcNormal(Vector3d&, int, const Fractal *, FractalIterData *, FractalIterData *) const = 0;
+        virtual const FractalRulesInfo& Info() const = 0;
+        virtual const FractalSpace& Space() const = 0;
 };
 
 typedef shared_ptr<FractalRules> FractalRulesPtr;

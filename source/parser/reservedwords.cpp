@@ -99,6 +99,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { AVERAGE_TOKEN,                "average" },
 
     { BACKGROUND_TOKEN,             "background" },
+    { BAILOUT_TOKEN,                "bailout" },
     { BEZIER_SPLINE_TOKEN,          "bezier_spline" },
     { BICUBIC_PATCH_TOKEN,          "bicubic_patch" },
     { BITWISE_AND_TOKEN,            "bitwise_and" },
@@ -186,10 +187,12 @@ const RESERVED_WORD Reserved_Words[] = {
     { DIMENSIONS_TOKEN,             "dimensions" },
     { DIRECTION_TOKEN,              "direction" },
     { DISC_TOKEN,                   "disc" },
+    { DISCONTINUITY_TEST_TOKEN,     "discontinuity_test" },
     { DISPERSION_TOKEN,             "dispersion" },
     { DISPERSION_SAMPLES_TOKEN,     "dispersion_samples" },
     { DIST_EXP_TOKEN,               "dist_exp" },
     { DISTANCE_TOKEN,               "distance" },
+    { DISTANCE_ESTIMATOR_TOKEN,     "distance_estimator" },
 #if 0 // [CLi] the distance_maximum token is perfectly obsolete
     { DISTANCE_MAXIMUM_TOKEN,       "distance_maximum" },
 #endif
@@ -281,12 +284,16 @@ const RESERVED_WORD Reserved_Words[] = {
     { IOR_TOKEN,                    "ior" },
     { IRID_TOKEN,                   "irid" },
     { IRID_WAVELENGTH_TOKEN,        "irid_wavelength" },
+    { ISOMETRIC_TOKEN,              "isometric" },
     { ISOSURFACE_TOKEN,             "isosurface" },
 
     { JITTER_TOKEN,                 "jitter" },
     { JPEG_TOKEN,                   "jpeg" },
     { JULIA_TOKEN,                  "julia" },
     { JULIA_FRACTAL_TOKEN,          "julia_fractal" },
+    { JUMP_MAX_TOKEN,               "jump_max" },
+    { JUMP_MAX_SCALE_TOKEN,         "jump_max_scale" },
+    { JUMP_MIN_TOKEN,               "jump_min" },
 
     { LAMBDA_TOKEN,                 "lambda" },
     { LATHE_TOKEN,                  "lathe" },
@@ -407,6 +414,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { POW_TOKEN,                    "pow" },
     { PPM_TOKEN,                    "ppm" },
     { PRECISION_TOKEN,              "precision" },
+    { PRECISION_SCALE_TOKEN,        "precision_scale" },
     { PRECOMPUTE_TOKEN,             "precompute" },
 #if POV_PARSER_EXPERIMENTAL_OBJ_IMPORT
     { PREFIX_TOKEN,                 "prefix" },
@@ -417,6 +425,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { PRISM_TOKEN,                  "prism" },
     { PROD_TOKEN,                   "prod" },
     { PROJECTED_THROUGH_TOKEN,      "projected_through" },
+    { PROJECTION_TOKEN,             "projection" },
     { PWR_TOKEN,                    "pwr" },
 
     { QUADRATIC_SPLINE_TOKEN,       "quadratic_spline" },
@@ -582,6 +591,7 @@ const RESERVED_WORD Reserved_Words[] = {
     { V_STEPS_TOKEN,                "v_steps" },
     { VAL_TOKEN,                    "val" },
     { VARIANCE_TOKEN,               "variance" },
+    { VARIANT_TOKEN,                "variant" },
     { VAXIS_ROTATE_TOKEN,           "vaxis_rotate" },
     { VCROSS_TOKEN,                 "vcross" },
     { VDOT_TOKEN,                   "vdot" },
